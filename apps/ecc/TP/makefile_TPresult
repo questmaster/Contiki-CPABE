@@ -1,0 +1,13 @@
+MIG = mig java
+
+public_key_point_msg.java:
+	$(MIG) -java-classname=public_key_point_msg ./tpresult.h public_key_point_msg -o $@
+
+private_key_point_msg.java:
+	$(MIG) -java-classname=private_key_point_msg ./tpresult.h private_key_point_msg -o $@
+
+tp_time_msg.java:
+	$(MIG) -java-classname=tp_time_msg ./tpresult.h tp_time_msg -o $@
+
+shared_key_msg.java:
+	$(MIG) -java-classname=shared_key_msg ./tpresult.h shared_key_msg -o $@

@@ -1,0 +1,33 @@
+# Tate Pairing Makefile
+# Use: make -f makefile_TP install imote2 debug
+# Author/Contact: Panos Kampanakis / pan_kamp@ncsu.edu
+
+#get the timing result
+COMPONENT=testTP
+#COMPONENT=testTP_java
+
+#change the packet length to 102 bytes
+MSG_SIZE=102
+
+##########################################
+#          choose sensor                 #
+##########################################
+
+#Imote2
+CFLAGS+=-DIMOTE2
+
+#MICAz
+#CFLAGS+=-DMICA
+#PFLAGS+=-I./Serial
+
+###########################################
+#          choose curve parameter         #
+###########################################
+ 
+#CFLAGS+=-DSS192K2
+CFLAGS+=-DSS512K2
+
+#choose processor frequency (in NN.h)
+CFLAGS+=-DMANUALFREQ
+
+include ../Makerules

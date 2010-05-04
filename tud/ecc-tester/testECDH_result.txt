@@ -1,0 +1,28 @@
+633	ID:1	Rime started with address 1.0
+643	ID:1	MAC 01:00:00:00:00:00:00:00 Contiki 2.4 started. Node id is set to 1.
+661	ID:1	CSMA ContikiMAC, channel check rate 8 Hz, radio channel 26
+663	ID:1	Starting 'ECDH tester process'
+665	ID:1	ECDH tester process started
+669	ID:1	ECDH_init(): 0 ms
+670	ID:1	entering loop.
+
+5682	ID:1	ECC_privkey1: e982 b2a4 6d57 72cb 3079 b073 44e6 3ce1 4ffc aa37 0 
+
+10041	ID:1	ECC_gen_public_key() 1: 557 ms
+10059	ID:1	ECC_pubkey1.x: 9dc0 5141 2062 3c03 a24a e75 6ed ecc4 496f 51b4 0 
+10078	ID:1	ECC_pubkey1.y: aa6c 1756 1ccc 4f38 9389 68d7 14b4 73a5 cb4b c28d 0 
+
+10096	ID:1	ECC_privkey2: 866 2b46 277e e74f 1c66 1510 ad4b 2a17 58a9 45fb 0 
+
+14349	ID:1	ECC_gen_public_key() 2: 543 ms
+14367	ID:1	ECC_pubkey2.x: e5bc 7c6 d567 f63 39d9 3287 69c2 9c03 1e0e 49b4 0 
+14386	ID:1	ECC_pubkey2.y: 8f83 e9c 3edc 111c 2a03 6d23 5ed9 6701 8b5 26e0 0 
+
+18753	ID:1	ECDH_key_agree() 1: 558 ms
+18772	ID:1	ECDH_secret1: 74 4a b7 3 f5 bc 8 2e 59 18 5f 6d 4 9d 2d 36 7d b2 45 c2 
+
+23018	ID:1	ECDH_key_agree() 2: 542 ms
+23037	ID:1	ECDH_secret2: 74 4a b7 3 f5 bc 8 2e 59 18 5f 6d 4 9d 2d 36 7d b2 45 c2 
+
+
+[stripped DEBUG printf's -> times are smaller]
