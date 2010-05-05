@@ -1,0 +1,151 @@
+diff -r msp430/dev/uart1.c msp430_tud/dev/uart1.c
+138,140c138,142
+< 
+< #if F_CPU == 3900000ul
+< 
+---
+> /*
+> // Not needed, as for 8MHz ACLK and SMCLK are divided by 2 
+>  
+> #if F_CPU == 8192000ul
+> 		  
+142,143c144,145
+<     UMCTL1 = 0xF7;
+<     break;
+---
+> 	  UMCTL1 = 0x10;
+> 	  break;
+145,146c147,148
+<     UMCTL1 = 0xED;
+<     break;
+---
+> 	  UMCTL1 = 0x44;
+> 	  break;
+148,149c150,151
+<     UMCTL1 = 0xD6;
+<     break;
+---
+> 	  UMCTL1 = 0x09;
+> 	  break;
+151,152c153,154
+<     UMCTL1 = 0x08;
+<     break;
+---
+> 	  UMCTL1 = 0x5B;
+> 	  break;
+154,156c156,230
+<     UMCTL1 = 0x22;
+<     break;
+< 
+---
+> 	  UMCTL1 = 0x52;
+> 	  break;
+> 	  
+> #elif F_CPU == 8000000ul
+> 		  
+>   case UART1_BAUD2UBR(115200ul):
+> 	  UMCTL1 = 0xAA;
+> 	  break;
+>   case UART1_BAUD2UBR(57600ul):
+> 	  UMCTL1 = 0xEF;
+> 	  break;
+>   case UART1_BAUD2UBR(38400ul):
+> 	  UMCTL1 = 0x11;
+> 	  break;
+>   case UART1_BAUD2UBR(19200ul):
+> 	  UMCTL1 = 0x5B;
+> 	  break;
+>   case UART1_BAUD2UBR(9600ul):
+> 	  UMCTL1 = 0x09;
+> 	  break;
+> */	  
+> #if F_CPU == 4096000ul
+> 		  
+>   case UART1_BAUD2UBR(115200ul):
+> 	  UMCTL1 = 0xD6;
+> 	  break;
+>   case UART1_BAUD2UBR(57600ul):
+> 	  UMCTL1 = 0x10;
+> 	  break;
+>   case UART1_BAUD2UBR(38400ul):
+> 	  UMCTL1 = 0x6D;
+> 	  break;
+>   case UART1_BAUD2UBR(19200ul):
+> 	  UMCTL1 = 0x09;
+> 	  break;
+>   case UART1_BAUD2UBR(9600ul):
+> 	  UMCTL1 = 0x5B;
+> 	  break;
+> 		  
+> #elif F_CPU == 4000000ul
+> 		  
+>   case UART1_BAUD2UBR(115200ul):
+> 	  UMCTL1 = 0xDD;
+> 	  break;
+>   case UART1_BAUD2UBR(57600ul):
+> 	  UMCTL1 = 0xAA;
+> 	  break;
+>   case UART1_BAUD2UBR(38400ul):
+> 	  UMCTL1 = 0x04;
+> 	  break;
+>   case UART1_BAUD2UBR(19200ul):
+> 	  UMCTL1 = 0x11;
+> 	  break;
+>   case UART1_BAUD2UBR(9600ul):
+> 	  UMCTL1 = 0x5B;
+> 	  break;
+> 		  
+> #elif F_CPU == 3900000ul
+> 		  
+>   case UART1_BAUD2UBR(115200ul):
+> 	  UMCTL1 = 0xF7;
+> 	  break;
+>   case UART1_BAUD2UBR(57600ul):
+> 	  UMCTL1 = 0xED;
+> 	  break;
+>   case UART1_BAUD2UBR(38400ul):
+> 	  UMCTL1 = 0xD6;
+> 	  break;
+>   case UART1_BAUD2UBR(19200ul):
+> 	  UMCTL1 = 0x08;
+> 	  break;
+>   case UART1_BAUD2UBR(9600ul):
+> 	  UMCTL1 = 0x22;
+> 	  break;
+> 		  
+158c232
+< 
+---
+> 		  
+diff -r msp430/msp430.c msp430_tud/msp430.c
+71a72
+> #ifndef MSP430_8MHZ_ENABLE
+84c85
+< 
+---
+> 	
+121a123,135
+> 
+> #else /* Hack for 8MHz */
+> 	
+> 	// Max Frequency
+> 	DCOCTL = 0xFF;
+> 	BCSCTL1 = 0x07;
+> 	
+> 	// XT2 Off, ACLK/2, SMCLK/2, use ext dco R
+> 	BCSCTL1 = XT2OFF | DIVA0 | (BCSCTL1 & (RSEL2|RSEL1|RSEL0));
+> 	BCSCTL2 = DIVS0 | DCOR;
+> 	IE1 &= OFIE; 
+> 	
+> #endif	
+256c270
+< /*   uint32_t speed; */
+---
+> /*   uint32_t speed;  */
+diff -r msp430/rtimer-arch.h msp430_tud/rtimer-arch.h
+46a47,49
+> #ifdef MSP430_8MHZ_ENABLE
+> #define RTIMER_ARCH_SECOND (4096U*2)
+> #else
+47a51
+> #endif

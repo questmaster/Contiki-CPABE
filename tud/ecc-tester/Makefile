@@ -29,6 +29,10 @@ CFLAGS+=-DSLIDING_WIN  #sliding window method, window size is defined in ECC.h
 ##ECDSA
 CFLAGS+=-DSHAMIR_TRICK  #shamir trick, windows size is defined in ECDSAM.nc
 
+##activate 4/8MHz configuration (compatible to TinyOS freq's)
+#CFLAGS += -DMSP430_4MHZ_ENABLE
+#CFLAGS += -DMSP430_8MHZ_ENABLE
+
 ##activate COOJA crash workarounds (watchdog problem?!)
 #CFLAGS += -DACT_WA
 

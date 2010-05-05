@@ -1,0 +1,6 @@
+106a107,109
+> #if defined(MSP430_8MHZ_ENABLE) || defined(MSP430_4MHZ_ENABLE)
+> #define F_CPU 4096000uL//3900000uL /*2457600uL*/
+> #else
+107a111
+> #endif

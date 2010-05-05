@@ -8,6 +8,32 @@
 
 #include "ECC.h"
 
+static void check_clock(){
+    uint32_t time_a, time_b;
+    uint32_t dM_len = 80000uL;
+
+	printf("check_clock(): start stopwatch...\n");
+	
+    time_a = clock_time();
+	
+    for (; dM_len > 0; dM_len--) {
+		//		asm("nop");
+		if ((dM_len / 1000) % 2) {
+			leds_on(LEDS_BLUE);
+		} else {
+			leds_off(LEDS_BLUE);
+		}
+		
+	} 
+    
+    time_b = clock_time();
+    t = time_b - time_a;
+	
+	printf("check_clock(): stopped at %d ms (diff: %d)\n", (uint)(t*1000/CLOCK_SECOND), (uint)t);
+	
+}
+
+
 
 /* declaration of scopes process */
 PROCESS(tester_process, "ECC tester process");
@@ -20,6 +46,7 @@ PROCESS_THREAD(tester_process, ev, data)
 	int i = 0;
 
   printf("ECC tester process started\n");
+  printf("BCSCTL1: 0x%x  BCSCTL2: 0x%x  DCOCTL: 0x%x\n", BCSCTL1, BCSCTL2, DCOCTL);
 
   /* create and start an event timer */
   static struct etimer tester_timer;
@@ -82,6 +109,8 @@ PROCESS_THREAD(tester_process, ev, data)
 	  }
 	  printf("\n");
 	  
+	  
+	  check_clock();
 	  
   } while(1);
 
