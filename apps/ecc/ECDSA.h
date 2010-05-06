@@ -39,13 +39,13 @@
 
 	//init the ECDSA, pKey is public key used to verify the signature
 	//we assume that the node has already know the public key when deployed
-	extern bool ECDSA_init(Point * pKey);
+	extern bool ECDSA_init(Point * pKey) __attribute__ ((noinline));
 	
 	//do signature on msg, (r,s) is the signature, d is the private key
-	extern void ECDSA_sign(uint8_t *msg, uint8_t len, NN_DIGIT *r, NN_DIGIT *s, NN_DIGIT *d);
+	extern void ECDSA_sign(uint8_t *msg, uint8_t len, NN_DIGIT *r, NN_DIGIT *s, NN_DIGIT *d) __attribute__ ((noinline));
 	
 	//verify the signature (r,s), Q is the public key. return 1 if passed.
-	extern uint8_t ECDSA_verify(uint8_t *msg, uint8_t len, NN_DIGIT *r, NN_DIGIT *s, Point *Q);
+	extern uint8_t ECDSA_verify(uint8_t *msg, uint8_t len, NN_DIGIT *r, NN_DIGIT *s, Point *Q) __attribute__ ((noinline));
 
 
 #endif

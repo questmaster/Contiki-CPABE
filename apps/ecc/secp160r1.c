@@ -329,11 +329,11 @@ void get_param(Params *para)
 
   }
 
-NN_UINT omega_mul(NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *omega, NN_UINT digits) /*__attribute__ ((noinline))*/
+NN_UINT omega_mul(NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *omega, NN_UINT digits) 
   {
     //#ifdef INLINE_ASM
 #ifdef HYBRID_MULT
-#ifdef PLATFORM_MICAZ // TODO: Platform constant
+#ifdef CONTIKI_TARGET_MICAZ
     uint8_t n_d;
     if (digits % 4 == 0)
       n_d = digits/4;
@@ -487,7 +487,7 @@ NN_UINT omega_mul(NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *omega, NN_UINT digits) /*_
     return (digits+2);
 #endif
 
-#ifdef PLATFORM_IMOTE2 // TODO: Platform constant
+#ifdef CONTIKI_TARGET_IMOTE2
     a[digits] += NNAddDigitMult(&a[0], &a[0], omega[0], b, digits);
     return (digits+1);
 #endif

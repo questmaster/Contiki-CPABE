@@ -36,7 +36,7 @@
 
 #include <ECC.h>
 
-	extern void get_param(Params *para);
+	extern void get_param(Params *para) __attribute__ ((noinline));
   
 	extern NN_UINT omega_mul(NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *omega, NN_UINT digits);
 

@@ -15,8 +15,14 @@ extern void ECIES_init();
 //M_len - length of M
 //PublicKey - be used to encrypt M
 //return the length of C
-extern int ECIES_encrypt(uint8_t *Ct, int C_len, uint8_t *M, int M_len, Point *PublicKey);
+#ifdef CODE_SIZE
+	extern int ECIES_encrypt(uint8_t *Ct, int C_len, uint8_t *M, int M_len, Point *PublicKey) __attribute__ ((noinline));
+	
+	extern int ECIES_decrypt(uint8_t *M, int M_len, uint8_t *Ct, int C_len, NN_DIGIT *d) __attribute__ ((noinline));
+#else
+	extern int ECIES_encrypt(uint8_t *Ct, int C_len, uint8_t *M, int M_len, Point *PublicKey);
 
-extern int ECIES_decrypt(uint8_t *M, int M_len, uint8_t *Ct, int C_len, NN_DIGIT *d);
+	extern int ECIES_decrypt(uint8_t *M, int M_len, uint8_t *Ct, int C_len, NN_DIGIT *d);
+#endif
 
 #endif

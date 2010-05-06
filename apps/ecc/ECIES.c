@@ -145,11 +145,7 @@ static void KDF(uint8_t *K, int K_len, uint8_t *Z){
   //C - ciphertext
   //M - plaintext, M_len - the length of plaintext <= 61
   //PublicKey - public key of other entity
-#ifdef CODE_SIZE
-  int ECIES_encrypt(uint8_t *Ct, int C_len, uint8_t *M, int M_len, Point *PublicKey) __attribute__ ((noinline)){
-#else
-  int ECIES_encrypt(uint8_t *Ct, int C_len, uint8_t *M, int M_len, Point *PublicKey){
-#endif
+int ECIES_encrypt(uint8_t *Ct, int C_len, uint8_t *M, int M_len, Point *PublicKey){
     NN_DIGIT k[NUMWORDS];
     uint8_t z[KEYDIGITS*NN_DIGIT_LEN];
     Point R, P;
@@ -259,11 +255,7 @@ static void KDF(uint8_t *K, int K_len, uint8_t *Z){
 
   }
 
-#ifdef CODE_SIZE
-  int ECIES_decrypt(uint8_t *M, int M_len, uint8_t *Ct, int C_len, NN_DIGIT *d) __attribute__ ((noinline)){
-#else
-  int ECIES_decrypt(uint8_t *M, int M_len, uint8_t *Ct, int C_len, NN_DIGIT *d){
-#endif
+int ECIES_decrypt(uint8_t *M, int M_len, uint8_t *Ct, int C_len, NN_DIGIT *d){
 
     uint8_t z[KEYDIGITS*NN_DIGIT_LEN];
     Point R, P;

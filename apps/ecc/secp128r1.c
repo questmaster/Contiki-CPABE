@@ -288,11 +288,11 @@ void get_param(Params *para)
 
   }
 
-NN_UINT omega_mul(NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *omega, NN_UINT digits) /*__attribute__ ((noinline))*/
+NN_UINT omega_mul(NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *omega, NN_UINT digits) 
   {
 #ifdef INLINE_ASM
 
-#ifdef MICA
+#ifdef CONTIKI_TARGET_MICAZ
     call NN.Assign(a, b, digits);
     a[digits+12] += call NN.AddDigitMult(&a[12], &a[12], omega[12], b, digits);
     return (digits+13);
@@ -304,7 +304,7 @@ NN_UINT omega_mul(NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *omega, NN_UINT digits) /*_
     return (digits+7);
 #endif
 
-#ifdef IMOTE2
+#ifdef CONTIKI_TARGET_IMOTE2
     call NN.Assign(a, b, digits);
     a[digits+3] += call NN.AddDigitMult(&a[3], &a[3], omega[3], b, digits);
     return (digits+4);

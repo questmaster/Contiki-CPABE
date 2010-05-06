@@ -37,7 +37,7 @@ typedef int8_t bool;
 #define TRUE 1
 #define FALSE 0
 
-
+/*
 // frequency (in MHz) of the imote2 processor
 #if CORE_FREQ == 13
 #define CORE_BUS 13
@@ -48,6 +48,7 @@ typedef int8_t bool;
 #elif CORE_FREQ == 416
 #define CORE_BUS 208
 #endif
+*/
 
 //#define BARRETT_REDUCTION
 //#define HYBRID_MULT  //hybrid multiplication
@@ -90,7 +91,7 @@ typedef int8_t bool;
 
 
 //mica, mica2, micaz
-#ifdef PLATFORM_MICAZ// TODO: Constant
+#ifdef CONTIKI_TARGET_MICAZ
 #define EIGHT_BIT_PROCESSOR
 #define INLINE_ASM
 #endif
@@ -102,7 +103,7 @@ typedef int8_t bool;
 #endif
 
 //imote2
-#ifdef PLATFORM_IMOTE2 // TODO: Constant
+#ifdef CONTIKI_TARGET_IMOTE2
 #define THIRTYTWO_BIT_PROCESSOR
 #define INLINE_ASM
 #endif
@@ -276,7 +277,11 @@ typedef struct Barrett Barrett;
 //Decodes character string b into a.
 extern void NNDecode(NN_DIGIT * a, NN_UINT digits, unsigned char * b, NN_UINT len);
 //Encodes a into character string b.
+#ifdef CODE_SIZE
+extern void NNEncode(unsigned char * a, NN_UINT digits, NN_DIGIT * b, NN_UINT len) __attribute__ ((noinline));
+#else
 extern void NNEncode(unsigned char * a, NN_UINT digits, NN_DIGIT * b, NN_UINT len);
+#endif
 
 /* ASSIGNMENT */
 //Assigns a = b.

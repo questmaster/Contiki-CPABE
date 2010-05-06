@@ -158,11 +158,19 @@ typedef struct PointSlope PointSlope;
  */
 	// init the parameters and base point array for sliding window method
 	// the first function to call
+#ifdef CODE_SIZE
+	extern void ECC_init()__attribute__ ((noinline));
+	
+	extern void ECC_gen_private_key(NN_DIGIT *PrivateKey)__attribute__ ((noinline));
+
+	extern void ECC_gen_public_key(Point *PublicKey, NN_DIGIT *PrivateKey)__attribute__ ((noinline));
+#else
 	extern void ECC_init();
 	
 	extern void ECC_gen_private_key(NN_DIGIT *PrivateKey);
 	
 	extern void ECC_gen_public_key(Point *PublicKey, NN_DIGIT *PrivateKey);
+#endif
 	
 	//return the length of octets, octet_len >= 2*NUMWORDS
 	extern int ECC_point2octet(uint8_t *octet, NN_UINT octet_len, Point *P, bool compress);

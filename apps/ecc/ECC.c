@@ -27,11 +27,11 @@
  * $Id: ECCM.nc,v 1.8 2007/11/02 22:36:39 aliu3 Exp $
  * ECCM, the module implement ECC.nc
  */
-#include <stdio.h> // TODO: DEBUG
 #include <NN.h>
 #include <CurveParam.h>
 #include <ECC.h>
 #include <string.h>
+#include <dev/watchdog.h>
 #include <lib/rand.h>
 
   //parameters for ECC operations
@@ -47,8 +47,7 @@ static  Barrett Bbuf;
 static  Point pBaseArray[NUM_POINTS];
   //masks for sliding window method
 static  NN_DIGIT mask[NUM_MASKS];
-#endif
-
+#endif		
 
 static void c_add_projective(Point * P0, NN_DIGIT *Z0, Point * P1, NN_DIGIT * Z1, Point * P2, NN_DIGIT * Z2);
 #ifdef ADD_MIX
@@ -579,11 +578,7 @@ static NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
 
 
   //initialize parameters for ECC module
-#ifdef CODE_SIZE
-  void ECC_init()__attribute__ ((noinline))
-#else
-  void ECC_init()
-#endif
+void ECC_init()
   {
     //call Random.init();
     // get parameters
@@ -725,9 +720,7 @@ static NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     tmp = NNBits(n, NUMWORDS);
 
     for(i = tmp-1; i >= 0; i--) {
-#ifdef ACT_WA
-		printf("DEBUG\n"); // TODO: Node  crashing without this ?!
-#endif
+		watchdog_periodic();
 		c_dbl_affine(P0, P0);
 
       if (b_testbit(n, i)){      	
@@ -752,9 +745,7 @@ static NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
 
     for (i = tmp-1; i >= 0; i--)
     {
-#ifdef ACT_WA
-		printf("DEBUG\n"); // TODO: Node  crashing without this ?!
-#endif
+		watchdog_periodic();
 		c_dbl_projective(P0, Z0, P0, Z0);
 
       if (b_testbit(n, i))
@@ -790,9 +781,7 @@ static NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     NNAssign(pointArray[0].y, baseP->y, NUMWORDS);
 
     for(i = 1; i < NUM_POINTS; i++) {
-#ifdef ACT_WA
-printf("DEBUG\n"); // TODO: Node  crashing without this ?!
-#endif
+		watchdog_periodic();
 #ifdef AFFINE
       c_add_affine(&(pointArray[i]), &(pointArray[i-1]), baseP);
 #else
@@ -821,9 +810,7 @@ static void win_mul(Point * P0, NN_DIGIT * n, Point * pointArray)
     tmp = NNDigits(n, NUMWORDS);
 
     for (i = tmp - 1; i >= 0; i--){
-#ifdef ACT_WA
-		printf("DEBUG\n"); // TODO: Node  crashing without this ?!
-#endif
+		watchdog_periodic();
 		for (j = NN_DIGIT_BITS/W_BITS - 1; j >= 0; j--){
 	for (k = 0; k < W_BITS; k++){
 	  c_dbl_affine(P0, P0);
@@ -856,10 +843,8 @@ static void win_mul(Point * P0, NN_DIGIT * n, Point * pointArray)
     tmp = NNDigits(n, NUMWORDS);
 
     for (i = tmp - 1; i >= 0; i--){ 
-#ifdef ACT_WA
-		printf("DEBUG\n"); // TODO: Node  crashing without this ?!
-#endif
 		for (j = NN_DIGIT_BITS/W_BITS - 1; j >= 0; j--){
+			watchdog_periodic();
 
 #ifndef REPEAT_DOUBLE
 	for (k = 0; k < W_BITS; k++){
@@ -925,6 +910,7 @@ static void win_mul(Point * P0, NN_DIGIT * n, Point * pointArray)
     ZList[0].z[0] = 0x01;
 
     for (i = 1; i < NUM_POINTS; i++){
+		watchdog_periodic();
 #ifdef ADD_MIX      
       c_add_mix(&(pointArray[i]), ZList[i].z, &(pointArray[i-1]), ZList[i-1].z, baseP);
 #else
@@ -954,7 +940,8 @@ static void win_mul(Point * P0, NN_DIGIT * n, Point * pointArray)
 
     for (i = tmp - 1; i >= 0; i--){ 
       for (j = NN_DIGIT_BITS/W_BITS - 1; j >= 0; j--){
-
+		  watchdog_periodic();
+		  
 #ifndef REPEAT_DOUBLE
 	for (k = 0; k < W_BITS; k++){
 	  c_dbl_projective(P0, Z0, P0, Z0);
@@ -1002,11 +989,7 @@ static void win_mul(Point * P0, NN_DIGIT * n, Point * pointArray)
   }
 #endif
 
-#ifdef CODE_SIZE
-  void ECC_gen_private_key(NN_DIGIT *PrivateKey)__attribute__ ((noinline)){
-#else
   void ECC_gen_private_key(NN_DIGIT *PrivateKey){
-#endif
 
     NN_UINT order_digit_len, order_bit_len;
     bool done = FALSE;

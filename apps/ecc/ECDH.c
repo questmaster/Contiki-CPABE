@@ -43,21 +43,13 @@ static ZCoordinate ZList[NUM_POINTS];
 #endif
 
   //init ECDH module
-#ifdef CODE_SIZE
-  void ECDH_init() __attribute__((noinline)){
-#else
-  void ECDH_init(){
-#endif
+void ECDH_init(){
 
     ECC_init();
   }
 
   //key agreement, K is the established key, ShareInfo not implemented
-#ifdef CODE_SIZE
-  int ECDH_key_agree(uint8_t *K, NN_UINT keydatalen, Point *PublicKey, NN_DIGIT *PrivateKey) __attribute__((noinline)){
-#else
   int ECDH_key_agree(uint8_t *K, NN_UINT keydatalen, Point *PublicKey, NN_DIGIT *PrivateKey){
-#endif
 
     Point tempP;
     uint8_t z[KEYDIGITS*NN_DIGIT_LEN+4];

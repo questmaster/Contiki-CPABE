@@ -85,10 +85,18 @@
                void  NN_Assign (NN_DIGIT *a, NN_DIGIT *b, NN_UINT digits);
                void  NN_AssignZero (NN_DIGIT *a, NN_UINT digits);
                void  NN_Assign2Exp (NN_DIGIT *a, NN_UINT2 b, NN_UINT digits);
-           NN_DIGIT  NN_Add (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT digits);
-           NN_DIGIT  NN_Sub (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT digits);
-               void  NN_Mult (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT digits);
-           NN_DIGIT  NN_LShift (NN_DIGIT *a, NN_DIGIT *b, NN_UINT c, NN_UINT digits);
+#ifdef CODE_SIZE
+		   NN_DIGIT  NN_Add (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT digits) __attribute__ ((noinline));
+		   NN_DIGIT  NN_Sub (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT digits) __attribute__ ((noinline));
+			   void  NN_Mult (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT digits) __attribute__ ((noinline));
+			   void  NN_Sqr(NN_DIGIT *a, NN_DIGIT *b, NN_UINT digits) __attribute__ ((noinline));
+#else
+		   NN_DIGIT  NN_Add (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT digits);
+		   NN_DIGIT  NN_Sub (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT digits);
+		   void  NN_Mult (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT digits);
+		   void  NN_Sqr(NN_DIGIT *a, NN_DIGIT *b, NN_UINT digits);
+#endif
+		   NN_DIGIT  NN_LShift (NN_DIGIT *a, NN_DIGIT *b, NN_UINT c, NN_UINT digits);
            NN_DIGIT  NN_RShift (NN_DIGIT *a, NN_DIGIT *b, NN_UINT c, NN_UINT digits);
                void  NN_Div (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT cDigits, NN_DIGIT *d, NN_UINT dDigits);
                void  NN_Mod (NN_DIGIT *a, NN_DIGIT *b, NN_UINT bDigits, NN_DIGIT *c, NN_UINT cDigits);
@@ -111,7 +119,7 @@ static unsigned int  NN_DigitBits (NN_DIGIT a);
   */
 #ifdef INLINE_ASM
 
-#ifdef PLATFORM_MICAZ // TODO: Platform constant
+#ifdef CONTIKI_TARGET_MICAZ
 #define NN_DigitMult(b, c) (NN_DOUBLE_DIGIT)(b) * (c)
 #endif
 
@@ -135,7 +143,7 @@ NN_DOUBLE_DIGIT NN_DigitMult(NN_DIGIT b, NN_DIGIT c)
   
 #endif
 
-#ifdef PLATFORM_IMOTE2 // TODO: Platform constant
+#ifdef CONTIKI_TARGET_IMOTE2 // Not yet supported by Contiki
 #define NN_DigitMult(b, c) (NN_DOUBLE_DIGIT)(b) * (c)
 #endif
 
@@ -257,11 +265,11 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
      a, b ,c can be same
      Lengths: a[digits], b[digits], c[digits].
    */
-  NN_DIGIT NN_Add (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT digits) /*__attribute__ ((noinline))*/
+  NN_DIGIT NN_Add (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT digits)
   {
     //inline assembly for micaz
 #ifdef INLINE_ASM
-#ifdef PLATFORM_MICAZ // TODO: Platform constant
+#ifdef CONTIKI_TARGET_MICAZ
 
     NN_DIGIT carry;
     if (digits == 0)
@@ -308,7 +316,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     return carry;
 #endif
 
-#ifdef PLATFORM_IMOTE2 // TODO: Platform constant
+#ifdef CONTIKI_TARGET_IMOTE2 // Not yet supported by Contiki
     NN_DIGIT carry, ai;
     NN_UINT i;
 
@@ -351,11 +359,11 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
      a, b, c can be same
      Lengths: a[digits], b[digits], c[digits].
    */
-  NN_DIGIT NN_Sub (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT digits) /*__attribute__ ((noinline))*/
+  NN_DIGIT NN_Sub (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT digits) 
   {
 
 #ifdef INLINE_ASM
-#ifdef PLATFORM_MICAZ // TODO: Platform constant
+#ifdef CONTIKI_TARGET_MICAZ
 
     NN_DIGIT borrow;
     if (digits == 0)
@@ -403,7 +411,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     return borrow;
 #endif
 
-#ifdef PLATFORM_IMOTE2 // TODO: Platform constant
+#ifdef CONTIKI_TARGET_IMOTE2 // Not yet supported by Contiki
     NN_DIGIT ai, borrow;
     NN_UINT i;
 
@@ -447,12 +455,12 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
      Lengths: a[2*digits], b[digits], c[digits].
      Assumes digits < MAX_NN_DIGITS.
    */
-  void NN_Mult (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT digits) /*__attribute__ ((noinline))*/
+  void NN_Mult (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT digits) 
   {
 
     //#ifdef INLINE_ASM
 #ifdef HYBRID_MULT
-#ifdef PLATFORM_MICAZ // TODO: Platform constant
+#ifdef CONTIKI_TARGET_MICAZ
 #ifdef HYBRID_MUL_WIDTH4
     uint8_t n_d;
     
@@ -1484,7 +1492,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
 		  :"r0","r1","r2","r3","r4","r5","r6","r8","r9","r10","r11","r12","r13","r14","r15","r16","r17","r18","r19","r20","r21","r22","r24","r25"
 		  );
 #endif
-#endif //PLATFORM_MICAZ // TODO: Platform constant
+#endif //CONTIKI_TARGET_MICAZ
 
 #ifdef CONTIKI_TARGET_SKY
 
@@ -1664,7 +1672,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     */
 #endif //CONTIKI_TARGET_SKY
 
-#ifdef PLATFORM_IMOTE2 // TODO: Platform constant
+#ifdef CONTIKI_TARGET_IMOTE2 // Not yet supported by Contiki
     //r0~r2
     //r3 b
     //r4 i
@@ -1730,7 +1738,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
 		  :"r"(a), "r"(b), "r"(c), "r"(digits)
 		  :"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8"
 		  );
-#endif //PLATFORM_IMOTE2 // TODO: Platform constant
+#endif //CONTIKI_TARGET_IMOTE2 // Not yet supported by Contiki
 
 #else  //no inline assembly
 
@@ -1751,11 +1759,11 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
   }
 
 
-  void NN_Sqr(NN_DIGIT *a, NN_DIGIT *b, NN_UINT digits) /*__attribute__ ((noinline))*/
+  void NN_Sqr(NN_DIGIT *a, NN_DIGIT *b, NN_UINT digits)
   {
     //#ifdef INLINE_ASM
 #ifdef HYBRID_SQR
-#ifdef PLATFORM_MICAZ // TODO: Platform constant
+#ifdef CONTIKI_TARGET_MICAZ
     uint8_t n_d;
     
     n_d = digits/4;
@@ -2483,7 +2491,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
 		  :"r0","r1","r2","r3","r4","r5","r6","r7","r8","r9","r10","r11","r12","r13","r14","r15","r16","r17","r19","r24","r25","r26","r27","r28","r29"
 		  );
 
-#endif  //end of PLATFORM_MICAZ // TODO: Platform constant
+#endif  //end of CONTIKI_TARGET_MICAZ
 
 #ifdef CONTIKI_TARGET_SKY  //should implement in assembly
     //width=1
@@ -2610,7 +2618,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     */
 #endif  //end of CONTIKI_TARGET_SKY
 
-#ifdef PLATFORM_IMOTE2 // TODO: Platform constant
+#ifdef CONTIKI_TARGET_IMOTE2 // Not yet supported by Contiki
 
     //r0~r2
     //r3 b
@@ -3165,7 +3173,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
   static NN_DIGIT NN_AddDigitMult (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT c, NN_DIGIT *d, NN_UINT digits)
   {
 #ifdef INLINE_ASM
-#ifdef PLATFORM_MICAZ // TODO: Platform constant
+#ifdef CONTIKI_TARGET_MICAZ
     NN_DIGIT carry;
     unsigned int i;
     if (c == 0)
@@ -3209,7 +3217,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     return (carry);
 #endif
 
-#ifdef PLATFORM_IMOTE2 // TODO: Platform constant
+#ifdef CONTIKI_TARGET_IMOTE2 // Not yet supported by Contiki
     NN_DIGIT carry;
     unsigned int i;
     NN_DOUBLE_DIGIT t;
@@ -3263,7 +3271,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
   static NN_DIGIT NN_SubDigitMult (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT c, NN_DIGIT *d, NN_UINT digits)
   {
 #ifdef INLINE_ASM
-#ifdef PLATFORM_MICAZ // TODO: Platform constant
+#ifdef CONTIKI_TARGET_MICAZ
     NN_DIGIT borrow;
     unsigned int i;
 
@@ -3311,7 +3319,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     return (borrow);
 #endif
 
-#ifdef PLATFORM_IMOTE2 // TODO: Platform constant
+#ifdef CONTIKI_TARGET_IMOTE2 // Not yet supported by Contiki
     NN_DIGIT borrow;
     unsigned int i;
     NN_DOUBLE_DIGIT t;
@@ -3410,11 +3418,7 @@ void NNDecode(NN_DIGIT * a, NN_UINT digits, unsigned char * b, NN_UINT len)
   }
    
 
-#ifdef CODE_SIZE
-  void NNEncode(unsigned char * a, NN_UINT digits, NN_DIGIT * b, NN_UINT len) /*__attribute__ ((noinline))*/
-#else
-  void NNEncode(unsigned char * a, NN_UINT digits, NN_DIGIT * b, NN_UINT len)
-#endif
+void NNEncode(unsigned char * a, NN_UINT digits, NN_DIGIT * b, NN_UINT len)
   {
     NN_Encode (a, digits, b, len);
   }
@@ -3508,7 +3512,7 @@ void NNDecode(NN_DIGIT * a, NN_UINT digits, unsigned char * b, NN_UINT len)
     pBarrett->mu_len = NN_Digits(pBarrett->mu, 2*MAX_NN_DIGITS+1);
 
 #ifdef HYBRID_MULT
-#ifdef PLATFORM_MICAZ // TODO: Platform constant
+#ifdef CONTIKI_TARGET_MICAZ
 #ifdef HYBRID_MUL_WIDTH4
     while ((pBarrett->mu_len % 4) != 0)
       pBarrett->mu_len++;
@@ -3618,7 +3622,7 @@ void NNDecode(NN_DIGIT * a, NN_UINT digits, unsigned char * b, NN_UINT len)
   void NNModDiv(NN_DIGIT * a, NN_DIGIT * b, NN_DIGIT * c, NN_DIGIT * d, NN_UINT digits)
   {
     /*
-#if defined(INLINE_ASM) && defined(PLATFORM_MICAZ // TODO: Platform constant)
+#if defined(INLINE_ASM) && defined(CONTIKI_TARGET_MICAZ)
    //with assembly code for multiplication it will be faster the traditional way
      NN_DIGIT t1[NUMWORDS];
      NN_ModInv (t1, c, d, digits);

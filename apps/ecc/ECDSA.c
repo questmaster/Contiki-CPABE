@@ -31,6 +31,7 @@
 #include <NN.h>
 #include <ECC.h>
 #include <ECDSA.h>
+#include <dev/watchdog.h>
 #include <lib/rand.h>
 
 #ifdef SHAMIR_TRICK
@@ -171,7 +172,8 @@ static void shamir_init(Point * pKey, Point * pointArray)
      */
     for (i = 0; i < S_MAX; i++){
       for (j = 0; j<S_MAX+1; j++){
-	if (i == 0 && j==0){
+		  watchdog_periodic();
+    if (i == 0 && j==0){
 	  NNAssign(pointArray[S_MAX].x, param->G.x, NUMWORDS);
 	  NNAssign(pointArray[S_MAX].y, param->G.y, NUMWORDS);
 	}else if (j==0){
@@ -204,9 +206,11 @@ static void shamir(Point * P0, NN_DIGIT * u1, NN_DIGIT * u2){
 
     for (i = tmp - 1; i >= 0; i--){ 
       for (j = NN_DIGIT_BITS/S_W_BITS - 1; j >= 0; j--){
-	for (k = 0; k < S_W_BITS; k++)
-    	  ECC_dbl_affine(P0, P0);
-	
+		for (k = 0; k < S_W_BITS; k++) {
+			watchdog_periodic();
+			ECC_dbl_affine(P0, P0);
+		  }
+		  
 	if (j != 0){
 	  windex = ((s_mask[j] & u1[i]) >> ((j-1)*S_W_BITS)) | ((s_mask[j] & u2[i]) >> (j*S_W_BITS));
 	}else{
@@ -241,13 +245,13 @@ static void shamir(Point * P0, NN_DIGIT * u1, NN_DIGIT * u2){
 
     for (i = tmp - 1; i >= 0; i--)
     { 
-      //call Leds.redToggle();
       for (j = NN_DIGIT_BITS/S_W_BITS - 1; j >= 0; j--)
       {
-        //call Leds.yellowToggle();
-	for (k = 0; k < S_W_BITS; k++)
-    	  ECC_dbl_proj(P0, Z0, P0, Z0);
-	
+		for (k = 0; k < S_W_BITS; k++){
+			watchdog_periodic();
+			ECC_dbl_proj(P0, Z0, P0, Z0);
+		  }
+		  
 	if (j != 0){
 	  windex = ((s_mask[j] & u1[i]) >> ((j-1)*S_W_BITS)) | ((s_mask[j] & u2[i]) >> (j*S_W_BITS));
 	}else{
@@ -279,7 +283,7 @@ static void shamir(Point * P0, NN_DIGIT * u1, NN_DIGIT * u2){
 
   //init the ECDSA, pKey is public key used to verify the signature
   //we assume that the node has already know the public key when node is deployed 	
-  bool ECDSA_init(Point * pKey) /*__attribute__ ((noinline))*/
+  bool ECDSA_init(Point * pKey)
   {
     ECC_init();
     param = ECC_get_param();
@@ -288,7 +292,7 @@ static void shamir(Point * P0, NN_DIGIT * u1, NN_DIGIT * u2){
     shamir_init(pKey, pqBaseArray);
 #elif defined(SLIDING_WIN)
     //precompute the array of public key for sliding window method
-    ECC_win_precompute(pKey, qBaseArray);
+	  ECC_win_precompute(pKey, qBaseArray);
 #endif
 
 #ifdef BARRETT_REDUCTION
@@ -299,7 +303,7 @@ static void shamir(Point * P0, NN_DIGIT * u1, NN_DIGIT * u2){
   }
 
 	
-  void ECDSA_sign(uint8_t *msg, uint8_t len, NN_DIGIT *r, NN_DIGIT *s, NN_DIGIT *d) /*__attribute__ ((noinline))*/
+  void ECDSA_sign(uint8_t *msg, uint8_t len, NN_DIGIT *r, NN_DIGIT *s, NN_DIGIT *d)
   {
 
     bool done = FALSE;
@@ -376,7 +380,7 @@ static void shamir(Point * P0, NN_DIGIT * u1, NN_DIGIT * u2){
     }
   }
 	
-  uint8_t ECDSA_verify(uint8_t *msg, uint8_t len, NN_DIGIT *r, NN_DIGIT *s, Point *Q) /*__attribute__ ((noinline))*/
+  uint8_t ECDSA_verify(uint8_t *msg, uint8_t len, NN_DIGIT *r, NN_DIGIT *s, Point *Q)
   {
 
     uint8_t sha1sum[20];
@@ -457,7 +461,7 @@ static void shamir(Point * P0, NN_DIGIT * u1, NN_DIGIT * u2){
 	NNModSmall(w, param->r, NUMWORDS);
     }
 
-    if ((NNCmp(w, r, NUMWORDS)) == 0){
+	if ((NNCmp(w, r, NUMWORDS)) == 0){
       return 1;
     }else{
       return 2;
