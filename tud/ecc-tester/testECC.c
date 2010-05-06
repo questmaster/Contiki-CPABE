@@ -2,14 +2,12 @@
 #include <stdio.h>
 
 #include "contiki.h"
-//#include <contiki-lib.h>
-//#include <contiki-net.h>
-//#include <net/rime/ctimer.h>
+#include "dev/leds.h"
 
 #include "ECC.h"
 
 static void check_clock(){
-    uint32_t time_a, time_b;
+    uint32_t time_a, time_b, t;
     uint32_t dM_len = 80000uL;
 
 	printf("check_clock(): start stopwatch...\n");
@@ -20,6 +18,7 @@ static void check_clock(){
 		//		asm("nop");
 		if ((dM_len / 1000) % 2) {
 			leds_on(LEDS_BLUE);
+			watchdog_periodic();
 		} else {
 			leds_off(LEDS_BLUE);
 		}

@@ -234,7 +234,6 @@ PROCESS_THREAD(tester_process, ev, data)
   /* create and start an event timer */
   static struct etimer tester_timer;
   etimer_set(&tester_timer, 5 * CLOCK_SECOND);
-	watchdog_stop();
 
 	init_data();
 

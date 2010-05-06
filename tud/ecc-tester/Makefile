@@ -15,7 +15,7 @@ APPS = ecc
 
 #use test vector for secp160r1 to show the correctness of TinyECC
 Cparam = TEST_VECTOR
-#CFLAGS+=-DCODE_SIZE
+#CFLAGS+=-DCODE_SIZE	#does not work with Contiki!
 
 ##choose different optimization techniques
 ##NN
@@ -32,9 +32,6 @@ CFLAGS+=-DSHAMIR_TRICK  #shamir trick, windows size is defined in ECDSAM.nc
 ##activate 4/8MHz configuration (compatible to TinyOS freq's)
 #CFLAGS += -DMSP430_4MHZ_ENABLE
 #CFLAGS += -DMSP430_8MHZ_ENABLE
-
-##activate COOJA crash workarounds (watchdog problem?!)
-#CFLAGS += -DACT_WA
 
 CONTIKI = ../..
 include $(CONTIKI)/Makefile.include
