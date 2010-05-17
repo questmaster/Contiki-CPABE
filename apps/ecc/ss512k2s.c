@@ -36,7 +36,7 @@
 
 // TODO: 8-bit
 
-void TPCurveParam.get_param(TPParams *tppara)
+void get_param(TPParams *tppara)
   {
 #ifdef EIGHT_BIT_PROCESSOR
 

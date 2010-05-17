@@ -70,4 +70,4 @@ void NN2Assign(NN2_NUMBER * a,NN2_NUMBER * b,NN_UINT digits) {
      NNAssign(a->r,b->r,digits);
      NNAssign(a->i,b->i,digits);
    } 	  
-}
+
