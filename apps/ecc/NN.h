@@ -78,7 +78,7 @@ typedef int8_t bool;
 #define HYBRID_MUL_WIDTH4
 #else
 #if defined (SS512K2) || defined (SS512K2S)
-#define BARRETT_REDUCTION
+//#define BARRETT_REDUCTION
 #define KEY_BIT_LEN 512
 #define HYBRID_MUL_WIDTH5
 #endif // end of 512

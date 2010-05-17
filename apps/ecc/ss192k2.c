@@ -30,18 +30,85 @@
  * Date: 02/04/2007
  */
 
-includes ECC;
+#include <ECC.h>
+#include <NN.h>
 
-module ss192k2 {
-  provides interface TPCurveParam;
-  uses interface NN;
-}
+// TODO: 8-bit
 
-implementation {
-
-  command void TPCurveParam.get_param(TPParams *tppara)
+void TPCurveParam.get_param(TPParams *tppara)
   {
-  	#ifdef THIRTYTWO_BIT_PROCESSOR
+#ifdef EIGHT_BIT_PROCESSOR
+	  
+#elif defined(SIXTEEN_BIT_PROCESSOR)
+	  //init parameters
+	  //prime p
+	  tppara->p[12] = 0x0000;
+	  tppara->p[11] = 0xF769;
+	  tppara->p[10] = 0x064B;
+	  tppara->p[9] = 0x0993;
+	  tppara->p[8] = 0x8DE6;
+	  tppara->p[7] = 0xAE19;
+	  tppara->p[6] = 0x39DE;
+	  tppara->p[5] = 0xCBC9;
+	  tppara->p[4] = 0x775F;
+	  tppara->p[3] = 0x9042;
+	  tppara->p[2] = 0x27C7;
+	  tppara->p[1] = 0xA95E;
+	  tppara->p[0] = 0x9D63;
+	  
+	  // a = 1 
+	  memset(tppara->E.a, 0, NUMWORDS*NN_DIGIT_LEN);
+	  tppara->E.a[0] =  0x0001;
+	  // b = 0
+	  memset(tppara->E.b, 0, NUMWORDS*NN_DIGIT_LEN);
+	  
+	  // point P
+	  tppara->P.x[12] = 0x0000;
+	  tppara->P.x[11] = 0xf6a7;
+	  tppara->P.x[10] = 0x1262;
+	  tppara->P.x[9] = 0xc318;
+	  tppara->P.x[8] = 0x2055;
+	  tppara->P.x[7] = 0x5c56;
+	  tppara->P.x[6] = 0x86df;
+	  tppara->P.x[5] = 0x49cf;
+	  tppara->P.x[4] = 0x25be;
+	  tppara->P.x[3] = 0xdec3;
+	  tppara->P.x[2] = 0xe31f;
+	  tppara->P.x[1] = 0x118a;
+	  tppara->P.x[0] = 0xa0d6;
+	  
+	  tppara->P.y[12] = 0x0000;
+	  tppara->P.y[11] = 0xb004;
+	  tppara->P.y[10] = 0xea46;
+	  tppara->P.y[9] = 0x8af3;
+	  tppara->P.y[8] = 0x4bab;
+	  tppara->P.y[7] = 0xca2f;
+	  tppara->P.y[6] = 0x4c01;
+	  tppara->P.y[5] = 0x03d2;
+	  tppara->P.y[4] = 0xb57e;
+	  tppara->P.y[3] = 0xed02;
+	  tppara->P.y[2] = 0xc81f;
+	  tppara->P.y[1] = 0x14d2;
+	  tppara->P.y[0] = 0x0cb1;
+	  
+	  // group order m
+	  memset(tppara->m, 0, NUMWORDS*NN_DIGIT_LEN);
+	  tppara->m[3] = 0x1000;
+	  tppara->m[0] = 0x0021;
+	  
+	  // c= p^k-1/m
+	  memset(tppara->c, 0, NUMWORDS*NN_DIGIT_LEN);
+	  tppara->c[8] = 0x000f;
+	  tppara->c[7] = 0x7690;
+	  tppara->c[6] = 0x64b0;
+	  tppara->c[5] = 0x9938;
+	  tppara->c[4] = 0xbe86;
+	  tppara->c[3] = 0x57c3;
+	  tppara->c[2] = 0xf1b0;
+	  tppara->c[1] = 0xb78e;
+	  tppara->c[0] = 0x80e4;
+	  
+#elif defined(THIRTYTWO_BIT_PROCESSOR)
 	    //init parameters
 	    //prime p
 	    tppara->p[6] = 0x00000000;
@@ -90,4 +157,4 @@ implementation {
 	    tppara->c[0] = 0xb78e80e4;
 	#endif
   }
-}
+

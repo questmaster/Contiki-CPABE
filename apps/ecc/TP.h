@@ -24,24 +24,26 @@
  */
 
 /**
- * NN2.h
+ * interface for TP
  *
  * Author: Panos Kampanakis
- * Date: 02/04/2007
+ * Date: 02/04/2005
  */
 
-#ifndef _NN2_H_
-#define _NN2_H_
+#ifndef _TP_H_
+#define _TP_H_
 
-#include "NN.h"
+#include <ECC.h>
+#include <NN.h>
+#include <NN2.h>
 
-// Complex numbers for Tate Pairing of distorted mapped points
-struct nn2_num
-{
-    // curve's coefficients
-    NN_DIGIT r[NUMWORDS];
-    NN_DIGIT i[NUMWORDS];
-};
-typedef struct nn2_num NN2_NUMBER;
+  //initialize the Tate Pairing between the private key of the curve P and the key given Q
+  extern bool TP_init(Point Q);
+  //Miller's algorithm
+  extern bool TP_Miller(NN2_NUMBER *ef);
+  //final exponentiation in Miller's algorithm
+  extern bool TP_final_expon(NN_DIGIT *r,NN2_NUMBER *ef);
+  //Tate Pairing Computation
+  extern bool TP_computeTP(NN_DIGIT *res);
 
 #endif

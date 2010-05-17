@@ -24,26 +24,33 @@
  */
 
 /**
- * interface for TP
+ * NN2.h
+ * Provide the functions of big Natural Complex Numbers.
  *
  * Author: Panos Kampanakis
- * Date: 02/04/2005
+ * Date: 02/04/2007
  */
 
-#ifndef _TP_H_
-#define _TP_H_
+#ifndef _NN2_H_
+#define _NN2_H_
 
-#include <ECC.h>
-#include <NN.h>
-#include <NN2.h>
+#include "NN.h"
 
-  //initialize the Tate Pairing between the private key of the curve P and the key given Q
-  extern bool init(Point Q);
-  //Miller's algorithm
-  extern bool Miller(NN2_NUMBER *ef);
-  //final exponentiation in Miller's algorithm
-  extern bool final_expon(NN_DIGIT *r,NN2_NUMBER *ef);
-  //Tate Pairing Computation
-  extern bool computeTP(NN_DIGIT *res);
+// Complex numbers for Tate Pairing of distorted mapped points
+struct nn2_num
+{
+    // curve's coefficients
+    NN_DIGIT r[NUMWORDS];
+    NN_DIGIT i[NUMWORDS];
+};
+typedef struct nn2_num NN2_NUMBER;
+
+//multiplies two complex numbers
+extern void NN2ModMult(NN2_NUMBER * a, NN2_NUMBER * b, NN2_NUMBER * c, NN_DIGIT * d, NN_UINT digits);
+//squre of a complex number
+extern void NN2ModSqr(NN2_NUMBER * a, NN2_NUMBER * b, NN_DIGIT * d, NN_UINT digits);
+//assign a = b
+extern void NN2Assign(NN2_NUMBER * a,NN2_NUMBER * b,NN_UINT digits);
+
 
 #endif

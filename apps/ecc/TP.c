@@ -34,10 +34,11 @@
 #include <ECC.h>
 #include <NN2.h>
 #include <TPCurveParam.h>
+#include <string.h>
 
-#define PROJECTIVE
-//#define PROJECTIVE_M
-//#define FIXED_P
+//#define PROJECTIVE
+///#define PROJECTIVE_M
+///#define FIXED_P
 
 
 static TPParams tpparam;
@@ -57,7 +58,6 @@ static PointSlope *pPointSlope;
 #endif
 static NN_DIGIT inv2[NUMWORDS]; // used for lucas division
 
-static int pflag=0;
 
 #ifdef IMOTE2
   void print_val(NN_DIGIT *num) {
@@ -78,7 +78,7 @@ static int pflag=0;
 
 
 #ifdef PROJECTIVE
-  void dbl_line_projective(NN2_NUMBER *u, Point *P0, NN_DIGIT *Z0, Point *P1, NN_DIGIT *Z1){
+static void dbl_line_projective(NN2_NUMBER *u, Point *P0, NN_DIGIT *Z0, Point *P1, NN_DIGIT *Z1){
     NN_DIGIT t1[NUMWORDS];
     NN_DIGIT t2[NUMWORDS];
     NN_DIGIT t3[NUMWORDS];
@@ -141,7 +141,7 @@ static int pflag=0;
 
   }
 
-  void add_line_projective(NN2_NUMBER *u, Point *P0, NN_DIGIT *Z0, Point *P1, NN_DIGIT *Z1, Point *P2){
+static void add_line_projective(NN2_NUMBER *u, Point *P0, NN_DIGIT *Z0, Point *P1, NN_DIGIT *Z1, Point *P2){
     NN_DIGIT t1[NUMWORDS];
     NN_DIGIT t2[NUMWORDS];
     NN_DIGIT t3[NUMWORDS];
@@ -188,7 +188,7 @@ static int pflag=0;
   }
 
   //Miller's algorithm based on projective coordinate system
-  bool TP_Miller(NN2_NUMBER *ef){
+bool TP_Miller(NN2_NUMBER *ef){
     NN2_NUMBER temp1;
     Point V;
     int t;
@@ -207,22 +207,22 @@ static int pflag=0;
     
     while (t>-1) {
       dbl_line_projective(&temp1, &V, Z, &V, Z);
-      call NN2.ModSqr(ef, ef, tpparam.p, NUMWORDS);  //f=f^2
-      call NN2.ModMult(ef, ef, &temp1, tpparam.p, NUMWORDS); // f=f*g
+      NN2ModSqr(ef, ef, tpparam.p, NUMWORDS);  //f=f^2
+      NN2ModMult(ef, ef, &temp1, tpparam.p, NUMWORDS); // f=f*g
 
       if ((t>0) && (NNTestBit(tpparam.m,t))) {
 	add_line_projective(&temp1, &V, Z, &V, Z, &(tpparam.P));
-	call NN2.ModMult(ef, ef, &temp1, tpparam.p, NUMWORDS);//f=f*g
+	NN2ModMult(ef, ef, &temp1, tpparam.p, NUMWORDS);//f=f*g
       }
       t--;
     }
-    return SUCCESS;
+    return TRUE;
   }
 
 
 #elif defined(PROJECTIVE_M)
 
-  void dbl_line_projective_m(NN2_NUMBER *u, NN2_NUMBER *temp, Point *P0, NN_DIGIT *Z0, Point *P1, NN_DIGIT *Z1, int m){
+static void dbl_line_projective_m(NN2_NUMBER *u, NN2_NUMBER *temp, Point *P0, NN_DIGIT *Z0, Point *P1, NN_DIGIT *Z1, int m){
     NN_DIGIT t1[NUMWORDS];
     NN_DIGIT t2[NUMWORDS];
     NN_DIGIT t3[NUMWORDS];
@@ -281,8 +281,8 @@ static int pflag=0;
 	NNModMult(W, W, t1, tpparam.p, NUMWORDS);
       }
       //f = f^2*g
-      call NN2.ModSqr(u, u, tpparam.p, NUMWORDS);  //f=f^2
-      call NN2.ModMult(u, u, temp, tpparam.p, NUMWORDS); // f=f*g      
+      NN2ModSqr(u, u, tpparam.p, NUMWORDS);  //f=f^2
+      NN2ModMult(u, u, temp, tpparam.p, NUMWORDS); // f=f*g      
     }
     //Y0 = Y0/2
     if (P0->y[0] % 2 == 1)
@@ -290,7 +290,7 @@ static int pflag=0;
     NNRShift(P0->y, P0->y, 1, NUMWORDS);
   }
 
-  void add_line_projective(NN2_NUMBER *u, Point *P0, NN_DIGIT *Z0, Point *P1, NN_DIGIT *Z1, Point *P2){
+static void add_line_projective(NN2_NUMBER *u, Point *P0, NN_DIGIT *Z0, Point *P1, NN_DIGIT *Z1, Point *P2){
     NN_DIGIT t1[NUMWORDS];
     NN_DIGIT t2[NUMWORDS];
     NN_DIGIT t3[NUMWORDS];
@@ -337,7 +337,7 @@ static int pflag=0;
   }
 
   //return the largest number of consecutive 0s, start is the position of first 0 bit
-  int check_m_0(NN_DIGIT *a, int start){
+static int check_m_0(NN_DIGIT *a, int start){
     NN_DIGIT temp;
     int rest, original_rest;
     bool done = FALSE;
@@ -377,8 +377,7 @@ static int pflag=0;
     return ((original_i - 1 - i) * NN_DIGIT_BITS + original_rest + NN_DIGIT_BITS - rest);
   }
 
-  bool TP_Miller(NN2_NUMBER *ef){
-    
+bool TP_Miller(NN2_NUMBER *ef){
     NN2_NUMBER temp1;
     Point V;
     int t, m;
@@ -402,11 +401,11 @@ static int pflag=0;
       t = t - m;
       if (t>0) {
 	add_line_projective(&temp1, &V, Z, &V, Z, &(tpparam.P));
-	call NN2.ModMult(ef, ef, &temp1, tpparam.p, NUMWORDS);//f=f*g
+	NN2ModMult(ef, ef, &temp1, tpparam.p, NUMWORDS);//f=f*g
       }
       t--;
     }
-    return SUCCESS;
+    return TRUE;
 
   }
 
@@ -414,7 +413,7 @@ static int pflag=0;
 
   // affine point doubleing, P0 = 2*P1, slope is set slope=[(3x1^2+a)/(2y1)]^2=(y{2P1}-y1)/(x{2P1}-x1)
   // P0 and P1 can be the same point
-  void aff_dbl(PointSlope *pNode, Point * P0, Point * P1)
+static void aff_dbl(PointSlope *pNode, Point * P0, Point * P1)
   {
    Point P;
    NN_DIGIT t1[NUMWORDS], t2[NUMWORDS];
@@ -447,7 +446,7 @@ static int pflag=0;
 
   // affine Point addition, P0 = P1 + P2, slope is set slope=(y2-y1)/(x2-x1)
   // P0, P1 and P2 can be the same point
-  void aff_add(PointSlope *pNode, Point * P0, Point * P1, Point * P2)
+static void aff_add(PointSlope *pNode, Point * P0, Point * P1, Point * P2)
   {
     NN_DIGIT t1[NUMWORDS], t2[NUMWORDS];
     Point Pt1, Pt2;
@@ -467,7 +466,7 @@ static int pflag=0;
     NNAssign(pNode->P.y, Pt1.y, NUMWORDS);
   }
 
-  void precompute(){
+static void precompute(){
     Point V;
     int t;
     bool first_bit = TRUE;
@@ -499,7 +498,7 @@ static int pflag=0;
   }
 
   // Miller's algorithm
-  bool TP_Miller(NN2_NUMBER *ef) { 
+bool TP_Miller(NN2_NUMBER *ef) { 
     NN2_NUMBER temp1;
     PointSlope *current;
 
@@ -515,22 +514,22 @@ static int pflag=0;
       NNModMult(temp1.r, current->slope, temp1.r, tpparam.p, NUMWORDS); //slope(x+Qx)
       NNModSub(temp1.r, current->P.y, temp1.r, tpparam.p, NUMWORDS); //y-slope(x+Qx)	
       if(current->dbl){
-	call NN2.ModSqr(ef, ef, tpparam.p, NUMWORDS);
-	call NN2.ModMult(ef, ef, &temp1, tpparam.p, NUMWORDS);
+	NN2ModSqr(ef, ef, tpparam.p, NUMWORDS);
+	NN2ModMult(ef, ef, &temp1, tpparam.p, NUMWORDS);
       }else{
-	call NN2.ModMult(ef, ef, &temp1, tpparam.p, NUMWORDS);//f=f*g
+	NN2ModMult(ef, ef, &temp1, tpparam.p, NUMWORDS);//f=f*g
       }
       current = current->next;
 
     }
-    return SUCCESS;
+    return TRUE;
   }
   
 #else  //affine coordinate
 
   // affine point doubleing, P0 = 2*P1, slope is set slope=[(3x1^2+a)/(2y1)]^2=(y{2P1}-y1)/(x{2P1}-x1)
   // P0 and P1 can be the same point
-  void aff_dbl(NN2_NUMBER *u, Point * P0, Point * P1)
+static void aff_dbl(NN2_NUMBER *u, Point * P0, Point * P1)
   {
    Point P;
    NN_DIGIT t1[NUMWORDS], t2[NUMWORDS], slope[NUMWORDS];
@@ -564,7 +563,7 @@ static int pflag=0;
 
   // affine Point addition, P0 = P1 + P2, slope is set slope=(y2-y1)/(x2-x1)
   // P0, P1 and P2 can be the same point
-  void aff_add(NN2_NUMBER *u, Point * P0, Point * P1, Point * P2)
+static void aff_add(NN2_NUMBER *u, Point * P0, Point * P1, Point * P2)
   {
     NN_DIGIT t1[NUMWORDS], t2[NUMWORDS], slope[NUMWORDS];
     Point Pt1, Pt2;
@@ -586,7 +585,7 @@ static int pflag=0;
   }
 
   // Miller's algorithm
-  bool TP_Miller(NN2_NUMBER *ef) { 
+bool TP_Miller(NN2_NUMBER *ef) { 
     NN2_NUMBER temp1;
     Point V;
     int t;
@@ -601,28 +600,28 @@ static int pflag=0;
     
     while (t>-1) {
       aff_dbl(&temp1, &V, &V); //V=2V
-      call NN2.ModSqr(ef, ef, tpparam.p, NUMWORDS);
-      call NN2.ModMult(ef, ef, &temp1, tpparam.p, NUMWORDS);
+      NN2ModSqr(ef, ef, tpparam.p, NUMWORDS);
+      NN2ModMult(ef, ef, &temp1, tpparam.p, NUMWORDS);
       
       if ((t>0) && (NNTestBit(tpparam.m,t))) {
 	aff_add(&temp1, &V, &V, &(tpparam.P)); //V=V+P
-	call NN2.ModMult(ef, ef, &temp1, tpparam.p, NUMWORDS);//f=f*g
+	NN2ModMult(ef, ef, &temp1, tpparam.p, NUMWORDS);//f=f*g
       }
       t--;
 
     }
 
-    return SUCCESS;
+    return TRUE;
   }
 
 #endif
   
   // initialize the Pairing with the point to be used along with the private key
-  bool TP_init(Point Q) {
+bool TP_init(Point Q) {
     NN_DIGIT Qy[NUMWORDS], two[NUMWORDS];
     
     //ECC_tpinit();
-    call TPCurveParam.get_param(&tpparam);
+    get_param(&tpparam);
 #ifdef BARRETT_REDUCTION
     NNModBarrettInit(tpparam.p, NUMWORDS, &Bbuf);
 #endif
@@ -640,13 +639,13 @@ static int pflag=0;
     precompute();
 #endif
     
-    return SUCCESS;
+    return TRUE;
   }
 
   
   // final exponentiation in Miller's algorithm
   // using the (u+iv)^(k-1) trick and Lucas exponentiation optimization
-  bool TP_final_expon(NN_DIGIT *r,NN2_NUMBER *ef) {
+bool TP_final_expon(NN_DIGIT *r,NN2_NUMBER *ef) {
     NN_DIGIT t1[NUMWORDS], t2[NUMWORDS], t3[NUMWORDS];
     
     NNModSqr(t1, ef->r, tpparam.p, NUMWORDS); // x^2
@@ -659,14 +658,14 @@ static int pflag=0;
     NNModDivOpt(t1, t1, t3, tpparam.p, NUMWORDS);
 #endif
     NNLucExp(r,t1,tpparam.c,inv2,tpparam.p,NUMWORDS); // Lucas exponentiation 
-    return SUCCESS;
+    return TRUE;
   }
   
   // Set the res value to be the Tate Pairing result
-  bool TP_computeTP(NN_DIGIT *res) {
+bool TP_computeTP(NN_DIGIT *res) {
     NN2_NUMBER ef;
     TP_Miller(&ef);
     TP_final_expon(res,&ef);
-    return SUCCESS;
+    return TRUE;
   }
-}
+

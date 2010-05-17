@@ -24,20 +24,50 @@
  */
 
 /**
- * Interface NN2
- * Provide the functions of big Natural Complex Numbers.
+ * module NN2M, provides interface NN2
  * 
+ * Implement well known optimized algorithms for Big Natural Complex Numbers
+ *
  * Author: Panos Kampanakis
- * Date: 02/05/2007
+ * Date: 02/04/2007
  */
 
-includes NN2;
+#include "NN2.h"
+#include "NN.h"
+#include "ECC.h"
+#include "TPCurveParam.h"
 
-interface NN2 {
-	  //multiplies two complex numbers
-  	  command void ModMult(NN2_NUMBER * a, NN2_NUMBER * b, NN2_NUMBER * c, NN_DIGIT * d, NN_UINT digits);
-	  //squre of a complex number
-  	  command void ModSqr(NN2_NUMBER * a, NN2_NUMBER * b, NN_DIGIT * d, NN_UINT digits);
-  	  //assign a = b
-  	  command void Assign(NN2_NUMBER * a,NN2_NUMBER * b,NN_UINT digits);
+
+   //Computes a = (b.r*c.r - b.i*c.i) mod d + i*(b.i*c.r + b.r*c.i) mod d
+void NN2ModMult(NN2_NUMBER * a, NN2_NUMBER * b, NN2_NUMBER * c, NN_DIGIT * d, NN_UINT digits) {
+     NN_DIGIT t1[NUMWORDS], t2[NUMWORDS], t3[NUMWORDS];
+
+     NNModMult(t1,b->r,c->r,d,digits);
+     NNModMult(t2,b->i,c->i,d,digits);
+     NNModSub(t3,t1,t2,d,digits);
+     NNModMult(t1,b->i,c->r,d,digits);
+     NNModMult(t2,b->r,c->i,d,digits);
+     NNModAdd(t1,t1,t2,d,digits);
+     NNAssign(a->r,t3,digits);
+     NNAssign(a->i,t1,digits);
+   }
+
+   //Computes a = (b.r^2 - b.i^2) mod d + i*(2*b.i*b.r) mod d
+void NN2ModSqr(NN2_NUMBER * a, NN2_NUMBER * b, NN_DIGIT * d, NN_UINT digits) {
+     NN_DIGIT t1[NUMWORDS], t2[NUMWORDS], t3[NUMWORDS];
+
+     NNModSqr(t1, b->r, d, digits);
+     NNModSqr(t2, b->i, d, digits);
+     NNModSub(t3, t1, t2, d, digits);
+     NNModMult(t1, b->i, b->r, d, digits);
+     NNAssign(a->r, t3, digits);
+     NNAssign(a->i,t1,digits);
+     NNModAdd(a->i, a->i, t1, d, digits);
+   }
+
+   //assign a = b
+void NN2Assign(NN2_NUMBER * a,NN2_NUMBER * b,NN_UINT digits) {
+     NNAssign(a->r,b->r,digits);
+     NNAssign(a->i,b->i,digits);
+   } 	  
 }

@@ -31,18 +31,118 @@
  * Date: 02/07/2007
  */
 
-includes ECC;
+#include <ECC.h>
+#include <NN.h>
 
-module ss512k2s {
-  provides interface TPCurveParam;
-  uses interface NN;
-}
+// TODO: 8-bit
 
-implementation {
-
-  command void TPCurveParam.get_param(TPParams *tppara)
+void TPCurveParam.get_param(TPParams *tppara)
   {
-	#ifdef THIRTYTWO_BIT_PROCESSOR
+#ifdef EIGHT_BIT_PROCESSOR
+
+#elif defined(SIXTEEN_BIT_PROCESSOR)
+	  //init parameters
+	  //prime p
+	  memset(tppara->p, 0, NUMWORDS*NN_DIGIT_LEN);
+	  tppara->p[31]=0x8000;
+	  tppara->p[23]=0x0002;
+	  tppara->p[22]=0x0001;
+	  tppara->p[21]=0x4000;
+	  tppara->p[13]=0x0001;
+	  tppara->p[11]=0x8000;
+	  tppara->p[10]=0x0002;
+	  tppara->p[1]=0x0008;
+	  tppara->p[0]=0x0003;
+	  
+	  // a = 1 
+	  memset(tppara->E.a, 0, NUMWORDS*NN_DIGIT_LEN);
+	  tppara->E.a[0] =  0x0001;
+	  // b = 0
+	  memset(tppara->E.b, 0, NUMWORDS*NN_DIGIT_LEN);
+	  
+	  // point sP
+	  // sPx
+	  tppara->P.x[32]=0x0000;
+	  tppara->P.x[31]=0x187b;
+	  tppara->P.x[30]=0xdc81;
+	  tppara->P.x[29]=0x33bb;
+	  tppara->P.x[28]=0xe39c;
+	  tppara->P.x[27]=0x88dc;
+	  tppara->P.x[26]=0x3e91;
+	  tppara->P.x[25]=0xe7d4;
+	  tppara->P.x[24]=0x74eb;
+	  tppara->P.x[23]=0x2a63;
+	  tppara->P.x[22]=0x422c;
+	  tppara->P.x[21]=0x24cc;
+	  tppara->P.x[20]=0x1a0d;
+	  tppara->P.x[19]=0xcd79;
+	  tppara->P.x[18]=0xd659;
+	  tppara->P.x[17]=0xae15;
+	  tppara->P.x[16]=0x4c07;
+	  tppara->P.x[15]=0x88f1;
+	  tppara->P.x[14]=0x35e6;
+	  tppara->P.x[13]=0xe57e;
+	  tppara->P.x[12]=0xd851;
+	  tppara->P.x[11]=0xc307;
+	  tppara->P.x[10]=0x67c7;
+	  tppara->P.x[9]=0xc332;
+	  tppara->P.x[8]=0xa8e2;
+	  tppara->P.x[7]=0x715a;
+	  tppara->P.x[6]=0x7293;
+	  tppara->P.x[5]=0xd5dc;
+	  tppara->P.x[4]=0x13e1;
+	  tppara->P.x[3]=0x629d;
+	  tppara->P.x[2]=0x73c1;
+	  tppara->P.x[1]=0xd65c;
+	  tppara->P.x[0]=0xe363;
+	  // sPy
+	  tppara->P.y[32]=0x0000;
+	  tppara->P.y[31]=0x63a4;
+	  tppara->P.y[30]=0x6b41;
+	  tppara->P.y[29]=0xf6b8;
+	  tppara->P.y[28]=0x6db1;
+	  tppara->P.y[27]=0xfff5;
+	  tppara->P.y[26]=0x6cc5;
+	  tppara->P.y[25]=0xea70;
+	  tppara->P.y[24]=0xfd05;
+	  tppara->P.y[23]=0x04bd;
+	  tppara->P.y[22]=0x2873;
+	  tppara->P.y[21]=0xbea3;
+	  tppara->P.y[20]=0xddc1;
+	  tppara->P.y[19]=0x32fc;
+	  tppara->P.y[18]=0xa2fd;
+	  tppara->P.y[17]=0x628f;
+	  tppara->P.y[16]=0xb33c;
+	  tppara->P.y[15]=0x8bc6;
+	  tppara->P.y[14]=0x1dc9;
+	  tppara->P.y[13]=0x83e6;
+	  tppara->P.y[12]=0xda28;
+	  tppara->P.y[11]=0xdaac;
+	  tppara->P.y[10]=0x4c3c;
+	  tppara->P.y[9]=0xbdfd;
+	  tppara->P.y[8]=0x8f20;
+	  tppara->P.y[7]=0xe75a;
+	  tppara->P.y[6]=0x3407;
+	  tppara->P.y[5]=0x5092;
+	  tppara->P.y[4]=0xae3f;
+	  tppara->P.y[3]=0xa544;
+	  tppara->P.y[2]=0xe2dd;
+	  tppara->P.y[1]=0x9b3f;
+	  tppara->P.y[0]=0xf064;
+	  
+	  // group order m
+	  memset(tppara->m, 0, NUMWORDS*NN_DIGIT_LEN);
+	  tppara->m[9]=0x8000;
+	  tppara->m[1]=0x0002
+	  tppara->m[0]=0x0001;
+	  
+	  // c= p^k-1/m
+	  memset(tppara->c, 0, NUMWORDS*NN_DIGIT_LEN);
+	  tppara->c[22]=0x0001;
+	  tppara->c[11]=0x8000;
+	  tppara->c[0]=0x0004;
+	  
+#elif defined(THIRTYTWO_BIT_PROCESSOR)
 	    //init parameters
 	    //prime p
 	    tppara->p[16]=0x00000000;
@@ -119,4 +219,4 @@ implementation {
 	    tppara->c[0]=0x00000004;
 	#endif
   }
-}
+
