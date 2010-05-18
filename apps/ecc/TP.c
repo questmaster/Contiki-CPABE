@@ -621,7 +621,7 @@ bool TP_init(Point Q) {
     NN_DIGIT Qy[NUMWORDS], two[NUMWORDS];
     
     //ECC_tpinit();
-    get_param(&tpparam);
+    get_TP_param(&tpparam);
 #ifdef BARRETT_REDUCTION
     NNModBarrettInit(tpparam.p, NUMWORDS, &Bbuf);
 #endif

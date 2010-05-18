@@ -37,6 +37,6 @@
 
 
   //get the parameters of specific curve for Tate Pairing
-extern void get_param(TPParams *tppara);
+extern void get_TP_param(TPParams *tppara);
 
 #endif

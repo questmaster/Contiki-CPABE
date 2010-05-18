@@ -35,7 +35,7 @@
 
 // TODO: 8-bit
 
-void get_param(TPParams *tppara)
+void get_TP_param(TPParams *tppara)
   {
 #ifdef EIGHT_BIT_PROCESSOR
 	  

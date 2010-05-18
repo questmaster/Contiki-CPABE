@@ -1,10 +1,11 @@
 ecc_src = ECC.c ECDH.c ECDSA.c ECIES.c NN.c sha1.c
 
-# Options for Tate Pairing
+# Files for Tate Pairing
 ifeq ($(USE_PAIRING), TRUE)
-ecc_src += TP/TP.c TP/NN2.c
-CFLAGS += -I$(CONTIKI)/apps/ecc/TP
+ecc_src += TP.c NN2.c
 endif
+
+
 ifeq ($(Cparam), TEST_VECTOR)
 ecc_src += secp160r1.c
 CFLAGS+=-DSECP160R1 -DTEST_VECTOR
@@ -46,24 +47,24 @@ ecc_src += secp192r1.c
 CFLAGS+=-DSECP192R1
 endif
 
-#// Tate pairing curves
+# Tate pairing curves
 ifeq ($(Cparam), SS192K2)
-ecc_src += TP/ss192k2.c
+ecc_src += ss192k2.c
 CFLAGS+=-DSS192K2
 endif
 
 ifeq ($(Cparam), SS512K2)
-ecc_src += TP/ss512k2.c
+ecc_src += ss512k2.c
 CFLAGS+=-DSS512K2
 endif
 
 ifeq ($(Cparam), SS192K2S)
-ecc_src += TP/ss192k2s.c
+ecc_src += ss192k2s.c
 CFLAGS+=-DSS192K2S
 endif
 
 ifeq ($(Cparam), SS512K2S)
-ecc_src += TP/ss512k2s.c
+ecc_src += ss512k2s.c
 CFLAGS+=-DSS512K2S
 endif
 

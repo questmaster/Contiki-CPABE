@@ -36,7 +36,7 @@
 #include <NN.h>
 
 
-void get_param(TPParams *tppara)
+void get_TP_param(TPParams *tppara)
   {
   	#ifdef EIGHT_BIT_PROCESSOR 
   	  memset(tppara->p, 0, NUMWORDS*NN_DIGIT_LEN);
