@@ -377,40 +377,40 @@ NN_UINT omega_mul(NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *omega, NN_UINT digits)
 #ifdef INLINE_ASM
 
 #ifdef CONTIKI_TARGET_MICAZ
-    call NN.Assign(a, b, digits);
-    call NN.Add(a+8, a+8, b, digits+1);
+    NNAssign(a, b, digits);
+    NNAdd(a+8, a+8, b, digits+1);
     return (digits+9);
 #endif
 
 #ifdef CONTIKI_TARGET_SKY
-    call NN.Assign(a, b, digits);
-    call NN.Add(a+4, a+4, b, digits+1);
+    NNAssign(a, b, digits);
+    NNAdd(a+4, a+4, b, digits+1);
     return (digits+5);
 #endif
 
 #ifdef CONTIKI_TARGET_IMOTE2
-    call NN.Assign(a, b, digits);
-    call NN.Add(&a[2], &a[2], b, digits+1);
+    NNAssign(a, b, digits);
+    NNAdd(&a[2], &a[2], b, digits+1);
     return (digits+3);
 #endif
 
 #else
 
 #ifdef EIGHT_BIT_PROCESSOR
-    call NN.Assign(a, b, digits);
-    call NN.Add(a+8, a+8, b, digits+1);
+    NNAssign(a, b, digits);
+    NNAdd(a+8, a+8, b, digits+1);
     return (digits+9);
 #endif
 
 #ifdef SIXTEEN_BIT_PROCESSOR
-    call NN.Assign(a, b, digits);
-    call NN.Add(a+4, a+4, b, digits+1);
+    NNAssign(a, b, digits);
+    NNAdd(a+4, a+4, b, digits+1);
     return (digits+5);
 #endif
 
 #ifdef THIRTYTWO_BIT_PROCESSOR
-    call NN.Assign(a, b, digits);
-    call NN.Add(&a[2], &a[2], b, digits+1);
+    NNAssign(a, b, digits);
+    NNAdd(&a[2], &a[2], b, digits+1);
     return (digits+3);
 #endif
 

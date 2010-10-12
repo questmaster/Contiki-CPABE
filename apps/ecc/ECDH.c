@@ -44,7 +44,8 @@ static ZCoordinate ZList[NUM_POINTS];
 
   //init ECDH module
 void ECDH_init(){
-
+	Params *p = ECC_get_param();
+	get_param(p);
     ECC_init();
   }
 

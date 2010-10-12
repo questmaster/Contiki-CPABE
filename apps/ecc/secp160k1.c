@@ -428,20 +428,20 @@ NN_UINT omega_mul(NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *omega, NN_UINT digits)
 		  :"r0","r1","r2","r3","r4","r5","r6","r7","r8","r9","r10","r11","r12","r13","r14","r15","r16","r17","r19","r25","r26","r27","r28","r29"
 		  );
 
-    call NN.Add(a+4, a+4, b, digits+1);
+    NNAdd(a+4, a+4, b, digits+1);
     return (digits+5);
 #endif  //end of MICA
 
 #ifdef CONTIKI_TARGET_SKY  //should implement in assembly
     //memset(a, 0, digits*NN_DIGIT_LEN);
-    a[digits] += call NN.AddDigitMult(a, a, omega[0], b, digits);
-    call NN.Add(&a[2], &a[2], b, digits+1);
+    a[digits] += NNAddDigitMult(a, a, omega[0], b, digits);
+    NNAdd(&a[2], &a[2], b, digits+1);
     return (digits+3);
 #endif  //end of CONTIKI_TARGET_SKY
 
 #ifdef CONTIKI_TARGET_IMOTE2
-    a[digits] += call NN.AddDigitMult(a, a, omega[0], b, digits);
-    call NN.Add(&a[1], &a[1], b, digits+1);
+    a[digits] += NNAddDigitMult(a, a, omega[0], b, digits);
+    NNAdd(&a[1], &a[1], b, digits+1);
     return (digits+2);
 #endif
 
@@ -449,22 +449,22 @@ NN_UINT omega_mul(NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *omega, NN_UINT digits)
 
 #ifdef EIGHT_BIT_PROCESSOR
     //memset(a, 0, digits*NN_DIGIT_LEN);
-    a[digits] += call NN.AddDigitMult(a, a, omega[0], b, digits);
-    a[digits+1] += call NN.AddDigitMult(&a[1], &a[1], omega[1], b, digits);
-    call NN.Add(&a[4], &a[4], b, digits+1);
+    a[digits] += NNAddDigitMult(a, a, omega[0], b, digits);
+    a[digits+1] += NNAddDigitMult(&a[1], &a[1], omega[1], b, digits);
+    NNAdd(&a[4], &a[4], b, digits+1);
     return (digits+5);
 #endif  //end of 8bit
 
 #ifdef SIXTEEN_BIT_PROCESSOR
     //memset(a, 0, digits*NN_DIGIT_LEN);
-    a[digits] += call NN.AddDigitMult(a, a, omega[0], b, digits);
-    call NN.Add(&a[2], &a[2], b, digits+1);
+    a[digits] += NNAddDigitMult(a, a, omega[0], b, digits);
+    NNAdd(&a[2], &a[2], b, digits+1);
     return (digits+3);
 #endif  // end of 16bit
 
 #ifdef THIRTYTWO_BIT_PROCESSOR
-    a[digits] += call NN.AddDigitMult(a, a, omega[0], b, digits);
-    call NN.Add(&a[1], &a[1], b, digits+1);
+    a[digits] += NNAddDigitMult(a, a, omega[0], b, digits);
+    NNAdd(&a[1], &a[1], b, digits+1);
     return (digits+2);
 #endif
 

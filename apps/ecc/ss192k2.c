@@ -61,6 +61,11 @@ void get_TP_param(TPParams *tppara)
 	  tppara->E.a[0] =  0x0001;
 	  // b = 0
 	  memset(tppara->E.b, 0, NUMWORDS*NN_DIGIT_LEN);
+
+	  tppara->E.a_minus3 = FALSE;
+	  tppara->E.a_zero = FALSE;
+	  tppara->E.a_one = TRUE;
+	  
 	  
 	  // point P
 	  tppara->P.x[12] = 0x0000;

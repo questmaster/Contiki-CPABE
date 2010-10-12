@@ -34,7 +34,6 @@
 
 #include "NN.h"
 
-
 #ifndef PROJECTIVE
 #define AFFINE
 #endif

@@ -36,7 +36,35 @@
 #include <ECC.h>
 
 
-  //get the parameters of specific curve for Tate Pairing
+extern void get_param(Params *para);
+
+//get the parameters of specific curve for Tate Pairing
 extern void get_TP_param(TPParams *tppara);
+
+
+
+  // Quick and dirty, trail & error...
+void get_param(Params *para) {
+	TPParams tpp;
+	int i;
+	
+	get_TP_param(&tpp);
+	
+	// set ECC_params
+	para->E.a_minus3 = tpp.E.a_minus3;
+	para->E.a_zero = tpp.E.a_zero;
+	para->E.a_one = tpp.E.a_one;
+	
+	for (i = 0; i < NUMWORDS; i++) {
+		para->p[i] = tpp.p[i];
+		para->omega[i] = 0;
+		para->E.a[i] = tpp.E.a[i];
+		para->E.b[i] = tpp.E.b[i];
+		para->G.x[i] = tpp.P.x[i];
+		para->G.y[i] = tpp.P.y[i];
+		para->r[i] = tpp.m[i];
+	}
+	
+}
 
 #endif

@@ -28,7 +28,8 @@
  * ECCM, the module implement ECC.nc
  */
 #include <NN.h>
-#include <CurveParam.h>
+//#include <CurveParam.h>
+#include <TPCurveParam.h>
 #include <ECC.h>
 #include <string.h>
 #include <dev/watchdog.h>
@@ -580,9 +581,9 @@ static NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
   //initialize parameters for ECC module
 void ECC_init()
   {
-    //call Random.init();
-    // get parameters
-    get_param(&param);
+    // get parameters -> done extern. 
+	// First get param pointer and set curve parameters, then call this init!
+//    get_param(&param);
 
 #ifdef BARRETT_REDUCTION
     NNModBarrettInit(param.p, NUMWORDS, &Bbuf);
@@ -757,7 +758,6 @@ void ECC_init()
 #endif
       }
     }   
-
     //convert back to affine coordinate
     if (!Z_is_one(Z0))
     {
@@ -801,7 +801,6 @@ void ECC_init()
 static void win_mul(Point * P0, NN_DIGIT * n, Point * pointArray)
   {
 #ifdef AFFINE
-
     int16_t i, tmp;
     int8_t j, k;
     NN_DIGIT windex;
@@ -878,6 +877,7 @@ static void win_mul(Point * P0, NN_DIGIT * n, Point * pointArray)
       NNModMultOpt(Z0, Z0, Z1, param.p, param.omega, NUMWORDS);
       NNModMultOpt(P0->y, P0->y, Z0, param.p, param.omega, NUMWORDS);
     }
+
 #endif    
   }
   
@@ -1025,11 +1025,7 @@ static void win_mul(Point * P0, NN_DIGIT * n, Point * pointArray)
 
   }
 
-#ifdef CODE_SIZE
-  void ECC_gen_public_key(Point *PublicKey, NN_DIGIT *PrivateKey)__attribute__ ((noinline)){
-#else
-  void ECC_gen_public_key(Point *PublicKey, NN_DIGIT *PrivateKey){
-#endif
+void ECC_gen_public_key(Point *PublicKey, NN_DIGIT *PrivateKey){
 
 #ifdef SLIDING_WIN
     win_mul(PublicKey, PrivateKey, pBaseArray);    

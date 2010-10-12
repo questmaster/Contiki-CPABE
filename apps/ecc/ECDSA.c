@@ -285,8 +285,9 @@ static void shamir(Point * P0, NN_DIGIT * u1, NN_DIGIT * u2){
   //we assume that the node has already know the public key when node is deployed 	
   bool ECDSA_init(Point * pKey)
   {
-    ECC_init();
-    param = ECC_get_param();
+	  param = ECC_get_param();
+	  get_param(param);
+	  ECC_init();
 
 #ifdef SHAMIR_TRICK
     shamir_init(pKey, pqBaseArray);

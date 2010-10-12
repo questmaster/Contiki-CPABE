@@ -283,21 +283,21 @@ NN_UINT omega_mul(NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *omega, NN_UINT digits)
 
 #ifdef CONTIKI_TARGET_MICAZ
     //memset(a, 0, digits*NN_DIGIT_LEN);
-    call NN.Assign(a, b, digits);
-    a[digits+12] += call NN.AddDigitMult(&a[12], &a[12], omega[12], b, digits);
+    NNAssign(a, b, digits);
+    a[digits+12] += NNAddDigitMult(&a[12], &a[12], omega[12], b, digits);
     return (digits+13);
 #endif
 
 #ifdef CONTIKI_TARGET_SKY
     //memset(a, 0, digits*NN_DIGIT_LEN);
-    call NN.Assign(a, b, digits);
-    a[digits+6] += call NN.AddDigitMult(&a[6], &a[6], omega[6], b, digits);
+    NNAssign(a, b, digits);
+    a[digits+6] += NNAddDigitMult(&a[6], &a[6], omega[6], b, digits);
     return (digits+7);
 #endif
 
 #ifdef CONTIKI_TARGET_IMOTE2
-    call NN.Assign(a, b, digits);
-    a[digits+3] += call NN.AddDigitMult(&a[3], &a[3], omega[3], b, digits);
+    NNAssign(a, b, digits);
+    a[digits+3] += NNAddDigitMult(&a[3], &a[3], omega[3], b, digits);
     return (digits+4);
 #endif
 
@@ -305,22 +305,22 @@ NN_UINT omega_mul(NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *omega, NN_UINT digits)
 
 #ifdef EIGHT_BIT_PROCESSOR
     //memset(a, 0, digits*NN_DIGIT_LEN);
-    call NN.Assign(a, b, digits);
-    a[digits+12] += call NN.AddDigitMult(&a[12], &a[12], omega[12], b, digits);
+    NNAssign(a, b, digits);
+    a[digits+12] += NNAddDigitMult(&a[12], &a[12], omega[12], b, digits);
     return (digits+13);
 #endif
 
 #ifdef SIXTEEN_BIT_PROCESSOR
     //memset(a, 0, digits*NN_DIGIT_LEN);
-    call NN.Assign(a, b, digits);
-    a[digits+6] += call NN.AddDigitMult(&a[6], &a[6], omega[6], b, digits);
+    NNAssign(a, b, digits);
+    a[digits+6] += NNAddDigitMult(&a[6], &a[6], omega[6], b, digits);
     return (digits+7);
 
 #endif
 
 #ifdef THIRTYTWO_BIT_PROCESSOR
-    call NN.Assign(a, b, digits);
-    a[digits+3] += call NN.AddDigitMult(&a[3], &a[3], omega[3], b, digits);
+    NNAssign(a, b, digits);
+    a[digits+3] += NNAddDigitMult(&a[3], &a[3], omega[3], b, digits);
     return (digits+4);
 #endif
 

@@ -47,6 +47,8 @@ static ZCoordinate ZList[NUM_POINTS];
   //init ECIES
   //initialize the public key pair
   void ECIES_init(){
+    Params *p = ECC_get_param();
+    get_param(p);
     ECC_init();
   }
 

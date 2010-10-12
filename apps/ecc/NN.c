@@ -2987,7 +2987,6 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
       u1[MAX_NN_DIGITS], u3[MAX_NN_DIGITS], v1[MAX_NN_DIGITS],
       v3[MAX_NN_DIGITS], w[2*MAX_NN_DIGITS];
     int u1Sign;
-
     /* Apply extended Euclidean algorithm, modified to avoid negative
        numbers.
      */
@@ -3034,7 +3033,9 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     NN_AssignZero(V, digits);
     
     while ((tmp_even = NN_Cmp(A, B, digits)) != 0){
-      if (NN_EVEN(A, digits)){
+  	  watchdog_periodic();
+
+	  if (NN_EVEN(A, digits)){
 	NN_RShift(A, A, 1, digits);
 	if (NN_EVEN(U, digits)){
 	  NN_RShift(U, U, 1, digits);
@@ -3566,7 +3567,7 @@ void NNEncode(unsigned char * a, NN_UINT digits, NN_DIGIT * b, NN_UINT len)
 
   }
 
-
+  // b = b mod c
   void NNModSmall(NN_DIGIT * b, NN_DIGIT * c, NN_UINT digits)
   {
     while (NN_Cmp(b, c, digits) > 0)
@@ -3768,7 +3769,7 @@ void NNEncode(unsigned char * a, NN_UINT digits, NN_DIGIT * b, NN_UINT len)
 #ifndef MODINVOPT
     NN_ModInv (a, b, c, digits);
 #else
-    NN_DIGIT y[MAX_NN_DIGITS];
+	NN_DIGIT y[MAX_NN_DIGITS];
     NN_ASSIGN_DIGIT(y, 1, digits);
     NN_ModDivOpt(a, y, b, c, digits);
 #endif

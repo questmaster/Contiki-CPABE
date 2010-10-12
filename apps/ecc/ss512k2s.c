@@ -60,6 +60,10 @@ void get_TP_param(TPParams *tppara)
 	  // b = 0
 	  memset(tppara->E.b, 0, NUMWORDS*NN_DIGIT_LEN);
 	  
+	  tppara->E.a_minus3 = FALSE;
+	  tppara->E.a_zero = FALSE;
+	  tppara->E.a_one = TRUE;
+	  	  
 	  // point sP
 	  // sPx
 	  tppara->P.x[32]=0x0000;
@@ -133,7 +137,7 @@ void get_TP_param(TPParams *tppara)
 	  // group order m
 	  memset(tppara->m, 0, NUMWORDS*NN_DIGIT_LEN);
 	  tppara->m[9]=0x8000;
-	  tppara->m[1]=0x0002
+	  tppara->m[1]=0x0002;
 	  tppara->m[0]=0x0001;
 	  
 	  // c= p^k-1/m
@@ -169,6 +173,10 @@ void get_TP_param(TPParams *tppara)
 	    // b = 0
 	    memset(tppara->E.b, 0, NUMWORDS*NN_DIGIT_LEN);
 
+		tppara->E.a_minus3 = FALSE;
+		tppara->E.a_zero = FALSE;
+		tppara->E.a_one = TRUE;
+	  	  
 	    // point sP
 	    // sPx
 	    tppara->P.x[16]=0x00000000;
