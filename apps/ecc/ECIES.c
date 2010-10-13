@@ -28,8 +28,6 @@
  * Module implement ECIES operations
  */
 
-#include <ECC.h>
-#include <NN.h>
 #include <sha1.h>
 #include <string.h>
 #include <ECIES.h>

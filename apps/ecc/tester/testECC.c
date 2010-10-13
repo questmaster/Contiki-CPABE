@@ -2,7 +2,8 @@
 #include <stdio.h>
 
 #include "contiki.h"
-#include "dev/leds.h"
+#include "leds.h"
+#include "watchdog.h"
 
 #include "ECC.h"
 

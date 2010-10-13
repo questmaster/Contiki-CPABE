@@ -2,12 +2,7 @@
 #include <stdio.h>
 
 #include "contiki.h"
-//#include <contiki-lib.h>
-//#include <contiki-net.h>
-//#include <net/rime/ctimer.h>
 
-#include "ECC.h"
-#include "NN.h"
 #include "ECDSA.h"
 #include "lib/rand.h"
 
@@ -24,6 +19,10 @@ static NN_DIGIT r[NUMWORDS];
 static NN_DIGIT s[NUMWORDS];
 static uint8_t pass;
 static uint32_t t = 0;
+
+static int round_index;
+#define MAX_ROUNDS 10
+
 
 static void gen_PrivateKey();
 
@@ -57,7 +56,7 @@ static void init_data(){
     message[1] = 0x62;
     message[2] = 0x63;
 #endif
-    ECC_init();
+//    ECC_init();
 }
 
 static void gen_PrivateKey(){
@@ -143,13 +142,15 @@ static void ecc__init(){
 		
     time_a = clock_time();
 	
-    ECC_init();
+	Params *p = ECC_get_param();
+	get_param(p);
+	ECC_init();
 	
 	
     time_b = clock_time();
     t = time_b - time_a;
 	
-	printf("ECC_init(): %d ms\n", (uint)(t*1000/CLOCK_SECOND));
+	printf("ECC_init(%d): %u ms\n", round_index, (uint)(t*1000/CLOCK_SECOND));
 }
 
 static void gen_PublicKey(){
@@ -165,7 +166,7 @@ static void gen_PublicKey(){
     t = time_b - time_a;
 	
 
-	printf("ECC_gen_public_key(): %d ms\n", (uint)(t*1000/CLOCK_SECOND));
+	printf("ECC_gen_public_key(%d): %u ms\n", round_index, (uint)(t*1000/CLOCK_SECOND));
 	printf("ECC_pubkey.x: ");
 	for (i = 0; i < NUMWORDS; i++) {
 		printf("%x ", PublicKey.x[i]);
@@ -191,7 +192,7 @@ static void ecdsa_init(){
     time_b = clock_time();
     t = time_b - time_a;
 	
-	printf("ECDSA_init(): %d ms\n", (uint)(t*1000/CLOCK_SECOND));
+	printf("ECDSA_init(%d): %u ms\n", round_index, (uint)(t*1000/CLOCK_SECOND));
 }
 
 static void sign(){
@@ -204,7 +205,7 @@ static void sign(){
     time_b = clock_time();
     t = time_b - time_a;
 	
-	printf("ECDSA_sign(): %d ms\n", (uint)(t*1000/CLOCK_SECOND));
+	printf("ECDSA_sign(%d): %u ms\n", round_index, (uint)(t*1000/CLOCK_SECOND));
 // TODO output
 }
 
@@ -219,8 +220,8 @@ static void verify(){
     time_b = clock_time();
     t = time_b - time_a;
 	
-	printf("ECDSA_verify(): %d ms\n", (uint)(t*1000/CLOCK_SECOND));
-	printf("ECDSA_verify(): %s\n", pass?"passed":"not passed");
+	printf("ECDSA_verify(%d): %u ms\n", round_index, (uint)(t*1000/CLOCK_SECOND));
+	printf("ECDSA_verify(%d): %s\n", round_index, pass?"passed":"NOT PASSED");
 }
 
 
@@ -239,13 +240,13 @@ PROCESS_THREAD(tester_process, ev, data)
 	
 	printf("entering loop.\n");
 
-  do {
     /* wait till the timer expires and then reset it immediately */
     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&tester_timer));
 //    etimer_reset(&tester_timer);
+  do {
 
-	  gen_PrivateKey();
 	  ecc__init();
+	  gen_PrivateKey();
 	  gen_PublicKey();
 	  
 	  ecdsa_init();
@@ -253,7 +254,9 @@ PROCESS_THREAD(tester_process, ev, data)
 	  sign();
 	  verify();
 	  
-  } while(1);
+	  round_index++;
+	  
+  } while(round_index < MAX_ROUNDS);
 
   PROCESS_END();
 }

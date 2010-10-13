@@ -28,8 +28,6 @@
  * ECDHM, the module implement ECDH operations
  */
 
-#include <ECC.h>
-#include <NN.h>
 #include <sha1.h>
 #include <ECDH.h>
 #include <string.h>

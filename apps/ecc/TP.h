@@ -34,8 +34,8 @@
 #define _TP_H_
 
 #include <ECC.h>
-#include <NN.h>
 #include <NN2.h>
+#include <TPCurveParam.h>
 
   //initialize the Tate Pairing between the private key of the curve P and the key given Q
   extern bool TP_init(Point Q);

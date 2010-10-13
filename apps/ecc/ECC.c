@@ -27,9 +27,6 @@
  * $Id: ECCM.nc,v 1.8 2007/11/02 22:36:39 aliu3 Exp $
  * ECCM, the module implement ECC.nc
  */
-#include <NN.h>
-//#include <CurveParam.h>
-#include <TPCurveParam.h>
 #include <ECC.h>
 #include <string.h>
 #include <dev/watchdog.h>

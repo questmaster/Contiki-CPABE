@@ -1,4 +1,19 @@
-ecc_src = ECC.c ECDH.c ECDSA.c ECIES.c NN.c sha1.c
+ecc_src = ECC.c NN.c sha1.c
+
+# Files for ECDH
+ifeq ($(USE_ECDH), TRUE)
+ecc_src += ECDH.c
+endif
+
+# Files for ECIES
+ifeq ($(USE_ECIES), TRUE)
+ecc_src += ECIES.c
+endif
+
+# Files for ECDSA
+ifeq ($(USE_ECDSA), TRUE)
+ecc_src += ECDSA.c
+endif
 
 # Files for Tate Pairing
 ifeq ($(USE_PAIRING), TRUE)
@@ -14,58 +29,59 @@ else
 
 ifeq ($(Cparam), SECP128R1)
 ecc_src += secp128r1.c
-CFLAGS+=-DSECP128R1
+CFLAGS+=-DSECP128R1 -DSECP
 endif
 
 ifeq ($(Cparam), SECP128R2)
 ecc_src += secp128r2.c
-CFLAGS+=-DSECP128R2
+CFLAGS+=-DSECP128R2 -DSECP
 endif
 
 ifeq ($(Cparam), SECP160K1)
 ecc_src += secp160k1.c
-CFLAGS+=-DSECP160K1
+CFLAGS+=-DSECP160K1 -DSECP
 endif
 
 ifeq ($(Cparam), SECP160R1)
 ecc_src += secp160r1.c
-CFLAGS+=-DSECP160R1
+CFLAGS+=-DSECP160R1 -DSECP
 endif
 
 ifeq ($(Cparam), SECP160R2)
 ecc_src += secp160r2.c
-CFLAGS+=-DSECP160R2
+CFLAGS+=-DSECP160R2 -DSECP
 endif
 
 ifeq ($(Cparam), SECP192K1)
 ecc_src += secp192k1.c
-CFLAGS+=-DSECP192K1
+CFLAGS+=-DSECP192K1 -DSECP
 endif
 
 ifeq ($(Cparam), SECP192R1)
 ecc_src += secp192r1.c
-CFLAGS+=-DSECP192R1
+CFLAGS+=-DSECP192R1 -DSECP
 endif
 
 # Tate pairing curves
+
 ifeq ($(Cparam), SS192K2)
-ecc_src += ss192k2.c
-CFLAGS+=-DSS192K2
+ecc_src += ss192k2.c TPCurveParam.c
+CFLAGS+=-DSS192K2 -DTPSSC
 endif
 
 ifeq ($(Cparam), SS512K2)
-ecc_src += ss512k2.c
-CFLAGS+=-DSS512K2
+ecc_src += ss512k2.c TPCurveParam.c
+CFLAGS+=-DSS512K2 -DTPSSC
 endif
 
 ifeq ($(Cparam), SS192K2S)
-ecc_src += ss192k2s.c
-CFLAGS+=-DSS192K2S
+ecc_src += ss192k2s.c TPCurveParam.c
+CFLAGS+=-DSS192K2S -DTPSSC
 endif
 
 ifeq ($(Cparam), SS512K2S)
-ecc_src += ss512k2s.c
-CFLAGS+=-DSS512K2S
+ecc_src += ss512k2s.c TPCurveParam.c
+CFLAGS+=-DSS512K2S -DTPSSC
 endif
 
 endif

@@ -2,14 +2,9 @@
 #include <stdio.h>
 
 #include "contiki.h"
-#include "watchdog.h"
-//#include <contiki-lib.h>
-//#include <contiki-net.h>
-//#include <net/rime/ctimer.h>
 
-#include "NN.h"
-#include "ECC.h"
 #include "ECDH.h"
+
 
 static NN_DIGIT PrivateKey1[NUMWORDS];
 static NN_DIGIT PrivateKey2[NUMWORDS];
@@ -18,6 +13,9 @@ static Point PublicKey2;
 static uint8_t Secret1[KEYDIGITS*NN_DIGIT_LEN];
 static uint8_t Secret2[KEYDIGITS*NN_DIGIT_LEN];
 static uint32_t t = 0;
+
+static int round_index;
+#define MAX_ROUNDS 10
 
 
 /* declaration of scopes process */
@@ -43,7 +41,7 @@ static void init_data(){
     time_b = clock_time();
     t = time_b - time_a;
 	
-	printf("ECDH_init(): %d ms\n", (uint)(t*1000/CLOCK_SECOND));
+	printf("ECDH_init(%d): %d ms\n", round_index, (uint)(t*1000/CLOCK_SECOND));
 }
 
 void gen_PrivateKey1(){
@@ -117,7 +115,7 @@ void gen_PublicKey1(){
     time_b = clock_time();
     t = time_b - time_a;
 	
-	printf("ECC_gen_public_key() 1: %d ms\n", (uint)(t*1000/CLOCK_SECOND));
+	printf("ECC_gen_public_key(%d) 1: %u ms\n", round_index, (uint)(t*1000/CLOCK_SECOND));
 	printf("ECC_pubkey1.x: ");
 	for (i = 0; i < NUMWORDS; i++) {
 		printf("%x ", PublicKey1.x[i]);
@@ -203,7 +201,7 @@ void gen_PublicKey2(){
     time_b = clock_time();
     t = time_b - time_a;
 	
-	printf("ECC_gen_public_key() 2: %d ms\n", (uint)(t*1000/CLOCK_SECOND));
+	printf("ECC_gen_public_key(%d) 2: %u ms\n", round_index, (uint)(t*1000/CLOCK_SECOND));
 	printf("ECC_pubkey2.x: ");
 	for (i = 0; i < NUMWORDS; i++) {
 		printf("%x ", PublicKey2.x[i]);
@@ -228,7 +226,7 @@ void establish1(){
     time_b = clock_time();
     t = time_b - time_a;
 	
-	printf("ECDH_key_agree() 1: %d ms\n", (uint)(t*1000/CLOCK_SECOND));
+	printf("ECDH_key_agree(%d) 1: %u ms\n", round_index, (uint)(t*1000/CLOCK_SECOND));
 	printf("ECDH_secret1: ");
 	for (i = 0; i < KEYDIGITS*NN_DIGIT_LEN; i++) {
 		printf("%x ", Secret1[i]);
@@ -248,7 +246,7 @@ void establish2(){
     time_b = clock_time();
     t = time_b - time_a;
 	
-	printf("ECDH_key_agree() 2: %d ms\n", (uint)(t*1000/CLOCK_SECOND));
+	printf("ECDH_key_agree(%d) 2: %u ms\n", round_index, (uint)(t*1000/CLOCK_SECOND));
 	printf("ECDH_secret2: ");
 	for (i = 0; i < KEYDIGITS*NN_DIGIT_LEN; i++) {
 		printf("%x ", Secret2[i]);
@@ -269,14 +267,14 @@ PROCESS_THREAD(tester_process, ev, data)
   static struct etimer tester_timer;
   etimer_set(&tester_timer, 5 * CLOCK_SECOND);
   
-	init_data();
 	
 	printf("entering loop.\n");
 
-  do {
     /* wait till the timer expires and then reset it immediately */
     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&tester_timer));
 //    etimer_reset(&tester_timer);
+  do {
+	  init_data();
 
 	  gen_PrivateKey1();
 	  gen_PublicKey1();
@@ -287,8 +285,9 @@ PROCESS_THREAD(tester_process, ev, data)
 	  establish1();
 	  establish2();
 	  
+	  round_index++;
 	  
-  } while(1);
+  } while(round_index < MAX_ROUNDS);
 
   PROCESS_END();
 }

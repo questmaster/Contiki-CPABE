@@ -30,10 +30,7 @@
  * Date: 02/04/2005
  */
 
-#include <NN.h>
-#include <ECC.h>
-#include <NN2.h>
-#include <TPCurveParam.h>
+#include <TP.h>
 #include <string.h>
 
 //#define PROJECTIVE

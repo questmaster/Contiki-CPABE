@@ -28,8 +28,6 @@
  * module for ECDSA
  */
 #include <sha1.h>
-#include <NN.h>
-#include <ECC.h>
 #include <ECDSA.h>
 #include <dev/watchdog.h>
 #include <lib/rand.h>

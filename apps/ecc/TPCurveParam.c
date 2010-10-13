@@ -1,5 +1,5 @@
 /**
- * All new code in this distribution is Copyright 2005 by North Carolina
+ * All new code in this distribution is Copyright 2007 by North Carolina
  * State University. All rights reserved. Redistribution and use in
  * source and binary forms are permitted provided that this entire
  * copyright notice is duplicated in all such copies, and that any
@@ -24,28 +24,39 @@
  */
 
 /**
- * $Id: ECDSA.nc,v 1.2 2007/09/12 18:17:06 aliu3 Exp $
- * interface for ECDSA
+ * Translation for Tate Pairing curve parameters
  *
- * Author: An Liu
- * Date: 09/15/2005
+ * Author: Daniel Jacobi
+ * Date: 02/04/2007
  */
 
-#ifndef _ECDSA_H_
-#define _ECDSA_H_
+#include "TPCurveParam.h"
 
-#include <ECC.h>
+// if no SECP curve is loaded convert TPCurve params
+#ifndef SECP
 
-	//init the ECDSA, pKey is public key used to verify the signature
-	//we assume that the node has already know the public key when deployed
-	extern bool ECDSA_init(Point * pKey) __attribute__ ((noinline));
+  // Quick and dirty, trail & error...
+void get_param(Params *para) {
+	TPParams tpp;
+	int i;
 	
-	//do signature on msg, (r,s) is the signature, d is the private key
-	extern void ECDSA_sign(uint8_t *msg, uint8_t len, NN_DIGIT *r, NN_DIGIT *s, NN_DIGIT *d) __attribute__ ((noinline));
+	get_TP_param(&tpp);
 	
-	//verify the signature (r,s), Q is the public key. return 1 if passed.
-	extern uint8_t ECDSA_verify(uint8_t *msg, uint8_t len, NN_DIGIT *r, NN_DIGIT *s, Point *Q) __attribute__ ((noinline));
-
-
+	// set ECC_params
+	para->E.a_minus3 = tpp.E.a_minus3;
+	para->E.a_zero = tpp.E.a_zero;
+	para->E.a_one = tpp.E.a_one;
+	
+	for (i = 0; i < NUMWORDS; i++) {
+		para->p[i] = tpp.p[i];
+		para->omega[i] = 0;
+		para->E.a[i] = tpp.E.a[i];
+		para->E.b[i] = tpp.E.b[i];
+		para->G.x[i] = tpp.P.x[i];
+		para->G.y[i] = tpp.P.y[i];
+		para->r[i] = tpp.m[i];
+	}
+	
+}
 #endif
 

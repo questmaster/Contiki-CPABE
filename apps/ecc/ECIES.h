@@ -2,7 +2,6 @@
 #define _ECIES_H_
 
 #include <ECC.h>
-#include <NN.h>
 
 #define MAX_M_LEN 41
 #define HMAC_LEN 20

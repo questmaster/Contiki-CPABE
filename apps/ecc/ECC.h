@@ -34,6 +34,7 @@
 
 #include "NN.h"
 
+
 #ifndef PROJECTIVE
 #define AFFINE
 #endif
@@ -119,6 +120,8 @@ struct Params
 //    NN_DIGIT k[NUMWORDS];
 };
 typedef struct Params Params;
+
+#include "CurveParam.h"
 
 //all the parameters needed for elliptic curve operations of Tate Pairing
 struct TPParams

@@ -2,13 +2,7 @@
 #include <stdio.h>
 
 #include "contiki.h"
-#include "watchdog.h"
-//#include <contiki-lib.h>
-//#include <contiki-net.h>
-//#include <net/rime/ctimer.h>
 
-#include "ECC.h"
-#include "NN.h"
 #include "ECIES.h"
 #include "lib/rand.h"
 
@@ -27,6 +21,9 @@ static int M_len;
 static uint8_t Ct[2*KEYDIGITS*NN_DIGIT_LEN + 1 + MAX_M_LEN + HMAC_LEN];
 static int C_len;
 static uint8_t dM[MAX_M_LEN];
+
+static int round_index;
+#define MAX_ROUNDS 10
 
 //generate message and init ecc module
 static void init_data(){
@@ -71,12 +68,12 @@ static void init_data(){
 	
     time_a = clock_time();
 	
-    ECC_init();
+    ECIES_init();
 	
     time_b = clock_time();
     t = time_b - time_a;
 	
-	printf("ECC_init(): %d ms\n", (uint)(t*1000/CLOCK_SECOND));
+	printf("ECIES_init(%d): %u ms\n", round_index, (uint)(t*1000/CLOCK_SECOND));
 	printf("Init Message: ");
 	for (i = 0; i < MSG_LEN; i++) {
 		printf("%x ", M[i]);
@@ -160,7 +157,7 @@ static void V_PublicKey(){
     time_b = clock_time();
     t = time_b - time_a;
 	
-	printf("ECC_gen_public_key(): %d ms\n", (uint)(t*1000/CLOCK_SECOND));
+	printf("ECC_gen_public_key(%d): %u ms\n", round_index, (uint)(t*1000/CLOCK_SECOND));
 	printf("ECC_pubkey.x: ");
 	for (i = 0; i < NUMWORDS; i++) {
 		printf("%x ", PublicKey.x[i]);
@@ -187,7 +184,7 @@ static void U_encrypt(){
     time_b = clock_time();
     t = time_b - time_a;
 	
-	printf("ECIES_encrypt(): %d ms\n", (uint)(t*1000/CLOCK_SECOND));
+	printf("ECIES_encrypt(%d): %u ms\n", round_index, (uint)(t*1000/CLOCK_SECOND));
 	printf("Cyphertext: ");
 	for (i = 0; i < C_len; i++) {
 		printf("%x ", Ct[i]);
@@ -210,7 +207,7 @@ static void V_decrypt(){
     time_b = clock_time();
     t = time_b - time_a;
 	
-	printf("ECIES_decrypt(): %d ms\n", (uint)(t*1000/CLOCK_SECOND));
+	printf("ECIES_decrypt(%d): %u ms\n", round_index, (uint)(t*1000/CLOCK_SECOND));
 	printf("dMessage: ");
 	for (i = 0; i < dM_len; i++) {
 		printf("%x ", dM[i]);
@@ -235,14 +232,14 @@ PROCESS_THREAD(tester_process, ev, data)
   static struct etimer tester_timer;
   etimer_set(&tester_timer, 5 * CLOCK_SECOND);
 
-	init_data();
 
 	printf("entering loop.\n");
 
-  do {
     /* wait till the timer expires and then reset it immediately */
     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&tester_timer));
 //    etimer_reset(&tester_timer);
+  do {
+	  init_data();
 
 	  V_PrivateKey();
 	  V_PublicKey();
@@ -251,8 +248,9 @@ PROCESS_THREAD(tester_process, ev, data)
 	  
 	  V_decrypt();
 	  
+	  round_index++;
 	  
-  } while(1);
+  } while(round_index < MAX_ROUNDS);
 
   PROCESS_END();
 }
