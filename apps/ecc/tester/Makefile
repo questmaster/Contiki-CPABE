@@ -21,10 +21,10 @@ Cparam = SS192K2
 #CFLAGS+=-DCODE_SIZE
 
 # use EC algorithms
-USE_ECDH = TRUE
-USE_ECIES = TRUE
-USE_ECDSA = TRUE
-#USE_PAIRING = TRUE
+#USE_ECDH = TRUE
+#USE_ECIES = TRUE
+#USE_ECDSA = TRUE
+USE_PAIRING = TRUE
 
 ## choose different optimization techniques
 ## NN
@@ -38,10 +38,15 @@ CFLAGS+=-DPROJECTIVE			# projective coordinate
 CFLAGS+=-DSLIDING_WIN			# sliding window method, window size is defined in ECC.h
 ## ECDSA
 CFLAGS+=-DSHAMIR_TRICK			# shamir trick, windows size is defined in ECDSAM.nc
+## TP
+#CFLAGS+=-DFIXED_P				# precompute intermediate nodes, slopes for a fixed P
+#CFLAGS+=-DPROJECTIVE_M			# ???
 
 ## activate 4/8MHz configuration (compatible to TinyOS freq's)
-CFLAGS += -DMSP430_4MHZ_ENABLE
+#CFLAGS += -DMSP430_4MHZ_ENABLE
 #CFLAGS += -DMSP430_8MHZ_ENABLE
 
-CONTIKI = ../..
+ifndef CONTIKI
+	CONTIKI = ../..
+endif
 include $(CONTIKI)/Makefile.include

@@ -4,11 +4,6 @@
 #include "contiki.h"
 #include "leds.h"
 #include "watchdog.h"
-//#include <contiki-lib.h>
-//#include <contiki-net.h>
-
-#include <NN.h>
-#include <NN2.h>
 #include "TP.h"
 
 #define MAX_ROUNDS 10
@@ -18,7 +13,7 @@ static Point Q;
 static NN_DIGIT res[NUMWORDS];
 static NN2_NUMBER f;
 static int round_index;
-
+static TPParams tp;
 
 static void print_val(NN_DIGIT *num){
     int i;
@@ -388,25 +383,34 @@ static void get_PublicKey() {
 
 static void runTP(){
     
-    uint32_t time_s, time_f, dt1, dt2;
+    uint32_t time_s, time_f, dt0, dt1, dt2;
+	get_TP_param(&tp);
     
 	leds_toggle(LEDS_BLUE);
     get_PublicKey();
-    TP_init(Q);
-	leds_toggle(LEDS_BLUE);
 
-    while (round_index<=MAX_ROUNDS) {
+    while (round_index<MAX_ROUNDS) {
 		leds_toggle(LEDS_BLUE);
-      time_s = clock_time();
-
-		TP_Miller(&f);
-      
-      time_f = clock_time();
+		time_s = clock_time();
+		
+		TP_init(tp.P, Q);
+//		TP_init(Q);
+		
+		time_f = clock_time();
 		leds_toggle(LEDS_BLUE);
-
-	  dt1 = time_f - time_s;
-    
+		
+		dt0 = time_f - time_s;
+		
+		time_s = clock_time();
+		
+		TP_Miller(&f, tp.P);
+//		TP_Miller(&f);
+		
+		time_f = clock_time();
 		leds_toggle(LEDS_BLUE);
+		
+		dt1 = time_f - time_s;
+		
  	  time_s = clock_time();
 
 		TP_final_expon(res,&f);
@@ -419,7 +423,11 @@ static void runTP(){
       
       printf("TP= ");
       print_val(res);
-      printf("time(%d): miller: %lu ms, exp: %lu ms, total: %lu ms\n", round_index, (uint32_t)(dt1*1000/CLOCK_SECOND), (uint32_t)(dt2*1000/CLOCK_SECOND), (uint32_t)((dt1+dt2)*1000/CLOCK_SECOND));
+      printf("time(%d): init: %lu ms, miller: %lu ms, exp: %lu ms, miller+exp: %lu ms\n", 
+			 round_index, (uint32_t)(dt0*1000/CLOCK_SECOND), 
+						  (uint32_t)(dt1*1000/CLOCK_SECOND), 
+						  (uint32_t)(dt2*1000/CLOCK_SECOND), 
+						  (uint32_t)((dt1+dt2)*1000/CLOCK_SECOND));
       
 
       round_index++;
@@ -441,7 +449,7 @@ PROCESS_THREAD(tester_process, ev, data)
 	printf("TP tester process started\n");
 watchdog_stop();
 
-	round_index = 1;
+	round_index = 0;
 
 	/* create and start an event timer */
 	static struct etimer tester_timer;
@@ -453,7 +461,7 @@ watchdog_stop();
 	/* wait till the timer expires and then reset it immediately */
 	PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&tester_timer));
 //		etimer_reset(&tester_timer);
-	do {
+//	do {
 		
 		leds_on(LEDS_RED);
 		runTP();
@@ -461,7 +469,7 @@ watchdog_stop();
 		leds_off(LEDS_RED);
 		leds_off(LEDS_GREEN);
 		
-	} while(round_index < MAX_ROUNDS);
+//	} while(round_index < MAX_ROUNDS);
 
   PROCESS_END();
 }
