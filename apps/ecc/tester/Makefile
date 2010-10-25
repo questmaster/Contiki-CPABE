@@ -25,6 +25,7 @@ Cparam = SS192K2
 #USE_ECIES = TRUE
 #USE_ECDSA = TRUE
 USE_PAIRING = TRUE
+#USE_CPABE = TRUE
 
 ## choose different optimization techniques
 ## NN
@@ -37,7 +38,7 @@ CFLAGS+=-DHYBRID_SQR			# hybrid squre
 CFLAGS+=-DPROJECTIVE			# projective coordinate
 CFLAGS+=-DSLIDING_WIN			# sliding window method, window size is defined in ECC.h
 ## ECDSA
-CFLAGS+=-DSHAMIR_TRICK			# shamir trick, windows size is defined in ECDSAM.nc
+CFLAGS+=-DSHAMIR_TRICK			# shamir trick, windows size is defined in ECDSA.c
 ## TP
 #CFLAGS+=-DFIXED_P				# precompute intermediate nodes, slopes for a fixed P
 #CFLAGS+=-DPROJECTIVE_M			# ???

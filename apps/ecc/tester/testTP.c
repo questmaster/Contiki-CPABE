@@ -394,7 +394,6 @@ static void runTP(){
 		time_s = clock_time();
 		
 		TP_init(tp.P, Q);
-//		TP_init(Q);
 		
 		time_f = clock_time();
 		leds_toggle(LEDS_BLUE);
@@ -404,7 +403,6 @@ static void runTP(){
 		time_s = clock_time();
 		
 		TP_Miller(&f, tp.P);
-//		TP_Miller(&f);
 		
 		time_f = clock_time();
 		leds_toggle(LEDS_BLUE);
@@ -447,7 +445,6 @@ PROCESS_THREAD(tester_process, ev, data)
 	PROCESS_BEGIN();
 	
 	printf("TP tester process started\n");
-watchdog_stop();
 
 	round_index = 0;
 
@@ -460,18 +457,14 @@ watchdog_stop();
 	
 	/* wait till the timer expires and then reset it immediately */
 	PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&tester_timer));
-//		etimer_reset(&tester_timer);
-//	do {
 		
-		leds_on(LEDS_RED);
-		runTP();
-		leds_on(LEDS_GREEN);
-		leds_off(LEDS_RED);
-		leds_off(LEDS_GREEN);
+	leds_on(LEDS_RED);
+	runTP();
+	leds_on(LEDS_GREEN);
+	leds_off(LEDS_RED);
+	leds_off(LEDS_GREEN);
 		
-//	} while(round_index < MAX_ROUNDS);
-
-  PROCESS_END();
+	PROCESS_END();
 }
 
 
