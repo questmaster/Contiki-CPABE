@@ -37,6 +37,9 @@
 ///#define PROJECTIVE_M
 ///#define FIXED_P
 
+#ifndef TPSSC
+#error *** Use one of the Pairing curves! NOT the Secp ones. *** 
+#endif
 
 static TPParams tpparam;
 static NN_DIGIT Qx[NUMWORDS], mQy[NUMWORDS];

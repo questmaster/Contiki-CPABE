@@ -15,6 +15,12 @@ ifeq ($(USE_ECDSA), TRUE)
 ecc_src += ECDSA.c
 endif
 
+# Files for CP-ABE
+ifeq ($(USE_CPABE), TRUE)
+ecc_src += cp_abe.c
+USE_PAIRING=TRUE
+endif
+
 # Files for Tate Pairing
 ifeq ($(USE_PAIRING), TRUE)
 ecc_src += TP.c NN2.c

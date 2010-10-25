@@ -30,6 +30,7 @@
  * modified from nn.h and nn.c from RSAREF 2.0
  */
 
+#include <watchdog.h>
 #include <NN.h>
 #include <string.h>
 #include <CurveParam.h>
@@ -457,7 +458,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
    */
   void NN_Mult (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT digits) 
   {
-
+	  watchdog_periodic();
     //#ifdef INLINE_ASM
 #ifdef HYBRID_MULT
 #ifdef CONTIKI_TARGET_MICAZ
@@ -1761,6 +1762,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
 
   void NN_Sqr(NN_DIGIT *a, NN_DIGIT *b, NN_UINT digits)
   {
+	  watchdog_periodic();
     //#ifdef INLINE_ASM
 #ifdef HYBRID_SQR
 #ifdef CONTIKI_TARGET_MICAZ
