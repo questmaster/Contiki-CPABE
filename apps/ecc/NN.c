@@ -362,7 +362,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
    */
   NN_DIGIT NN_Sub (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT digits) 
   {
-
+	  watchdog_periodic();
 #ifdef INLINE_ASM
 #ifdef CONTIKI_TARGET_MICAZ
 

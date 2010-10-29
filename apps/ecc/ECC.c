@@ -755,7 +755,7 @@ void ECC_init()
 #endif
       }
     }   
-    //convert back to affine coordinate
+	//convert back to affine coordinate
     if (!Z_is_one(Z0))
     {
       NNModInv(Z1, Z0, param.p, NUMWORDS);

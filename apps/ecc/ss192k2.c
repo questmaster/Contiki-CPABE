@@ -30,8 +30,9 @@
  * Date: 02/04/2007
  */
 
-#include <ECC.h>
-#include <NN.h>
+#include "ECC.h"
+#include "NN.h"
+#include <string.h>
 
 // TODO: 8-bit
 

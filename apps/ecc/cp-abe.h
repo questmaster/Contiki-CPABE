@@ -10,8 +10,12 @@
 #ifndef _CP_ABE_H_
 #define _CP_ABE_H_
 
+#include "NN.h"
+#include "ECC.h"
+#include <list.h>
+
 /*
- A public key.
+ * A public key.
  */
 typedef struct cpabe_pub_s {
 //	char* pairing_desc;
@@ -20,24 +24,67 @@ typedef struct cpabe_pub_s {
 	Point h;           /* G_1 */
 	Point f;           /* G_1 */
 //	Point gp;          /* G_2 */ // TODO: what is this for?!
-	NN_DIGIT g_hat_alpha; /* G_T */
+	NN_DIGIT g_hat_alpha[NUMWORDS]; /* G_T */
 } cpabe_pub_t;
 
 /*
- A master secret key.
+ * A master secret key.
  */
 typedef struct cpabe_msk_s {
-	NN_DIGIT beta;    /* Z_r */
+	NN_DIGIT beta[NUMWORDS];    /* Z_r */
 	Point g_alpha; /* G_2 */
 } cpabe_msk_t;
 
 /*
- A private key.
+ * A private key.
  */
 typedef struct cpabe_prv_s {
 	Point d;   /* G_2 */
-	list_t* comps; /* cpabe_prv_comp_t's */
+	list_t comps; /* cpabe_prv_comp_t's */
 } cpabe_prv_t;
+
+
+/*******/
+typedef struct cpabe_prv_comp_s {
+	struct cpabe_prv_comp_s *next;
+	/* these actually get serialized */
+	char* attr;
+	Point d;  /* G_2 */
+	Point dp; /* G_2 */
+	
+	/* only used during dec (only by dec_merge) */
+	//	int used;
+	//	NN_DIGIT z;  /* G_1 */
+	//	NN_DIGIT zp; /* G_1 */
+} cpabe_prv_comp_t;
+
+typedef struct cpabe_polynomial_s {
+	int deg;
+	/* coefficients from [0] x^0 to [deg] x^deg */
+	NN_DIGIT* coef[NUMWORDS]; /* G_T (of length deg + 1) */
+} cpabe_polynomial_t;
+
+typedef struct cpabe_policy_s {
+	struct cpabe_policy_s* next;
+	/* serialized */
+	int k;            /* one if leaf, otherwise threshold */
+	char* attr;       /* attribute string if leaf, otherwise null */
+	Point c;      /* G_1, only for leaves */
+	Point cp;     /* G_1, only for leaves */
+	list_t children; /* pointers to cpabe_policy_t's, len == 0 for leaves */ // list_init() in basenode()
+	
+	/* only used during encryption */
+	cpabe_polynomial_t* q;
+	
+	/* only used during decryption */
+	int satisfiable;
+	int min_leaves;
+	int attri;
+//	GArray* satl; // TODO: Replace GArray
+} cpabe_policy_t;
+
+
+/*******/
 
 /*
  A ciphertext. Note that this library only handles encrypting a
@@ -46,9 +93,9 @@ typedef struct cpabe_prv_s {
  hybrid encryption (which you do yourself).
  */
 typedef struct cpabe_cph_s {
-	NN_DIGIT cs; /* G_T */
+	NN_DIGIT cs[NUMWORDS]; /* G_T */
 	Point c;  /* G_1 */
-	cpabe_policy_t* p;
+	list_t p;
 } cpabe_cph_t;
 
 /*
@@ -64,7 +111,7 @@ extern void cpabe_setup(cpabe_pub_t *pub, cpabe_msk_t *msk);
  argument should be a null terminated array of pointers to strings,
  one for each attribute.
  */
-extern cpabe_prv_t *cpabe_keygen(cpabe_pub_t pub, cpabe_msk_t msk, char** attributes);
+extern void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** attributes);
 
 /*
  Pick a random group element and encrypt it under the specified
@@ -91,7 +138,7 @@ extern cpabe_prv_t *cpabe_keygen(cpabe_pub_t pub, cpabe_msk_t msk, char** attrib
  Returns null if an error occured, in which case a description can be
  retrieved by calling cpabe_error().
  */
-extern cpabe_cph_t *cpabe_enc(cpabe_pub_t pub, uint8_t *m, char *policy);
+extern void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN_DIGIT m[NUMWORDS], char *policy);
 
 /*
  Decrypt the specified ciphertext using the given private key,
