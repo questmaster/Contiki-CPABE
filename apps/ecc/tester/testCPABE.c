@@ -40,9 +40,10 @@ PROCESS_THREAD(tester_process, ev, data)
 	PROCESS_BEGIN();
 	uint16_t i = 0;
     uint32_t time_s, time_f, dt0;
-	char *attributes[4] = {"attr1", "val1", 
-						 "attr2", "val2"};
-	
+	char **attributes = {"attr1", "val1", 
+							"attr2", "val2",
+							""};
+
 	printf("CP-ABE tester process started\n");
 	
 	/* create and start an event timer */

@@ -24,8 +24,8 @@ Cparam = SS192K2
 #USE_ECDH = TRUE
 #USE_ECIES = TRUE
 #USE_ECDSA = TRUE
-USE_PAIRING = TRUE
-#USE_CPABE = TRUE
+#USE_PAIRING = TRUE
+USE_CPABE = TRUE
 
 ## choose different optimization techniques
 ## NN

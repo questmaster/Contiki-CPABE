@@ -35,16 +35,7 @@ typedef struct cpabe_msk_s {
 	Point g_alpha; /* G_2 */
 } cpabe_msk_t;
 
-/*
- * A private key.
- */
-typedef struct cpabe_prv_s {
-	Point d;   /* G_2 */
-	list_t comps; /* cpabe_prv_comp_t's */
-} cpabe_prv_t;
 
-
-/*******/
 typedef struct cpabe_prv_comp_s {
 	struct cpabe_prv_comp_s *next;
 	/* these actually get serialized */
@@ -58,10 +49,19 @@ typedef struct cpabe_prv_comp_s {
 	//	NN_DIGIT zp; /* G_1 */
 } cpabe_prv_comp_t;
 
+/*
+ * A private key.
+ */
+typedef struct cpabe_prv_s {
+	Point d;   /* G_2 */
+	list_t comps; /* list of cpabe_prv_comp_t */
+} cpabe_prv_t;
+
+
 typedef struct cpabe_polynomial_s {
 	int deg;
 	/* coefficients from [0] x^0 to [deg] x^deg */
-	NN_DIGIT* coef[NUMWORDS]; /* G_T (of length deg + 1) */
+	NN_DIGIT *coef; /* G_T (of length deg + 1) */
 } cpabe_polynomial_t;
 
 typedef struct cpabe_policy_s {
@@ -71,7 +71,7 @@ typedef struct cpabe_policy_s {
 	char* attr;       /* attribute string if leaf, otherwise null */
 	Point c;      /* G_1, only for leaves */
 	Point cp;     /* G_1, only for leaves */
-	list_t children; /* pointers to cpabe_policy_t's, len == 0 for leaves */ // list_init() in basenode()
+	list_t children; /* list of struct cpabe_policy_s, len == 0 for leaves */
 	
 	/* only used during encryption */
 	cpabe_polynomial_t* q;
@@ -80,11 +80,9 @@ typedef struct cpabe_policy_s {
 	int satisfiable;
 	int min_leaves;
 	int attri;
-//	GArray* satl; // TODO: Replace GArray
+//	GArray* satl; // TODO: Replace GArray, list, type?
 } cpabe_policy_t;
 
-
-/*******/
 
 /*
  A ciphertext. Note that this library only handles encrypting a
@@ -95,7 +93,7 @@ typedef struct cpabe_policy_s {
 typedef struct cpabe_cph_s {
 	NN_DIGIT cs[NUMWORDS]; /* G_T */
 	Point c;  /* G_1 */
-	list_t p;
+	list_t p;	/* tree of cpabe_policy_t */
 } cpabe_cph_t;
 
 /*

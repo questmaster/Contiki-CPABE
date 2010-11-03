@@ -10,11 +10,15 @@
 #include <stdio.h> // only DEBUG!
 #include <string.h>
 #include <watchdog.h>
+#include <memb.h>
 #include "cp-abe.h"
 #include "TP.h"
 #include "sha1.h"
 
 static TPParams param;
+
+
+MEMB(prv_comps_m, cpabe_prv_comp_t, 5);						/**< This limits the number of attributes in the private key */
 
 /* -- Utility functions ----------------------------------------------------- */
 
@@ -147,6 +151,13 @@ void * list_index(list_t list, uint8_t index) {
 
 /* -- CP-ABE functions ------------------------------------------------------ */
 
+/**
+ * @brief init memory structures needed for CP-ABE.
+ */
+void cpabe_init() {
+	memb_init(&prv_comps_m);
+}
+
 /* ** CP-ABE Setup ********************* */
 
 /**
@@ -257,11 +268,13 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 	ECC_mul(&(prv->d), &tmp, beta_inv);				/**< d = d * beta_inverted */
 	
 	// for all attributes generate params
-	while( *attributes )					// TODO: This does not work! How does this structure look?!
+	while( *attributes )					// TODO: This does not work! How does this structure look like?!
 	{
-		c = (cpabe_prv_comp_t *) malloc(sizeof(cpabe_prv_comp_t));
-		
+		c = (cpabe_prv_comp_t *) memb_alloc(&prv_comps_m);
+
+printf("before: %s\n", *attributes);		
 		c->attr = *(attributes++);
+printf("after: %s\n", *attributes);		
 		
  		point_from_string(&h_rp, c->attr);
  		NNModRandom(rp, param.p, NUMWORDS);
@@ -281,7 +294,7 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 
 /* ** CP-ABE Encryption ********************* */
 
-
+/*
 cpabe_policy_t*
 base_node( int k, char* s )
 {
@@ -384,12 +397,12 @@ rand_poly( int deg, NN_DIGIT zero_val )
 	
 	q = (cpabe_polynomial_t*) malloc(sizeof(cpabe_polynomial_t));
 	q->deg = deg;
-	q->coef = (NN_DIGIT **) malloc(sizeof(NN_DIGIT) * NUMWORDS * (deg + 1));	
+	q->coef = (NN_DIGIT *) malloc(sizeof(NN_DIGIT) * NUMWORDS * (deg + 1));	
 		
-	NNAssignDigit(q->coef[0], zero_val, NUMWORDS);
+	NNAssignDigit(q->coef, zero_val, NUMWORDS);
 	
 	for( i = 1; i < q->deg + 1; i++ )
- 		NNModRandom(q->coef[i * NUMWORDS], param.p, NUMWORDS);			// FIXME: Array addressing correct?
+ 		NNModRandom(&(q->coef[i * NUMWORDS]), param.p, NUMWORDS);			// FIXME: Array addressing correct?
 	
 	return q;
 }
@@ -406,7 +419,7 @@ eval_poly( NN_DIGIT r[NUMWORDS], cpabe_polynomial_t* q, NN_DIGIT x[NUMWORDS] )
 	for( i = 0; i < q->deg + 1; i++ )
 	{
 		// r += q->coef[i] * t 
-		NNModMult(s, q->coef[i * NUMWORDS], t, param.p, NUMWORDS);
+		NNModMult(s, &(q->coef[i * NUMWORDS]), t, param.p, NUMWORDS);
 		NNModAdd(r, r, s, param.p, NUMWORDS);
 		
 		// t *= x 
@@ -415,8 +428,8 @@ eval_poly( NN_DIGIT r[NUMWORDS], cpabe_polynomial_t* q, NN_DIGIT x[NUMWORDS] )
 }
 
 void
-fill_policy( /*cpabe_policy_t*/list_t *p, cpabe_pub_t* pub, NN_DIGIT e[NUMWORDS]) {
-#error bigger changes down here
+fill_policy(cpabe_policy_t *p, cpabe_pub_t* pub, NN_DIGIT e[NUMWORDS]) {
+#error bigger changes down here -> p and children.
 	cpabe_policy_t* cp;
 	int i;
 	NN_DIGIT r[NUMWORDS];
@@ -435,7 +448,7 @@ fill_policy( /*cpabe_policy_t*/list_t *p, cpabe_pub_t* pub, NN_DIGIT e[NUMWORDS]
 		i = 0;
 		for( cp = list_head(p->children); cp != NULL; cp = cp->next )
 			{
-				NNAssign(r, i + 1, NUMWORDS);				/**< Assign i+1 to r */
+				NNAssign(r, i + 1, NUMWORDS);				/ **< Assign i+1 to r * /
 				eval_poly(t, p->q, r);
 				fill_policy(cp, pub, t);
 				
@@ -444,9 +457,9 @@ fill_policy( /*cpabe_policy_t*/list_t *p, cpabe_pub_t* pub, NN_DIGIT e[NUMWORDS]
 	}
 }
 
-/**
+/ **
  * @brief generate symetric encryption key m with public key and a specified policy.
- */
+ * /
 void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN_DIGIT m[NUMWORDS], char *policy) {
  	NN_DIGIT s[NUMWORDS];
 	
@@ -459,13 +472,13 @@ void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN_DIGIT m[NUMWORDS], char *po
  	NNModRandom(m, param.p, NUMWORDS);
  	NNModRandom(s, param.p, NUMWORDS);
 	NNModExp(cph->cs,  pub.g_hat_alpha, s, NUMWORDS, param.p, NUMWORDS);	// FIXME: g_hat_alpha pow s ???
-	NNModMult(cph->cs, cph->cs, m, param.p, NUMWORDS);	/**< cs = cs * m */
+	NNModMult(cph->cs, cph->cs, m, param.p, NUMWORDS);	/ **< cs = cs * m * /
 	
-	ECC_mul(&(cph->c), &(pub.h), s);						/**< c = h * s */
+	ECC_mul(&(cph->c), &(pub.h), s);						/ **< c = h * s * /
 	
 	fill_policy(&(cph->p), &(pub), s);
 }
-
+*/
 
 /* ** CP-ABE Decryption ********************* */
 
