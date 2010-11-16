@@ -22,11 +22,12 @@
 #include "ECC.h"
 #include "cp-abe.h"
 
-#define MAX_ROUNDS 10
+#define MAX_ROUNDS 1//0
 
 static cpabe_pub_t pub;
 static cpabe_msk_t msk;
 static cpabe_prv_t prv;
+static cpabe_cph_t cph;
 static uint8_t round_index = 0;
 
 
@@ -40,10 +41,16 @@ PROCESS_THREAD(tester_process, ev, data)
 	PROCESS_BEGIN();
 	uint16_t i = 0;
     uint32_t time_s, time_f, dt0;
-	char **attributes = {"attr1", "val1", 
-							"attr2", "val2",
-							""};
 
+	char * attributes[4];
+	char * policy = "attr1"; 
+	NN_DIGIT m[NUMWORDS];
+	
+	attributes[0] = "attr1";
+	attributes[1] = "attr2";
+	attributes[2] = "attr3";
+	attributes[3] = 0;
+	
 	printf("CP-ABE tester process started\n");
 	
 	/* create and start an event timer */
@@ -109,8 +116,8 @@ PROCESS_THREAD(tester_process, ev, data)
 
 		printf("CPABE_keygen(%d)\n", round_index);
 		time_s = clock_time();
-
-		cpabe_keygen(&prv, pub, msk, attributes);
+printf("%p: %s\n", attributes[0], attributes[0]);
+		cpabe_keygen(&prv, pub, msk, attributes); // TODO: Why is attributes not referenced correctly?!
 
 		time_f = clock_time();
 		dt0 = time_f - time_s;
@@ -126,6 +133,16 @@ PROCESS_THREAD(tester_process, ev, data)
 			printf("%x ", prv.d.y[i]);
 		}
 		printf("\n");
+
+		printf("CPABE_enc(%d) \n", round_index);
+		time_s = clock_time();
+
+		cpabe_enc(&cph, pub, m, policy); // TODO: Why is attributes not referenced correctly?!
+
+		time_f = clock_time();
+		dt0 = time_f - time_s;
+		printf("CPABE_enc(%d): %lu ms\n", round_index, (uint32_t)(dt0*1000/CLOCK_SECOND));
+
 		
 		leds_on(LEDS_GREEN);
 		leds_off(LEDS_RED);

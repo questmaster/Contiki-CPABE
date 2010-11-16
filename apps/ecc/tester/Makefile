@@ -40,7 +40,7 @@ CFLAGS+=-DSLIDING_WIN			# sliding window method, window size is defined in ECC.h
 ## ECDSA
 CFLAGS+=-DSHAMIR_TRICK			# shamir trick, windows size is defined in ECDSA.c
 ## TP
-#CFLAGS+=-DFIXED_P				# precompute intermediate nodes, slopes for a fixed P
+#CFLAGS+=-DFIXED_P			# precompute intermediate nodes, slopes for a fixed P
 #CFLAGS+=-DPROJECTIVE_M			# ???
 
 ## activate 4/8MHz configuration (compatible to TinyOS freq's)
