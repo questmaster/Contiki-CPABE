@@ -29,7 +29,8 @@ static cpabe_msk_t msk;
 static cpabe_prv_t prv;
 static cpabe_cph_t cph;
 static uint8_t round_index = 0;
-
+static char * attributes[4];
+static char * policy;
 
 /* declaration of scopes process */
 PROCESS(tester_process, "CP-ABE tester process");
@@ -39,17 +40,19 @@ AUTOSTART_PROCESSES(&tester_process);
 PROCESS_THREAD(tester_process, ev, data)
 {
 	PROCESS_BEGIN();
-	uint16_t i = 0;
+	int8_t i = 0;
     uint32_t time_s, time_f, dt0;
 
-	char * attributes[4];
-	char * policy = "attr1"; 
+	policy = "attr1 attr3 2of2"; 
 	NN_DIGIT m[NUMWORDS];
 	
 	attributes[0] = "attr1";
 	attributes[1] = "attr2";
 	attributes[2] = "attr3";
 	attributes[3] = 0;
+	
+//	printf("%p-> 0:%s, 1:%s, 2:%s: 3:%s\n", attributes, attributes[0], 
+//		   attributes[1], attributes[2], attributes[3]);
 	
 	printf("CP-ABE tester process started\n");
 	
@@ -76,32 +79,32 @@ PROCESS_THREAD(tester_process, ev, data)
 	/* CP-ABE Keys */
 	
 	printf("CPABE_msk_beta: ");
-	for (i = 0; i < NUMWORDS; i++) {
+	for (i = NUMWORDS-1; i >= 0; i--) {
 		printf("%x ", msk.beta[i]);
 	}
 	printf("\n");
 	printf("CPABE_msk_g-alpha_x: ");
-	for (i = 0; i < NUMWORDS; i++) {
+	for (i = NUMWORDS-1; i >= 0; i--) {
 		printf("%x ", msk.g_alpha.x[i]);
 	}
 	printf("\n");
 	printf("CPABE_msk_g-alpha_y: ");
-	for (i = 0; i < NUMWORDS; i++) {
+	for (i = NUMWORDS-1; i >= 0; i--) {
 		printf("%x ", msk.g_alpha.y[i]);
 	}
 	printf("\n");
 	printf("CPABE_pub_g-hat-alpha: ");
-	for (i = 0; i < NUMWORDS; i++) {
+	for (i = NUMWORDS-1; i >= 0; i--) {
 		printf("%x ", pub.g_hat_alpha[i]);
 	}
 	printf("\n");
 	printf("CPABE_pub_h_x: ");
-	for (i = 0; i < NUMWORDS; i++) {
+	for (i = NUMWORDS-1; i >= 0; i--) {
 		printf("%x ", pub.h.x[i]);
 	}
 	printf("\n");
 	printf("CPABE_pub_h_y: ");
-	for (i = 0; i < NUMWORDS; i++) {
+	for (i = NUMWORDS-1; i >= 0; i--) {
 		printf("%x ", pub.h.y[i]);
 	}
 	printf("\n");
@@ -116,7 +119,6 @@ PROCESS_THREAD(tester_process, ev, data)
 
 		printf("CPABE_keygen(%d)\n", round_index);
 		time_s = clock_time();
-printf("%p: %s\n", attributes[0], attributes[0]);
 		cpabe_keygen(&prv, pub, msk, attributes); // TODO: Why is attributes not referenced correctly?!
 
 		time_f = clock_time();
@@ -124,12 +126,12 @@ printf("%p: %s\n", attributes[0], attributes[0]);
 		printf("CPABE_keygen(%d): %lu ms\n", round_index, (uint32_t)(dt0*1000/CLOCK_SECOND));
 
 		printf("CPABE_prv_d_x: ");
-		for (i = 0; i < NUMWORDS; i++) {
+		for (i = NUMWORDS-1; i >= 0; i--) {
 			printf("%x ", prv.d.x[i]);
 		}
 		printf("\n");
 		printf("CPABE_prv_d_y: ");
-		for (i = 0; i < NUMWORDS; i++) {
+		for (i = NUMWORDS-1; i >= 0; i--) {
 			printf("%x ", prv.d.y[i]);
 		}
 		printf("\n");

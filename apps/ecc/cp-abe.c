@@ -20,18 +20,23 @@ static TPParams param;
 
 MEMB(prv_comps_m, cpabe_prv_comp_t, 5);						/**< This limits the number of attributes in the private key */
 MEMB(enc_policy_m, cpabe_policy_t, 5);						/**< This limits the number of attributes in encrypted data */
-MEMB(enc_polynomial_m, cpabe_polynomial_t, 5);				/**< This limits the number of attributes in encrypted data */
+MEMB(enc_polynomial_m, cpabe_polynomial_t, 10);				/**< This limits the number of attributes in encrypted data */
 
 /* -- Utility functions ----------------------------------------------------- */
+
+#define MYLIST(name) \
+name = (list_t)&LIST_CONCAT(name,_list)
 
 /*
  * @brief Splits a String at " ".
  */
 char **strsplit(char *s) {
 	char ** tokens = NULL;
-	uint8_t i, tok_count = 0;
+	uint8_t i;
+	uint8_t tok_count = 1;
 	char * tmp;
-	
+	char * tmp1;
+
 	// count number of tokens
 	for (i = 0; i < strlen(s); i++) {
 		if (s[i] == ' ')
@@ -39,21 +44,23 @@ char **strsplit(char *s) {
 	}
 	
 	// alloc base array
-	if (tok_count > 0) {
-		tokens = (char **) malloc(tok_count * sizeof(char *));
-	}
-	
+	tmp = (char *) malloc((tok_count+1) * sizeof(char *) + strlen(s) + 1);		// FIXME: memb?
+	tokens = (char **) tmp;
+	tmp = tmp + ((tok_count+1) * sizeof(char *));
+	memcpy(tmp, s, strlen(s) + 1);
+							  
 	// reuse string?
-	for (i = 0; i < tok_count; i++) {
-		tmp = strchr(s, ' ');								/**< get pos of next ' ' char */
-		if (tmp != NULL) {
-			tmp[0] = '\0';									/**< replace ' ' by '\0', tmp points to rest of string */
-			tmp++;
+	tokens[0] = tmp;
+	for (i = 1; i < tok_count; i++) {
+		tmp1 = strchr(tmp, ' ');						/**< get pos of next ' ' char */
+		if (tmp1 != NULL) {
+			*tmp1 = 0;									/**< replace ' ' by '\0', tmp points to rest of string */
+			tmp = ++tmp1;
 		}
 		
-		tokens[i] = s;
-		s = tmp;
+		tokens[i] = tmp;
 	}
+	tokens[i] = 0; // needed to stop the while loop in parser
 
 	return tokens;
 }
@@ -75,13 +82,13 @@ void freesplit(char ** toks) {
  * TODO: Verify
  */
 static void NNModRandom (NN_DIGIT * b, NN_DIGIT * c, NN_UINT digits) {
-	NN_UINT order_digit_len, order_bit_len;
+	NN_UINT order_digit_len;//, order_bit_len;
     bool done = FALSE;
     uint8_t ri;
-    NN_DIGIT digit_mask;
+//    NN_DIGIT digit_mask;
 	
-    order_bit_len = NNBits(param.m, NUMWORDS); // TODO: m replaced r correct?
-    order_digit_len = NNDigits(param.m, NUMWORDS); // --^
+//    order_bit_len = NNBits(param.m, NUMWORDS); // TODO: m replaced r correct?
+    order_digit_len = /*NNDigits(param.m,*/ NUMWORDS/*)*/; // --^
 
     while(!done){
 		watchdog_periodic();
@@ -94,18 +101,19 @@ static void NNModRandom (NN_DIGIT * b, NN_DIGIT * c, NN_UINT digits) {
 #endif
 		}
 		
-		for (ri=order_digit_len; ri<NUMWORDS; ri++){
-			b[ri] = 0;
-		}
-		
-		if (order_bit_len % NN_DIGIT_BITS != 0){
-			digit_mask = MAX_NN_DIGIT >> (NN_DIGIT_BITS - order_bit_len % NN_DIGIT_BITS);
-			b[order_digit_len - 1] = b[order_digit_len - 1] & digit_mask;
-		}
-		NNModSmall(b, c, NUMWORDS);
+//		for (ri=order_digit_len; ri<NUMWORDS; ri++){
+//			b[ri] = 0;
+//		}
+//		
+//		if (order_bit_len % NN_DIGIT_BITS != 0){
+//			digit_mask = MAX_NN_DIGIT >> (NN_DIGIT_BITS - order_bit_len % NN_DIGIT_BITS);
+//			b[order_digit_len - 1] = b[order_digit_len - 1] & digit_mask;
+//		}
+		NNModSmall(b, c, NUMWORDS); /// *** HERE IT HANGS! *** ///
 		
 		if (NNZero(b, NUMWORDS) != 1)
 			done = TRUE;
+		watchdog_periodic();
 	}
 }
 
@@ -158,7 +166,7 @@ uint8_t sscanf_repl(char* tok, /*char * format,*/ uint8_t* k, uint8_t* n) {
 	char* param2;
 	uint8_t ret = 0;
 
-	// find 'to'
+	// find 'of'
 	for (i = 0; i < strlen(tok)-1; i++) {
 		if (tok[i] == 'o' && tok[i+1] == 'f') {
 			pos = i;
@@ -167,11 +175,13 @@ uint8_t sscanf_repl(char* tok, /*char * format,*/ uint8_t* k, uint8_t* n) {
 	}
 	
 	if (pos > 0) {
-		param1 = (char *) malloc(pos+1);
-		param2 = (char *) malloc(strlen(tok) - pos - 2);
+		param1 = (char *) malloc(pos+1);						// FIXME: memb?
+		param2 = (char *) malloc(strlen(tok) - pos - 2);		// FIXME: memb?
 		if (param1 == NULL || param2 == NULL) {
-			if (param1 == NULL) { free(param2);
-			} else if (param2 == NULL) { free(param1);
+			if (param1 == NULL) { 
+				free(param2);
+			} else if (param2 == NULL) { 
+				free(param1);
 			}
 			// ERR: no mem
 			return 0;
@@ -313,6 +323,7 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 	}
 	
 	// init
+	MYLIST(prv->comps);
 	list_init(prv->comps);
 	
 	// compute
@@ -325,14 +336,11 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 	ECC_mul(&(prv->d), &tmp, beta_inv);				/**< d = d * beta_inverted */
 	
 	// for all attributes generate params
-printf("%p: %s \n", attributes, attributes[i]);
 	while( attributes[i] != NULL )					// TODO: Code is not called: problem with attributes reference!
 	{
 		c = (cpabe_prv_comp_t *) memb_alloc(&prv_comps_m);
 
-printf("before: %s\n", attributes[i]);		
 		c->attr = attributes[i++];
-printf("after: %s\n", attributes[i]);		
 		
  		point_from_string(&h_rp, c->attr);
  		NNModRandom(rp, param.p, NUMWORDS);
@@ -343,7 +351,7 @@ printf("after: %s\n", attributes[i]);
 		ECC_add(&(c->d), &g_r, &h_rp);				/**< d = g_r + h_rp */
 		ECC_mul(&(c->dp), &pub.g, rp);				/**< dp = g * rp */
 		
-		// clear h_rb, rp (not needed)
+		// TODO: clear h_rb, rp needed?
 		
 		list_add(prv->comps, c);
 	}
@@ -366,6 +374,7 @@ base_node( int k, char* s )
 	} else {
 		p->attr = 0;
 	}
+	MYLIST(p->children);
 	list_init(p->children);
 	p->q = 0;
 	
@@ -378,10 +387,12 @@ parse_policy_postfix( cpabe_cph_t *cph, char* s )
 	char** toks;
 	char** cur_toks;
 	char*  tok;
-	toks     = strsplit(s);
-	cur_toks = toks;
 	cpabe_policy_t* node;
 	
+	toks     = strsplit(s);
+	cur_toks = toks;
+	
+	MYLIST(cph->p);
 	list_init(cph->p);
 	
 	while( *cur_toks )												// FIXME: same as with keygen, but should work
@@ -393,38 +404,38 @@ parse_policy_postfix( cpabe_cph_t *cph, char* s )
 		if( !*tok )
 			continue;
 		
-		if( sscanf_repl(tok, /*"%dof%d",*/ &k, &n) != 2 )					// sscanf not in library, replaced
+		if( sscanf_repl(tok, /*"%dof%d",*/ &k, &n) != 2 ) {			// sscanf not in library, replaced
 		// push leaf token 
 			list_push(cph->p, base_node(1, tok));
-		else
-		{
+//printf("parser(%s): k=1 used. (k=%d, n=%d) &cph->p=%p\n", tok, k, n, cph->p);		
+		} else {
 			// parse "kofn" operator 
+//printf("parser(%s): k=%d, n=%d\n", tok, k, n);		
 			
 			if( k < 1 )
 			{
-//				raise_error("error parsing \"%s\": trivially satisfied operator \"%s\"\n", s, tok);
+//				printf("error parsing \"%s\": trivially satisfied operator \"%s\"\n", s, tok);
 				return;
 			}
 			else if( k > n )
 			{
-//				raise_error("error parsing \"%s\": unsatisfiable operator \"%s\"\n", s, tok);
+//				printf("error parsing \"%s\": unsatisfiable operator \"%s\"\n", s, tok);
 				return;
 			}
 			else if( n == 1 )
 			{
-//				raise_error("error parsing \"%s\": identity operator \"%s\"\n", s, tok);
+//				printf("error parsing \"%s\": identity operator \"%s\"\n", s, tok);
 				return;
 			}
 			else if( n > list_length(cph->p) )
 			{
-//				raise_error("error parsing \"%s\": stack underflow at \"%s\"\n", s, tok);
+//				printf("error parsing \"%s\": stack underflow at \"%s\" (n=%d > list_length=%d)\n", s, tok, n, list_length(cph->p));
 				return;
 			}
 			
 			// pop n things and fill in children 
 			node = base_node(k, 0);
-			list_init(node->children);
-			for( i = 0; i <= n - 1; i++ )
+			for( i = 0; i < n; i++ )
 				list_add(node->children, list_pop(cph->p));
 			
 			// push result 
@@ -434,12 +445,12 @@ parse_policy_postfix( cpabe_cph_t *cph, char* s )
 	
 	if( list_length(cph->p) > 1 )
 	{
-		//raise_error("error parsing \"%s\": extra tokens left on stack\n", s);
+//		printf("error parsing \"%s\": extra tokens left on stack\n", s);
 		return;
 	}
 	else if( list_length(cph->p) < 1 )
 	{
-		//raise_error("error parsing \"%s\": empty policy\n", s);
+//		printf("error parsing \"%s\": empty policy\n", s);
 		return;
 	}
 		
@@ -456,11 +467,11 @@ rand_poly( int deg, NN_DIGIT zero_val[NUMWORDS] )
 	q = (cpabe_polynomial_t*) memb_alloc(&enc_polynomial_m);
 	q->deg = deg;
 	q->coef = (NN_DIGIT *) malloc(sizeof(NN_DIGIT) * NUMWORDS * (deg + 1));	// FIXME: memb?
-		
+	
 	NNAssign(q->coef, zero_val, NUMWORDS);
 	
 	for( i = 1; i < q->deg + 1; i++ )
- 		NNModRandom(&(q->coef[i * NUMWORDS]), param.p, NUMWORDS);			// FIXME: Array addressing correct?
+ 		NNModRandom(q->coef + (i * NUMWORDS), param.p, NUMWORDS);			// FIXME: Array addressing correct?
 	
 	return q;
 }
@@ -468,16 +479,17 @@ rand_poly( int deg, NN_DIGIT zero_val[NUMWORDS] )
 void
 eval_poly( NN_DIGIT r[NUMWORDS], cpabe_polynomial_t* q, NN_DIGIT x[NUMWORDS] )
 {
-	int i;
-	NN_DIGIT s[NUMWORDS], t[NUMWORDS];
+	int /*i,*/ j;
+	NN_DIGIT s[NUMWORDS];
+	NN_DIGIT t[NUMWORDS];
 		
 	NNAssignZero(r, NUMWORDS);
 	NNAssignOne(t, NUMWORDS);
 	
-	for( i = 0; i < q->deg + 1; i++ )
+	for( j = 0; j < q->deg + 1; j++ )
 	{
 		// r += q->coef[i] * t 
-		NNModMult(s, &(q->coef[i * NUMWORDS]), t, param.p, NUMWORDS);
+		NNModMult(s, q->coef + (j * NUMWORDS), t, param.p, NUMWORDS);
 		NNModAdd(r, r, s, param.p, NUMWORDS);
 		
 		// t *= x 
@@ -494,20 +506,15 @@ fill_policy(cpabe_policy_t *p, cpabe_pub_t pub, NN_DIGIT e[NUMWORDS]) {
 	Point h;
 		
 	p->q = rand_poly(p->k - 1, e);
-printf("41\n");	
 	
 	if( list_length(p->children) == 0 )
 	{		
 		point_from_string(&h, p->attr);
-printf("411\n");	
 		ECC_mul(&(p->c),  &pub.g, &(p->q->coef[0]));
-printf("412\n");	
 		ECC_mul(&(p->cp), &h,     &(p->q->coef[0]));
-printf("42\n");	
-	}
-	else {
+	} else {
 		i = 1;
-		for( cp = list_head(p->children); cp != NULL; cp = cp->next )
+		for(cp = list_head(p->children); cp != NULL; cp = cp->next )
 			{
 				NNAssign(r, &i, NUMWORDS);				/**< Assign i+1 to r */
 				eval_poly(t, p->q, r);
@@ -515,7 +522,6 @@ printf("42\n");
 				
 				i++;
 			}
-printf("43\n");	
 	}
 }
 
@@ -528,21 +534,16 @@ void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN_DIGIT m[NUMWORDS], char *po
 	// initialize 
 	
 	parse_policy_postfix(cph, policy);
-printf("1\n");	
 	// compute 
 	
  	NNModRandom(m, param.p, NUMWORDS);
  	NNModRandom(s, param.p, NUMWORDS);
-printf("2\n");	
 	NNModExp(cph->cs,  pub.g_hat_alpha, s, NUMWORDS, param.p, NUMWORDS);	// FIXME: g_hat_alpha pow s ???
 	NNModMult(cph->cs, cph->cs, m, param.p, NUMWORDS);		/**< cs = cs * m */
-printf("3\n");	
 	
 	ECC_mul(&(cph->c), &(pub.h), s);						/**< c = h * s */
-printf("4\n");	
 	
-	fill_policy((cpabe_policy_t *) &(cph->p), pub, s);
-printf("5\n");	
+	fill_policy((cpabe_policy_t *) list_head(cph->p), pub, s);
 }
 
 

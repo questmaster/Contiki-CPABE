@@ -55,6 +55,7 @@ typedef struct cpabe_prv_comp_s {
 typedef struct cpabe_prv_s {
 	Point d;   /* G_2 */
 	list_t comps; /* list of cpabe_prv_comp_t */
+	void * comps_list; /* used by list lib */
 } cpabe_prv_t;
 
 
@@ -72,6 +73,7 @@ typedef struct cpabe_policy_s {
 	Point c;      /* G_1, only for leaves */
 	Point cp;     /* G_1, only for leaves */
 	list_t children; /* list of struct cpabe_policy_s, len == 0 for leaves */
+	void * children_list; /* used by list lib */
 	
 	/* only used during encryption */
 	cpabe_polynomial_t* q;
@@ -94,6 +96,7 @@ typedef struct cpabe_cph_s {
 	NN_DIGIT cs[NUMWORDS]; /* G_T */
 	Point c;  /* G_1 */
 	list_t p;	/* tree of cpabe_policy_t */
+	void * p_list; /* used by list lib */
 } cpabe_cph_t;
 
 /*
