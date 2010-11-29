@@ -11,11 +11,13 @@
 #include <string.h>
 #include <watchdog.h>
 #include <memb.h>
+#include <assert.h>
 #include "cp-abe.h"
 #include "TP.h"
 #include "sha1.h"
 
 static TPParams param;
+//static cpabe_policy_t* cur_comp_pol;
 
 
 MEMB(prv_comps_m, cpabe_prv_comp_t, 5);						/**< This limits the number of attributes in the private key */
@@ -24,8 +26,15 @@ MEMB(enc_polynomial_m, cpabe_polynomial_t, 10);				/**< This limits the number o
 
 /* -- Utility functions ----------------------------------------------------- */
 
+/*
+ * @brief These two are needed for the list to work with my setup.
+ */ 
 #define MYLIST(name) \
 name = (list_t)&LIST_CONCAT(name,_list)
+struct list {
+	struct list *next;
+};
+
 
 /*
  * @brief Splits a String at " ".
@@ -140,12 +149,12 @@ static void ECC_assign(Point *P0, Point *P1) {
 
 /*
  * @brief Return item at position index.
- * /
+ */
 void * list_index(list_t list, uint8_t index) {
 	struct list *l;
-	int n = 0;
+	uint8_t n = 0;
 	
-	for(l = *list; l != NULL; l = l->next) {
+	for(l = *list; l != NULL; l = l->next) { // TODO: dereferencing pointer to incomplete type
 		if (n != index) {
 			++n;
 		} else {
@@ -155,7 +164,7 @@ void * list_index(list_t list, uint8_t index) {
 	}
 	
 	return l;
-} */// TODO: ^- There is a bug and i don't see it!
+} 
 
 /**
  * This replaces an sscanf call and parses the format "%dto%d".
@@ -549,41 +558,89 @@ void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN_DIGIT m[NUMWORDS], char *po
 
 /* ** CP-ABE Decryption ********************* */
 
-/*
+
 //#error Decryption not ready. You have to finish the porting!
 void
-check_sat( cpabe_policy_t* p, cpabe_prv_t* prv )
+check_sat( cpabe_policy_t * p, cpabe_prv_t * prv )
 {
 	int i, l;
-	
+printf("1 - begin\n");	
 	p->satisfiable = 0;
 	if( list_length(p->children) == 0 )
 	{
-		for( i = 0; i < list_length(prv->comps); i++ )
+printf("2 list_len=%d\n", list_length(p->children));	
+		for( i = 0; i < list_length(prv->comps); i++ ) {
+printf("3  i=%d\n", i);	
 			if( !strcmp(((cpabe_prv_comp_t *) list_index(prv->comps, i))->attr,	
 						p->attr) )
 			{
+printf("4  pattr=%s, lattr=%s\n", p->attr, ((cpabe_prv_comp_t *) list_index(prv->comps, i))->attr);	
 				p->satisfiable = 1;
 				p->attri = i;
 				break;
 			}
+		}
 	}
 	else
 	{
+printf("5\n");	
 		for( i = 0; i < list_length(p->children); i++ )
 			check_sat(list_index(p->children, i), prv);
 		
+printf("6\n");	
 		l = 0;
 		for( i = 0; i < list_length(p->children); i++ )
 			if( ((cpabe_policy_t*) list_index(p->children, i))->satisfiable )
 				l++;
 		
+printf("7  l=%d >= pk=\n", l, p->k);	
 		if( l >= p->k )
 			p->satisfiable = 1;
+printf("8\n");	
 	}
+printf("9 - end  sat=%d\n", p->satisfiable);	
 }
 
 //#error ****** Still missing... ********* 
+
+/*
+void
+pick_sat_naive( cpabe_policy_t* p, cpabe_prv_t* prv )
+{
+	int i, k, l;
+	
+	assert(p->satisfiable == 1);
+	
+	if( list_length(p->children) == 0 )
+		return;
+	
+	p->satl = g_array_new(0, 0, sizeof(int));									// TODO array stuff
+	
+	l = 0;
+	for( i = 0; i < list_length(p->children) && l < p->k; i++ )
+		if( ((cpabe_policy_t*) list_index(p->children, i))->satisfiable )
+		{
+			pick_sat_naive(list_index(p->children, i), prv);
+			l++;
+			k = i + 1;
+			g_array_append_val(p->satl, k);										// TODO array stuff
+		}
+}
+*/
+
+/*
+int
+cmp_int( const void* a, const void* b )
+{
+	int k, l;
+	
+	k = ((cpabe_policy_t*) list_index(cur_comp_pol->children, *((int*)a)))->min_leaves;
+	l = ((cpabe_policy_t*) list_index(cur_comp_pol->children, *((int*)b)))->min_leaves;
+	
+	return
+	k <  l ? -1 :
+	k == l ?  0 : 1;
+}
 
 void
 pick_sat_min_leaves( cpabe_policy_t* p, cpabe_prv_t* prv )
@@ -601,14 +658,14 @@ pick_sat_min_leaves( cpabe_policy_t* p, cpabe_prv_t* prv )
 			if( ((cpabe_policy_t*) list_index(p->children, i))->satisfiable )
 				pick_sat_min_leaves(list_index(p->children, i), prv);
 		
-		c = malloc(sizeof(int) * list_length(p->children));
+		c = malloc(sizeof(int) * list_length(p->children));						// FIXME: memb?
 		for( i = 0; i < list_length(p->children); i++ )
 			c[i] = i;
 		
-//		cur_comp_pol = p;																// ???
-		qsort(c, list_length(p->children), sizeof(int), cmp_int);	
+		cur_comp_pol = p;
+		qsort(c, list_length(p->children), sizeof(int), cmp_int);				// TODO: qsort?!
 		
-		p->satl = g_array_new(0, 0, sizeof(int));										// TODO: Reimplement Array stuff
+		p->satl = g_array_new(0, 0, sizeof(int));								// TODO: Reimplement Array stuff
 		p->min_leaves = 0;
 		l = 0;
 		
@@ -618,16 +675,18 @@ pick_sat_min_leaves( cpabe_policy_t* p, cpabe_prv_t* prv )
 				l++;
 				p->min_leaves += ((cpabe_policy_t*) list_index(p->children, c[i]))->min_leaves;
 				k = c[i] + 1;
-				g_array_append_val(p->satl, k);											// TODO: What does this do?
+				g_array_append_val(p->satl, k);									// TODO: Array stuff
 			}
 		assert(l == p->k);
 		
 		free(c);
 	}
 }
+*/
 
+/*
 void
-lagrange_coef( NN_DIGIT * r, GArray* s, int i )		// TODO: Array stuff
+lagrange_coef( NN_DIGIT * r, GArray* s, int i )									// TODO: Array stuff
 {
 	int j, k;
 	NN_DIGIT t[NUMWORDS];
@@ -638,7 +697,7 @@ lagrange_coef( NN_DIGIT * r, GArray* s, int i )		// TODO: Array stuff
 		j = g_array_index(s, int, k);
 		if( j == i )
 			continue;
-		NNAssignMod(t, - j, param.p, NUMWORDS);									// TODO: How to do?! -> negative number!
+		NNAssignMod(t, - j, param.p, NUMWORDS);						// TODO: How to do?! -> negative number!
 		NNModMul(r, r, t, param.p, NUMWORDS); / * num_muls++; * /
 		NNAssignMod(t, i - j, param.p, NUMWORDS);		
 		NNModInv(t, t, param.p, NUMWORDS);
@@ -647,7 +706,171 @@ lagrange_coef( NN_DIGIT * r, GArray* s, int i )		// TODO: Array stuff
 	
 	//element_clear(t);
 }
+*/
 
+/*
+void
+dec_leaf_naive( element_t r, bswabe_policy_t* p, bswabe_prv_t* prv, bswabe_pub_t* pub )
+ {
+ bswabe_prv_comp_t* c;
+ element_t s;
+ 
+ c = &(g_array_index(prv->comps, bswabe_prv_comp_t, p->attri));
+ 
+ element_init_GT(s, pub->p);
+ 
+ pairing_apply(r, p->c,  c->d,  pub->p); / * num_pairings++; * /
+pairing_apply(s, p->cp, c->dp, pub->p); / * num_pairings++; * /
+element_invert(s, s);
+element_mul(r, r, s); / * num_muls++; * /
+
+element_clear(s);
+}
+
+void dec_node_naive( element_t r, bswabe_policy_t* p, bswabe_prv_t* prv, bswabe_pub_t* pub );
+
+void
+dec_internal_naive( element_t r, bswabe_policy_t* p, bswabe_prv_t* prv, bswabe_pub_t* pub )
+{
+	int i;
+	element_t s;
+	element_t t;
+	
+	element_init_GT(s, pub->p);
+	element_init_Zr(t, pub->p);
+	
+	element_set1(r);
+	for( i = 0; i < p->satl->len; i++ )
+	{
+		dec_node_naive
+		(s, g_ptr_array_index
+		 (p->children, g_array_index(p->satl, int, i) - 1), prv, pub);
+ 		lagrange_coef(t, p->satl, g_array_index(p->satl, int, i));
+		element_pow_zn(s, s, t); / * num_exps++; * /
+		element_mul(r, r, s); / * num_muls++; * /
+	}
+	
+	element_clear(s);
+	element_clear(t);
+}
+
+void
+dec_node_naive( element_t r, bswabe_policy_t* p, bswabe_prv_t* prv, bswabe_pub_t* pub )
+{
+	assert(p->satisfiable);
+	if( p->children->len == 0 )
+		dec_leaf_naive(r, p, prv, pub);
+	else
+		dec_internal_naive(r, p, prv, pub);
+}
+
+void
+dec_naive( element_t r, bswabe_policy_t* p, bswabe_prv_t* prv, bswabe_pub_t* pub )
+{
+	dec_node_naive(r, p, prv, pub);
+}
+*/
+
+/*
+void
+dec_leaf_merge( element_t exp, bswabe_policy_t* p, bswabe_prv_t* prv, bswabe_pub_t* pub )
+{
+	bswabe_prv_comp_t* c;
+	element_t s;
+	
+	c = &(g_array_index(prv->comps, bswabe_prv_comp_t, p->attri));
+	
+	if( !c->used )
+	{
+		c->used = 1;
+		element_init_G1(c->z,  pub->p);
+		element_init_G1(c->zp, pub->p);
+		element_set1(c->z);
+		element_set1(c->zp);
+	}
+	
+	element_init_G1(s, pub->p);
+	
+	element_pow_zn(s, p->c, exp); / * num_exps++; * /
+	element_mul(c->z, c->z, s); / * num_muls++; * /
+	
+	element_pow_zn(s, p->cp, exp); / * num_exps++; * /
+	element_mul(c->zp, c->zp, s); / * num_muls++; * /
+	
+	element_clear(s);
+}
+
+void dec_node_merge( element_t exp, bswabe_policy_t* p, bswabe_prv_t* prv, bswabe_pub_t* pub );
+
+void
+dec_internal_merge( element_t exp, bswabe_policy_t* p, bswabe_prv_t* prv, bswabe_pub_t* pub )
+{
+	int i;
+	element_t t;
+	element_t expnew;
+	
+	element_init_Zr(t, pub->p);
+	element_init_Zr(expnew, pub->p);
+	
+	for( i = 0; i < p->satl->len; i++ )
+	{
+ 		lagrange_coef(t, p->satl, g_array_index(p->satl, int, i));
+		element_mul(expnew, exp, t); / * num_muls++; * /
+		dec_node_merge(expnew, g_ptr_array_index
+					   (p->children, g_array_index(p->satl, int, i) - 1), prv, pub);
+	}
+	
+	element_clear(t);
+	element_clear(expnew);
+}
+
+void
+dec_node_merge( element_t exp, bswabe_policy_t* p, bswabe_prv_t* prv, bswabe_pub_t* pub )
+{
+	assert(p->satisfiable);
+	if( p->children->len == 0 )
+		dec_leaf_merge(exp, p, prv, pub);
+	else
+		dec_internal_merge(exp, p, prv, pub);
+}
+
+void
+dec_merge( element_t r, bswabe_policy_t* p, bswabe_prv_t* prv, bswabe_pub_t* pub )
+{
+	int i;
+	element_t one;
+	element_t s;
+	
+	/ * first mark all attributes as unused * /
+	for( i = 0; i < prv->comps->len; i++ )
+		g_array_index(prv->comps, bswabe_prv_comp_t, i).used = 0;
+	
+	/ * now fill in the z's and zp's * /
+	element_init_Zr(one, pub->p);
+	element_set1(one);
+	dec_node_merge(one, p, prv, pub);
+	element_clear(one);
+	
+	/ * now do all the pairings and multiply everything together * /
+	element_set1(r);
+	element_init_GT(s, pub->p);
+	for( i = 0; i < prv->comps->len; i++ )
+		if( g_array_index(prv->comps, bswabe_prv_comp_t, i).used )
+		{
+			bswabe_prv_comp_t* c = &(g_array_index(prv->comps, bswabe_prv_comp_t, i));
+			
+			pairing_apply(s, c->z, c->d, pub->p); / * num_pairings++; * /
+			element_mul(r, r, s); / * num_muls++; * /
+			
+			pairing_apply(s, c->zp, c->dp, pub->p); / * num_pairings++; * /
+			element_invert(s, s);
+			element_mul(r, r, s); / * num_muls++; * /
+		}
+	element_clear(s);
+}
+*/
+
+/*
 void
 dec_leaf_flatten( NN_DIGIT * r, NN_DIGIT * exp,
 				 cpabe_policy_t* p, cpabe_prv_t* prv, cpabe_pub_t* pub )
@@ -658,8 +881,8 @@ dec_leaf_flatten( NN_DIGIT * r, NN_DIGIT * exp,
 	
 	c = (cpabe_prv_comp_t *) list_index(prv->comps, p->attri);
 		
-	// TODO: pairing_apply(s, p->c,  c->d,  pub->p); / * num_pairings++; * /
-	// TODO: pairing_apply(t, p->cp, c->dp, pub->p); / * num_pairings++; * /
+	TP_TatePairing(s, p->c,  c->d); / * num_pairings++; * /
+	TP_TatePairing(t, p->cp, c->dp); / * num_pairings++; * /
 	NNModInv(t, t, param.p, NUMWORDS);
 	NNModMul(s, s, t, param.p, NUMWORDS); / * num_muls++; * /
 	NNModExp(s, s, exp, param.p, NUMWORDS); / * num_exps++; * /
@@ -716,38 +939,38 @@ dec_flatten( NN_DIGIT * r, cpabe_policy_t* p, cpabe_prv_t* prv, cpabe_pub_t* pub
 	
 	//element_clear(one);
 }
-
-
-
-//int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, uint8_t *m) {
-//	NN_DIGIT t[NUMWORDS];
-//	
-//	check_sat(cph->p, prv);							// check properties saturation
-//	if( !cph->p->satisfiable )
-//	{
-//		//raise_error("cannot decrypt, attributes in key do not satisfy policy\n");
-//		return 0;
-//	}
-//	
-//	/ * 	if( no_opt_sat ) * /
-//	/ * 		pick_sat_naive(cph->p, prv); * /
-//	/ * 	else * /
-//	pick_sat_min_leaves(cph->p, prv);				
-//	
-//	/ * 	if( dec_strategy == DEC_NAIVE ) * /
-//	/ * 		dec_naive(t, cph->p, prv, pub); * /
-//	/ * 	else if( dec_strategy == DEC_FLATTEN ) * /
-//	dec_flatten(t, cph->p, prv, pub);
-//	/ * 	else * /
-//	/ * 		dec_merge(t, cph->p, prv, pub); * /
-//	
-//	NN_ModMult(m, cph->cs, t, param.p, NUMWORDS); / * num_muls++; * /
-//	
-//	// TODO: pairing_apply(t, cph->c, prv->d, pub->p); / * num_pairings++; * /
-//	NNModInv(t, t, param.p, NUMWORDS);
-//	NN_ModMult(m, m, t, param.p, NUMWORDS); / * num_muls++; * / 
-//	
-//	return 1;
-//}
 */
+
+
+int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN_DIGIT m[NUMWORDS]) {
+	NN_DIGIT t[NUMWORDS];
+	
+	check_sat(list_head(cph.p), &prv);							// check properties saturation
+	if( !((struct cpabe_policy_s *) list_head(cph.p))->satisfiable )
+	{
+		printf("cannot decrypt, attributes in key do not satisfy policy\n");
+		return 0;
+	}
+	
+//	if( no_opt_sat ) 
+		//pick_sat_naive(cph->p, prv); 
+//	else 
+//		pick_sat_min_leaves(cph->p, prv);				
+	
+//	if( dec_strategy == DEC_NAIVE ) 
+//		dec_naive(t, cph->p, prv, pub); 
+//	else if( dec_strategy == DEC_FLATTEN ) 
+		//dec_flatten(t, cph->p, prv, pub);
+//	else 
+//		dec_merge(t, cph->p, prv, pub); 
+	
+	NNModMult(m, cph.cs, t, param.p, NUMWORDS); /* num_muls++; */
+	
+	TP_TatePairing(t, cph.c, prv.d); /* num_pairings++; */
+	NNModInv(t, t, param.p, NUMWORDS);
+	NNModMult(m, m, t, param.p, NUMWORDS); /* num_muls++; */ 
+	
+	return 1;
+}
+
 

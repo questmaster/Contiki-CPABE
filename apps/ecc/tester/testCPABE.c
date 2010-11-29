@@ -45,15 +45,13 @@ PROCESS_THREAD(tester_process, ev, data)
 
 	policy = "attr1 attr3 2of2"; 
 	NN_DIGIT m[NUMWORDS];
+	NN_DIGIT m2[NUMWORDS];
 	
 	attributes[0] = "attr1";
 	attributes[1] = "attr2";
 	attributes[2] = "attr3";
 	attributes[3] = 0;
-	
-//	printf("%p-> 0:%s, 1:%s, 2:%s: 3:%s\n", attributes, attributes[0], 
-//		   attributes[1], attributes[2], attributes[3]);
-	
+		
 	printf("CP-ABE tester process started\n");
 	
 	/* create and start an event timer */
@@ -65,7 +63,7 @@ PROCESS_THREAD(tester_process, ev, data)
 	
 	/* wait till the timer expires and then reset it immediately */
 	PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&tester_timer));
-	//		etimer_reset(&tester_timer);
+//	etimer_reset(&tester_timer);
 	
 	printf("CPABE_setup(0)\n");
 	time_s = clock_time();
@@ -119,7 +117,7 @@ PROCESS_THREAD(tester_process, ev, data)
 
 		printf("CPABE_keygen(%d)\n", round_index);
 		time_s = clock_time();
-		cpabe_keygen(&prv, pub, msk, attributes); // TODO: Why is attributes not referenced correctly?!
+		cpabe_keygen(&prv, pub, msk, attributes);
 
 		time_f = clock_time();
 		dt0 = time_f - time_s;
@@ -137,22 +135,42 @@ PROCESS_THREAD(tester_process, ev, data)
 		printf("\n");
 
 		printf("CPABE_enc(%d) \n", round_index);
+		printf("m: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", m[i]);
+		}
+		printf("\n");
 		time_s = clock_time();
-
+		
 		cpabe_enc(&cph, pub, m, policy); // TODO: Why is attributes not referenced correctly?!
-
+		
 		time_f = clock_time();
 		dt0 = time_f - time_s;
 		printf("CPABE_enc(%d): %lu ms\n", round_index, (uint32_t)(dt0*1000/CLOCK_SECOND));
-
+		
+		printf("CPABE_dec(%d) \n", round_index);
+		time_s = clock_time();
+		
+		cpabe_dec(pub, prv, cph, m2); // TODO: Why is attributes not referenced correctly?!
+		
+		time_f = clock_time();
+		dt0 = time_f - time_s;
+		printf("m2: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", m2[i]);
+		}
+		printf("\n");
+		printf("CPABE_dec(%d): %lu ms\n", round_index, (uint32_t)(dt0*1000/CLOCK_SECOND));
+		
 		
 		leds_on(LEDS_GREEN);
 		leds_off(LEDS_RED);
-		leds_off(LEDS_GREEN);
 				
 		round_index++;
 	} while(round_index < MAX_ROUNDS);
-	
+
+	leds_off(LEDS_GREEN);
+
 	printf("Done.\n");
 	PROCESS_END();
 }
