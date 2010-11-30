@@ -47,6 +47,10 @@ PROCESS_THREAD(tester_process, ev, data)
 	NN_DIGIT m[NUMWORDS];
 	NN_DIGIT m2[NUMWORDS];
 	
+	for (i = 0; i < NUMWORDS; i++) {
+		m[i] = i;
+	}
+	
 	attributes[0] = "attr1";
 	attributes[1] = "attr2";
 	attributes[2] = "attr3";
@@ -135,14 +139,15 @@ PROCESS_THREAD(tester_process, ev, data)
 		printf("\n");
 
 		printf("CPABE_enc(%d) \n", round_index);
-		printf("m: ");
-		for (i = NUMWORDS-1; i >= 0; i--) {
-			printf("%x ", m[i]);
+		printf("m  (plain): ");
+		for (i = NUMWORDS; i > 0; i--) {
+			printf("%x ", m[i-1]);
 		}
 		printf("\n");
+		printf("enc policy: %s\n", policy);
 		time_s = clock_time();
 		
-		cpabe_enc(&cph, pub, m, policy); // TODO: Why is attributes not referenced correctly?!
+		cpabe_enc(&cph, pub, m, policy); 
 		
 		time_f = clock_time();
 		dt0 = time_f - time_s;
@@ -151,11 +156,11 @@ PROCESS_THREAD(tester_process, ev, data)
 		printf("CPABE_dec(%d) \n", round_index);
 		time_s = clock_time();
 		
-		cpabe_dec(pub, prv, cph, m2); // TODO: Why is attributes not referenced correctly?!
+		cpabe_dec(pub, prv, cph, m2); 
 		
 		time_f = clock_time();
 		dt0 = time_f - time_s;
-		printf("m2: ");
+		printf("m2 (plain): ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
 			printf("%x ", m2[i]);
 		}

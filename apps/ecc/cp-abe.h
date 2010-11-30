@@ -65,6 +65,11 @@ typedef struct cpabe_polynomial_s {
 	NN_DIGIT *coef; /* G_T (of length deg + 1) */
 } cpabe_polynomial_t;
 
+typedef struct satl_int_s {
+	struct satl_int_s * next;
+	int k;
+} satl_int_t;
+
 typedef struct cpabe_policy_s {
 	struct cpabe_policy_s* next;
 	/* serialized */
@@ -82,7 +87,8 @@ typedef struct cpabe_policy_s {
 	int satisfiable;
 	int min_leaves;
 	int attri;
-//	GArray* satl; // TODO: Replace GArray, list, type?
+	list_t satl; // TODO: Replace GArray, list, type?
+	void * satl_list; /* used by list lib */
 } cpabe_policy_t;
 
 

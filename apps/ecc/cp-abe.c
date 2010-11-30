@@ -11,7 +11,6 @@
 #include <string.h>
 #include <watchdog.h>
 #include <memb.h>
-#include <assert.h>
 #include "cp-abe.h"
 #include "TP.h"
 #include "sha1.h"
@@ -559,22 +558,17 @@ void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN_DIGIT m[NUMWORDS], char *po
 /* ** CP-ABE Decryption ********************* */
 
 
-//#error Decryption not ready. You have to finish the porting!
 void
 check_sat( cpabe_policy_t * p, cpabe_prv_t * prv )
 {
 	int i, l;
-printf("1 - begin\n");	
 	p->satisfiable = 0;
 	if( list_length(p->children) == 0 )
 	{
-printf("2 list_len=%d\n", list_length(p->children));	
 		for( i = 0; i < list_length(prv->comps); i++ ) {
-printf("3  i=%d\n", i);	
 			if( !strcmp(((cpabe_prv_comp_t *) list_index(prv->comps, i))->attr,	
 						p->attr) )
 			{
-printf("4  pattr=%s, lattr=%s\n", p->attr, ((cpabe_prv_comp_t *) list_index(prv->comps, i))->attr);	
 				p->satisfiable = 1;
 				p->attri = i;
 				break;
@@ -583,38 +577,35 @@ printf("4  pattr=%s, lattr=%s\n", p->attr, ((cpabe_prv_comp_t *) list_index(prv-
 	}
 	else
 	{
-printf("5\n");	
 		for( i = 0; i < list_length(p->children); i++ )
 			check_sat(list_index(p->children, i), prv);
 		
-printf("6\n");	
 		l = 0;
 		for( i = 0; i < list_length(p->children); i++ )
 			if( ((cpabe_policy_t*) list_index(p->children, i))->satisfiable )
 				l++;
 		
-printf("7  l=%d >= pk=\n", l, p->k);	
 		if( l >= p->k )
 			p->satisfiable = 1;
-printf("8\n");	
 	}
-printf("9 - end  sat=%d\n", p->satisfiable);	
 }
 
 //#error ****** Still missing... ********* 
 
-/*
+
 void
 pick_sat_naive( cpabe_policy_t* p, cpabe_prv_t* prv )
 {
 	int i, k, l;
+	satl_int_t * alloc_k;
 	
-	assert(p->satisfiable == 1);
+//	assert(p->satisfiable == 1);
 	
 	if( list_length(p->children) == 0 )
 		return;
 	
-	p->satl = g_array_new(0, 0, sizeof(int));									// TODO array stuff
+	MYLIST(p->satl);
+	list_init(p->satl);
 	
 	l = 0;
 	for( i = 0; i < list_length(p->children) && l < p->k; i++ )
@@ -623,10 +614,12 @@ pick_sat_naive( cpabe_policy_t* p, cpabe_prv_t* prv )
 			pick_sat_naive(list_index(p->children, i), prv);
 			l++;
 			k = i + 1;
-			g_array_append_val(p->satl, k);										// TODO array stuff
+			alloc_k = (satl_int_t *) malloc(sizeof(satl_int_t));
+			alloc_k->k = k;
+			list_add(p->satl, alloc_k);
 		}
 }
-*/
+
 
 /*
 int
@@ -684,29 +677,31 @@ pick_sat_min_leaves( cpabe_policy_t* p, cpabe_prv_t* prv )
 }
 */
 
-/*
+
 void
-lagrange_coef( NN_DIGIT * r, GArray* s, int i )									// TODO: Array stuff
+lagrange_coef( NN_DIGIT r[NUMWORDS], list_t s, int i )									// TODO: Array stuff
 {
-	int j, k;
+	int j, k, tmp;
 	NN_DIGIT t[NUMWORDS];
 		
-	NNAssignOne(r);
-	for( k = 0; k < s->len; k++ )
+	NNAssignOne(r, NUMWORDS);
+	for( k = 0; k < list_length(s); k++ )
 	{
-		j = g_array_index(s, int, k);
+		j = ((satl_int_t *) list_index(s, k))->k;
 		if( j == i )
 			continue;
-		NNAssignMod(t, - j, param.p, NUMWORDS);						// TODO: How to do?! -> negative number!
-		NNModMul(r, r, t, param.p, NUMWORDS); / * num_muls++; * /
-		NNAssignMod(t, i - j, param.p, NUMWORDS);		
+		tmp = -j;
+		NNMod(t, &tmp, NUMWORDS, param.p, NUMWORDS);						// TODO: How to do?! -> negative number!
+		NNModMult(r, r, t, param.p, NUMWORDS); /* num_muls++; */
+		tmp = i-j;
+		NNMod(t, &tmp, NUMWORDS, param.p, NUMWORDS);		
 		NNModInv(t, t, param.p, NUMWORDS);
-		NNModMul(r, r, t, param.p, NUMWORDS); / * num_muls++; * /
+		NNModMult(r, r, t, param.p, NUMWORDS); /* num_muls++; */
 	}
 	
 	//element_clear(t);
 }
-*/
+
 
 /*
 void
@@ -870,7 +865,7 @@ dec_merge( element_t r, bswabe_policy_t* p, bswabe_prv_t* prv, bswabe_pub_t* pub
 }
 */
 
-/*
+
 void
 dec_leaf_flatten( NN_DIGIT * r, NN_DIGIT * exp,
 				 cpabe_policy_t* p, cpabe_prv_t* prv, cpabe_pub_t* pub )
@@ -881,13 +876,13 @@ dec_leaf_flatten( NN_DIGIT * r, NN_DIGIT * exp,
 	
 	c = (cpabe_prv_comp_t *) list_index(prv->comps, p->attri);
 		
-	TP_TatePairing(s, p->c,  c->d); / * num_pairings++; * /
-	TP_TatePairing(t, p->cp, c->dp); / * num_pairings++; * /
+	TP_TatePairing(s, p->c,  c->d); /* num_pairings++; */
+	TP_TatePairing(t, p->cp, c->dp); /* num_pairings++; */
 	NNModInv(t, t, param.p, NUMWORDS);
-	NNModMul(s, s, t, param.p, NUMWORDS); / * num_muls++; * /
-	NNModExp(s, s, exp, param.p, NUMWORDS); / * num_exps++; * /
+	NNModMult(s, s, t, param.p, NUMWORDS); /* num_muls++; */
+	NNModExp(s, s, exp, NUMWORDS, param.p, NUMWORDS); /* num_exps++; */
 	
-	NNModMul(r, r, s, param.p, NUMWORDS); / * num_muls++; * /
+	NNModMult(r, r, s, param.p, NUMWORDS); /* num_muls++; */
 	
 	//element_clear(s);		
 	//element_clear(t);
@@ -904,12 +899,12 @@ dec_internal_flatten( NN_DIGIT * r, NN_DIGIT * exp,
 	NN_DIGIT t[NUMWORDS];
 	NN_DIGIT expnew[NUMWORDS];
 	
-	for( i = 0; i < p->satl->len; i++ )
+	for( i = 0; i < list_length(p->satl); i++ )
 	{
- 		lagrange_coef(t, p->satl, g_array_index(p->satl, int, i));				// TODO: GArray stuff
-		NNModMul(expnew, exp, t, param.p, NUMWORDS); / * num_muls++; * /
+ 		lagrange_coef(t, p->satl, ((satl_int_t *) list_index(p->satl, i))->k);
+		NNModMult(expnew, exp, t, param.p, NUMWORDS); /* num_muls++; */
 		dec_node_flatten(r, expnew, list_index
-						 (p->children, g_array_index(p->satl, int, i) - 1), prv, pub);	// TODO: GArray stuff
+						 (p->children, ((satl_int_t *) list_index(p->satl, i))->k - 1), prv, pub);
 	}
 	
 	//element_clear(t);
@@ -920,7 +915,7 @@ void
 dec_node_flatten( NN_DIGIT * r, NN_DIGIT * exp,
 				 cpabe_policy_t* p, cpabe_prv_t* prv, cpabe_pub_t* pub )
 {
-	assert(p->satisfiable);
+//	assert(p->satisfiable);
 	if( list_length(p->children) == 0 )
 		dec_leaf_flatten(r, exp, p, prv, pub);
 	else
@@ -932,14 +927,14 @@ dec_flatten( NN_DIGIT * r, cpabe_policy_t* p, cpabe_prv_t* prv, cpabe_pub_t* pub
 {
 	NN_DIGIT one[NUMWORDS];
 		
-	NNAssignOne(one);
-	NNAssignOne(r);
+	NNAssignOne(one, NUMWORDS);
+	NNAssignOne(r, NUMWORDS);
 	
 	dec_node_flatten(r, one, p, prv, pub);
 	
 	//element_clear(one);
 }
-*/
+
 
 
 int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN_DIGIT m[NUMWORDS]) {
@@ -953,14 +948,14 @@ int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN_DIGIT m[NUMW
 	}
 	
 //	if( no_opt_sat ) 
-		//pick_sat_naive(cph->p, prv); 
+		pick_sat_naive(list_head(cph.p), &prv); 
 //	else 
 //		pick_sat_min_leaves(cph->p, prv);				
 	
 //	if( dec_strategy == DEC_NAIVE ) 
 //		dec_naive(t, cph->p, prv, pub); 
 //	else if( dec_strategy == DEC_FLATTEN ) 
-		//dec_flatten(t, cph->p, prv, pub);
+		dec_flatten(t, list_head(cph.p), &prv, &pub);
 //	else 
 //		dec_merge(t, cph->p, prv, pub); 
 	
