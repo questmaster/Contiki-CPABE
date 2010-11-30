@@ -31,6 +31,8 @@ static cpabe_cph_t cph;
 static uint8_t round_index = 0;
 static char * attributes[4];
 static char * policy;
+static NN_DIGIT m[NUMWORDS];
+static NN_DIGIT m2[NUMWORDS];
 
 /* declaration of scopes process */
 PROCESS(tester_process, "CP-ABE tester process");
@@ -42,15 +44,12 @@ PROCESS_THREAD(tester_process, ev, data)
 	PROCESS_BEGIN();
 	int8_t i = 0;
     uint32_t time_s, time_f, dt0;
-
-	policy = "attr1 attr3 2of2"; 
-	NN_DIGIT m[NUMWORDS];
-	NN_DIGIT m2[NUMWORDS];
 	
-	for (i = 0; i < NUMWORDS; i++) {
+	for (i = 0; i < NUMWORDS-1; i++) {
 		m[i] = i;
 	}
 	
+	policy = "attr1 attr3 2of2"; 
 	attributes[0] = "attr1";
 	attributes[1] = "attr2";
 	attributes[2] = "attr3";
