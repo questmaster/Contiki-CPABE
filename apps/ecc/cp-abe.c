@@ -13,10 +13,11 @@
 #include <memb.h>
 #include "cp-abe.h"
 #include "TP.h"
+#include "qsort.h"
 #include "sha1.h"
 
 static TPParams param;
-//static cpabe_policy_t* cur_comp_pol;
+static cpabe_policy_t* cur_comp_pol;
 
 
 MEMB(prv_comps_m, cpabe_prv_comp_t, 5);						/**< This limits the number of attributes in the private key */
@@ -117,7 +118,7 @@ static void NNModRandom (NN_DIGIT * b, NN_DIGIT * c, NN_UINT digits) {
 //			digit_mask = MAX_NN_DIGIT >> (NN_DIGIT_BITS - order_bit_len % NN_DIGIT_BITS);
 //			b[order_digit_len - 1] = b[order_digit_len - 1] & digit_mask;
 //		}
-		NNModSmall(b, c, NUMWORDS); /// *** HERE IT HANGS! *** ///
+		NNModSmall(b, c, NUMWORDS);
 		
 		if (NNZero(b, NUMWORDS) != 1)
 			done = TRUE;
@@ -139,11 +140,49 @@ void NNAssignOne(NN_DIGIT * a, NN_UINT digits)
 }
 
 /*
- * Assign Points a = b.
+ * Assign Points P0 = P1.
  */
 static void ECC_assign(Point *P0, Point *P1) {
 	NNAssign(P0->x, P1->x, NUMWORDS);
 	NNAssign(P0->y, P1->y, NUMWORDS);
+}
+
+/*
+ * Find matching y to given x. P0 = (x, y) e E
+ * x has to be x mod p
+ */
+int ECC_compY(Point * P, NN_DIGIT * x) {
+    NN_DIGIT tmp[NUMWORDS];
+
+	// Set x
+	NNAssign(P->x, x, NUMWORDS);
+	
+	// Find y
+	NNAssign(P->y, param.E.b, NUMWORDS);			/**< (y^2) = b */
+	if (!param.E.a_zero) {
+		if (param.E.a_one) {						/**< (y^2) += a * x */
+			NNModAdd(P->y, P->y, P->x, param.p, NUMWORDS);
+		} else {
+			NNModMult(tmp, param.E.a, P->x, param.p, NUMWORDS);
+			NNModAdd(P->y, P->y, tmp, param.p, NUMWORDS);
+		}
+	}
+	NNModMult(tmp, P->x, P->x, param.p, NUMWORDS);
+	NNModMult(tmp, tmp, P->x, param.p, NUMWORDS);
+	NNModAdd(P->y, P->y, tmp, param.p, NUMWORDS);	/**< (y^2) += x^3 */
+	NNModSqrRootOpt(P->y, P->y, param.p, NUMWORDS, NULL);	/**< y = sqrt(y^2) */
+	
+	return ECC_check_point(P);
+}
+
+void ECC_Random(Point * P) {
+	NN_DIGIT x[NUMWORDS]; 
+	int res = -1;
+	
+	do {
+		NNModRandom(x, param.p, NUMWORDS);
+		res = ECC_compY(P, x);
+	} while (res < 0);
 }
 
 /*
@@ -153,7 +192,7 @@ void * list_index(list_t list, uint8_t index) {
 	struct list *l;
 	uint8_t n = 0;
 	
-	for(l = *list; l != NULL; l = l->next) { // TODO: dereferencing pointer to incomplete type
+	for(l = *list; l != NULL; l = l->next) {
 		if (n != index) {
 			++n;
 		} else {
@@ -234,6 +273,7 @@ void cpabe_init() {
 
 /* ** CP-ABE Setup ********************* */
 
+#ifdef CPABE_SETUP
 /**
  * @brief generate public and master key pair for CP-ABE.
  *
@@ -247,7 +287,7 @@ void cpabe_setup(cpabe_pub_t *pub, cpabe_msk_t *msk) {
 	}
 	
 	NN_DIGIT alpha[NUMWORDS];
-	NN_DIGIT beta_inv[NUMWORDS];
+//	NN_DIGIT beta_inv[NUMWORDS];
 
 	// init ECC with curve params
 	Params *p = ECC_get_param();
@@ -258,24 +298,26 @@ void cpabe_setup(cpabe_pub_t *pub, cpabe_msk_t *msk) {
 	get_TP_param(&param);
 	
 	NNModRandom(alpha, param.p, NUMWORDS);			/**< Random alpha */
- 	NNModRandom(msk->beta, param.p, NUMWORDS);	/**< Random beta */
-	ECC_assign(&(pub->g), &param.P);				/**< g = param.P */
-//	NNModRandom(&(pub->gp), param.p, NUMWORDS);		// FIXME: Is this needed?
+ 	NNModRandom(msk->beta, param.p, NUMWORDS);		/**< Random beta */
+//	ECC_assign(&(pub->g), &param.P);				/**< g = param.P */
+	ECC_Random(&(pub->g));		
+	ECC_Random(&(pub->gp));							// FIXME: Is this needed?
 	
-	ECC_mul(&(msk->g_alpha), &(pub->g), alpha);		/**< g_alpha = g * alpha */
-	ECC_mul(&(pub->h), &(pub->g), msk->beta);	/**< h = g * beta */
+	ECC_mul(&(msk->g_alpha), &(pub->gp), alpha);	/**< g_alpha = gp * alpha */
+	ECC_mul(&(pub->h), &(pub->g), msk->beta);		/**< h = g * beta */
 
 	/** f = g * (1/beta) */
-	NNModInv(beta_inv, msk->beta, param.p, NUMWORDS);
-	ECC_mul(&(pub->f), &(pub->g), beta_inv);	
+//	NNModInv(beta_inv, msk->beta, param.p, NUMWORDS);
+//	ECC_mul(&(pub->f), &(pub->g), beta_inv);	
 	
-	TP_TatePairing(pub->g_hat_alpha, pub->g, msk->g_alpha);	/**< g_hat_alpha = e(g, g * alpha) */
+	TP_TatePairing(pub->g_hat_alpha, pub->g, msk->g_alpha);	/**< g_hat_alpha = e(g, gp * alpha) */
 	
 }
+#endif
 
 /* ** CP-ABE Keygen ********************* */
 
-
+#ifdef CPABE_KEYGEN
 /**
  * @brief Compute a Point related to a string.
  * @param h Resulting point
@@ -283,7 +325,7 @@ void cpabe_setup(cpabe_pub_t *pub, cpabe_msk_t *msk) {
  */
 void point_from_string( Point* h, char* s )
 {
-	NN_DIGIT r[NUMWORDS/*SHA1HashSize*/]; // FIXME: does not work for curves smaller 160bit!
+	NN_DIGIT r[NUMWORDS/*SHA1HashSize*/]; // FIXME: not working with curves smaller 160bit!
 	SHA1Context context;
 	NN_DIGIT tmp[NUMWORDS];
 	
@@ -292,20 +334,10 @@ void point_from_string( Point* h, char* s )
 	SHA1_Digest(&context, (uint8_t *)r);
 	
 	// compute y for given (hash) x value  
-	NNMod(h->x, r, NUMWORDS, param.p, NUMWORDS);	/**< x = r */
-	NNAssign(h->y, param.E.b, NUMWORDS);			/**< (y^2) = b */
-	if (!param.E.a_zero) {
-		if (param.E.a_one) {						/**< (y^2) += a * x */
-			NNModAdd(h->y, h->y, r, param.p, NUMWORDS);
-		} else {
-			NNModMult(tmp, param.E.a, r, param.p, NUMWORDS);
-			NNModAdd(h->y, h->y, tmp, param.p, NUMWORDS);
-		}
-	}
-	NNModMult(tmp, r, r, param.p, NUMWORDS);
-	NNModMult(tmp, tmp, r, param.p, NUMWORDS);
-	NNModAdd(h->y, h->y, tmp, param.p, NUMWORDS);	/**< (y^2) += x^3 */
-	NNModSqrRootOpt(h->y, h->y, param.p, NUMWORDS, NULL);	/**< y = sqrt(y^2) */
+	NNMod(tmp, r, NUMWORDS, param.p, NUMWORDS);	/**< x = r mod p */
+	ECC_compY(h, tmp);
+	
+//	printf("DEBUG: point_from_string: %s\n", ECC_check_point(h) ? "ok" : "WRONG!");
 }
 
 /**
@@ -324,10 +356,9 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 	cpabe_prv_comp_t *c;
 	Point h_rp;
 	NN_DIGIT rp[NUMWORDS];
-	uint i = 0;
 	
 	if (prv == NULL || &pub == NULL || &msk == NULL) {
-		//			printf("cpabe_setup - ERROR: pub or msk NULL! pub: %p, msk: %p", pub, msk);
+//			printf("cpabe_setup - ERROR: pub or msk NULL! pub: %p, msk: %p", pub, msk);
 	}
 	
 	// init
@@ -336,7 +367,7 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 	
 	// compute
 	NNModRandom(r, param.p, NUMWORDS);
-	ECC_mul(&g_r, &pub.g, r);						/**< g_r = g * r */
+	ECC_mul(&g_r, &pub.gp, r);						/**< g_r = gp * r */
 	
 	ECC_add(&(prv->d), &msk.g_alpha, &g_r);			/**< d = g_alpha + g_r; here is P * P -> Add them !!! */
 	NNModInv(beta_inv, msk.beta, param.p, NUMWORDS);	/**< beta_inv = 1/beta */
@@ -344,11 +375,11 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 	ECC_mul(&(prv->d), &tmp, beta_inv);				/**< d = d * beta_inverted */
 	
 	// for all attributes generate params
-	while( attributes[i] != NULL )					// TODO: Code is not called: problem with attributes reference!
+	while( *attributes )
 	{
 		c = (cpabe_prv_comp_t *) memb_alloc(&prv_comps_m);
 
-		c->attr = attributes[i++];
+		c->attr = *(attributes++);
 		
  		point_from_string(&h_rp, c->attr);
  		NNModRandom(rp, param.p, NUMWORDS);
@@ -364,11 +395,11 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 		list_add(prv->comps, c);
 	}
 }
-
+#endif
 
 /* ** CP-ABE Encryption ********************* */
 
-
+#ifdef CPABE_ENCRYPTION
 cpabe_policy_t*
 base_node( int k, char* s )
 {
@@ -389,7 +420,7 @@ base_node( int k, char* s )
 	return p;
 }
 
-void
+int
 parse_policy_postfix( cpabe_cph_t *cph, char* s )
 {
 	char** toks;
@@ -403,7 +434,7 @@ parse_policy_postfix( cpabe_cph_t *cph, char* s )
 	MYLIST(cph->p);
 	list_init(cph->p);
 	
-	while( *cur_toks )												// FIXME: same as with keygen, but should work
+	while( *cur_toks )
 	{
 		uint8_t i, k, n;
 		
@@ -423,28 +454,28 @@ parse_policy_postfix( cpabe_cph_t *cph, char* s )
 			if( k < 1 )
 			{
 //				printf("error parsing \"%s\": trivially satisfied operator \"%s\"\n", s, tok);
-				return;
+				return 1;
 			}
 			else if( k > n )
 			{
 //				printf("error parsing \"%s\": unsatisfiable operator \"%s\"\n", s, tok);
-				return;
+				return 1;
 			}
 			else if( n == 1 )
 			{
 //				printf("error parsing \"%s\": identity operator \"%s\"\n", s, tok);
-				return;
+				return 1;
 			}
 			else if( n > list_length(cph->p) )
 			{
 //				printf("error parsing \"%s\": stack underflow at \"%s\" (n=%d > list_length=%d)\n", s, tok, n, list_length(cph->p));
-				return;
+				return 1;
 			}
 			
 			// pop n things and fill in children 
 			node = base_node(k, 0);
 			for( i = 0; i < n; i++ )
-				list_add(node->children, list_pop(cph->p));
+				list_add(node->children, list_pop(cph->p));					// TODO: is order correct?! should be
 			
 			// push result 
 			list_push(cph->p, node);
@@ -454,17 +485,17 @@ parse_policy_postfix( cpabe_cph_t *cph, char* s )
 	if( list_length(cph->p) > 1 )
 	{
 //		printf("error parsing \"%s\": extra tokens left on stack\n", s);
-		return;
+		return 1;
 	}
 	else if( list_length(cph->p) < 1 )
 	{
 //		printf("error parsing \"%s\": empty policy\n", s);
-		return;
+		return 1;
 	}
 		
  	freesplit(toks);
+	return 0;
 }
-
 
 cpabe_polynomial_t*
 rand_poly( int deg, NN_DIGIT zero_val[NUMWORDS] )
@@ -487,7 +518,7 @@ rand_poly( int deg, NN_DIGIT zero_val[NUMWORDS] )
 void
 eval_poly( NN_DIGIT r[NUMWORDS], cpabe_polynomial_t* q, NN_DIGIT x[NUMWORDS] )
 {
-	int /*i,*/ j;
+	int j;
 	NN_DIGIT s[NUMWORDS];
 	NN_DIGIT t[NUMWORDS];
 		
@@ -524,9 +555,9 @@ fill_policy(cpabe_policy_t *p, cpabe_pub_t pub, NN_DIGIT e[NUMWORDS]) {
 		i = 1;
 		for(cp = list_head(p->children); cp != NULL; cp = cp->next )
 			{
-				NNAssign(r, &i, NUMWORDS);				/**< Assign i+1 to r */
+				NNAssignDigit(r, i, NUMWORDS);				/**< Assign i+1 to r */
 				eval_poly(t, p->q, r);
-				fill_policy(cp, pub, t);
+				fill_policy(cp, pub, t);				/**< ...but supply element i */
 				
 				i++;
 			}
@@ -540,24 +571,23 @@ void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN_DIGIT m[NUMWORDS], char *po
  	NN_DIGIT s[NUMWORDS];
 	
 	// initialize 
-	
 	parse_policy_postfix(cph, policy);
-	// compute 
 	
+	// compute 
  	NNModRandom(m, param.p, NUMWORDS);
  	NNModRandom(s, param.p, NUMWORDS);
-	NNModExp(cph->cs,  pub.g_hat_alpha, s, NUMWORDS, param.p, NUMWORDS);	// FIXME: g_hat_alpha pow s ???
+	NNModExp(cph->cs,  pub.g_hat_alpha, s, NUMWORDS, param.p, NUMWORDS);	// TODO: g_hat_alpha pow s ???
 	NNModMult(cph->cs, cph->cs, m, param.p, NUMWORDS);		/**< cs = cs * m */
 	
 	ECC_mul(&(cph->c), &(pub.h), s);						/**< c = h * s */
 	
 	fill_policy((cpabe_policy_t *) list_head(cph->p), pub, s);
 }
-
+#endif
 
 /* ** CP-ABE Decryption ********************* */
 
-
+#ifdef CPABE_DECRYPTION
 void
 check_sat( cpabe_policy_t * p, cpabe_prv_t * prv )
 {
@@ -592,7 +622,7 @@ check_sat( cpabe_policy_t * p, cpabe_prv_t * prv )
 
 //#error ****** Still missing... ********* 
 
-
+/*
 void
 pick_sat_naive( cpabe_policy_t* p, cpabe_prv_t* prv )
 {
@@ -619,9 +649,9 @@ pick_sat_naive( cpabe_policy_t* p, cpabe_prv_t* prv )
 			list_add(p->satl, alloc_k);
 		}
 }
+*/
 
 
-/*
 int
 cmp_int( const void* a, const void* b )
 {
@@ -640,8 +670,9 @@ pick_sat_min_leaves( cpabe_policy_t* p, cpabe_prv_t* prv )
 {
 	int i, k, l;
 	int* c;
+	satl_int_t * alloc_k;
 	
-	assert(p->satisfiable == 1);
+//	assert(p->satisfiable == 1);
 	
 	if( list_length(p->children) == 0 )
 		p->min_leaves = 1;
@@ -656,9 +687,10 @@ pick_sat_min_leaves( cpabe_policy_t* p, cpabe_prv_t* prv )
 			c[i] = i;
 		
 		cur_comp_pol = p;
-		qsort(c, list_length(p->children), sizeof(int), cmp_int);				// TODO: qsort?!
+		qsort(c, list_length(p->children), sizeof(int), cmp_int);
 		
-		p->satl = g_array_new(0, 0, sizeof(int));								// TODO: Reimplement Array stuff
+		MYLIST(p->satl);
+		list_init(p->satl);
 		p->min_leaves = 0;
 		l = 0;
 		
@@ -668,33 +700,45 @@ pick_sat_min_leaves( cpabe_policy_t* p, cpabe_prv_t* prv )
 				l++;
 				p->min_leaves += ((cpabe_policy_t*) list_index(p->children, c[i]))->min_leaves;
 				k = c[i] + 1;
-				g_array_append_val(p->satl, k);									// TODO: Array stuff
+//				g_array_append_val(p->satl, k);
+				alloc_k = (satl_int_t *) malloc(sizeof(satl_int_t));
+				alloc_k->k = k;
+				list_add(p->satl, alloc_k);
 			}
-		assert(l == p->k);
+//		assert(l == p->k);
 		
 		free(c);
 	}
 }
-*/
+
 
 
 void
-lagrange_coef( NN_DIGIT r[NUMWORDS], list_t s, int i )									// TODO: Array stuff
+lagrange_coef( NN_DIGIT r[NUMWORDS], list_t s, int i )
 {
-	int j, k, tmp;
+	int j, k;
+	NN_DIGIT zero[NUMWORDS];
+	NN_DIGIT tmp1[NUMWORDS];
+	NN_DIGIT tmp2[NUMWORDS];
 	NN_DIGIT t[NUMWORDS];
 		
+	NNAssignZero(zero, NUMWORDS);
+	
 	NNAssignOne(r, NUMWORDS);
 	for( k = 0; k < list_length(s); k++ )
 	{
 		j = ((satl_int_t *) list_index(s, k))->k;
 		if( j == i )
 			continue;
-		tmp = -j;
-		NNMod(t, &tmp, NUMWORDS, param.p, NUMWORDS);						// TODO: How to do?! -> negative number!
+
+		NNAssignDigit(tmp1, j, NUMWORDS);									// FIXME: How to do?! -> negative number!
+		NNModSub(t, zero, tmp1, param.p, NUMWORDS);									// t = -j
+
 		NNModMult(r, r, t, param.p, NUMWORDS); /* num_muls++; */
-		tmp = i-j;
-		NNMod(t, &tmp, NUMWORDS, param.p, NUMWORDS);		
+
+		NNAssignDigit(tmp2, i, NUMWORDS);		
+		NNModSub(t, tmp2, tmp1, param.p, NUMWORDS);									// t = i - j
+		
 		NNModInv(t, t, param.p, NUMWORDS);
 		NNModMult(r, r, t, param.p, NUMWORDS); /* num_muls++; */
 	}
@@ -948,16 +992,16 @@ int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN_DIGIT m[NUMW
 	}
 	
 //	if( no_opt_sat ) 
-		pick_sat_naive(list_head(cph.p), &prv); 
+//		pick_sat_naive(list_head(cph.p), &prv); 
 //	else 
-//		pick_sat_min_leaves(cph->p, prv);				
+		pick_sat_min_leaves(list_head(cph.p), &prv);				
 	
 //	if( dec_strategy == DEC_NAIVE ) 
-//		dec_naive(t, cph->p, prv, pub); 
+//		dec_naive(t, cph->p, prv, pub); // unported!
 //	else if( dec_strategy == DEC_FLATTEN ) 
 		dec_flatten(t, list_head(cph.p), &prv, &pub);
 //	else 
-//		dec_merge(t, cph->p, prv, pub); 
+//		dec_merge(t, cph->p, prv, pub); // unported!
 	
 	NNModMult(m, cph.cs, t, param.p, NUMWORDS); /* num_muls++; */
 	
@@ -967,5 +1011,5 @@ int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN_DIGIT m[NUMW
 	
 	return 1;
 }
-
+#endif
 

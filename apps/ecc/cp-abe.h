@@ -22,8 +22,8 @@ typedef struct cpabe_pub_s {
 //	pairing_t p;
 	Point g;           /* G_1 */
 	Point h;           /* G_1 */
-	Point f;           /* G_1 */
-//	Point gp;          /* G_2 */ // TODO: what is this for?!
+//	Point f;           /* G_1 */
+	Point gp;          /* G_2 */
 	NN_DIGIT g_hat_alpha[NUMWORDS]; /* G_T */
 } cpabe_pub_t;
 
@@ -87,7 +87,7 @@ typedef struct cpabe_policy_s {
 	int satisfiable;
 	int min_leaves;
 	int attri;
-	list_t satl; // TODO: Replace GArray, list, type?
+	list_t satl; 
 	void * satl_list; /* used by list lib */
 } cpabe_policy_t;
 
