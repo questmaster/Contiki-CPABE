@@ -154,6 +154,22 @@ PROCESS_THREAD(tester_process, ev, data)
 		time_f = clock_time();
 		dt0 = time_f - time_s;
 		printf("CPABE_enc(%d): %lu ms\n", round_index, (uint32_t)(dt0*1000/CLOCK_SECOND));
+		
+		printf("CPABE_cph_cs: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", cph.cs[i]);
+		}
+		printf("\n");
+		printf("CPABE_cph_c_x: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", cph.c.x[i]);
+		}
+		printf("\n");
+		printf("CPABE_cph_c_y: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", cph.c.y[i]);
+		}
+		printf("\n");
 #endif
 #ifdef CPABE_DECRYPTION
 		printf("CPABE_dec(%d) \n", round_index);

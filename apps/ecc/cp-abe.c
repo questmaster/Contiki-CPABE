@@ -357,9 +357,9 @@ void point_from_string( Point* h, char* s )
 			h->x[11] = 0x03ad;
 			h->x[10] = 0xfc87;
 			h->x[9] = 0x32f0;
-			h->x[8] = 0x3cf;
+			h->x[8] = 0x3c7f;
 			h->x[7] = 0x5162;
-			h->x[6] = 0xde0e;
+			h->x[6] = 0xde0e; 
 			h->x[5] = 0x2bcf;
 			h->x[4] = 0x927c;
 			h->x[3] = 0x4b1b;
@@ -762,11 +762,11 @@ eval_poly( NN_DIGIT r[NUMWORDS], cpabe_polynomial_t* q, NN_DIGIT x[NUMWORDS] )
 	for( j = 0; j < q->deg + 1; j++ )
 	{
 		// r += q->coef[i] * t 
-		NNModMult(s, q->coef + (j * NUMWORDS), t, param.p, NUMWORDS);			// TODO: mod m or p?
-		NNModAdd(r, r, s, param.p, NUMWORDS);									// TODO: mod m or p?
+		NNModMult(s, q->coef + (j * NUMWORDS), t, param.m, NUMWORDS);			// TODO: mod m or p?
+		NNModAdd(r, r, s, param.m, NUMWORDS);									// mod m or p?
 		
 		// t *= x 
-		NNModMult(t, t, x, param.p, NUMWORDS);									// TODO: mod m or p?
+		NNModMult(t, t, x, param.m, NUMWORDS);									// TODO: mod m or p?
 	}
 }
 
@@ -808,8 +808,38 @@ void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN_DIGIT m[NUMWORDS], char *po
 	parse_policy_postfix(cph, policy);
 	
 	// compute 
+#ifdef CPABE_DEBUG_OFF
+	m[12] = 0x0000;
+	m[11] = 0x;
+	m[10] = 0x;
+	m[9] = 0x;
+	m[8] = 0x;
+	m[7] = 0x;
+	m[6] = 0x;
+	m[5] = 0x;
+	m[4] = 0x;
+	m[3] = 0x;
+	m[2] = 0x;
+	m[1] = 0x;
+	m[0] = 0x;
+
+	s[12] = 0x0000;
+	s[11] = 0x0000;
+	s[10] = 0x0000;
+	s[9] = 0x0000;
+	s[8] = 0x0000;
+	s[7] = 0x;
+	s[6] = 0x;
+	s[5] = 0x;
+	s[4] = 0x;
+	s[3] = 0x;
+	s[2] = 0x;
+	s[1] = 0x;
+	s[0] = 0x;
+#else
  	NNModRandom(m, param.p, NUMWORDS);
  	NNModRandom(s, param.m, NUMWORDS);
+#endif
 	NNModExp(cph->cs,  pub.g_hat_alpha, s, NUMWORDS, param.p, NUMWORDS);	// TODO: g_hat_alpha pow s ???
 	NNModMult(cph->cs, cph->cs, m, param.p, NUMWORDS);		/**< cs = cs * m */
 	
