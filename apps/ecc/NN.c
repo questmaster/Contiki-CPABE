@@ -3572,8 +3572,9 @@ void NNEncode(unsigned char * a, NN_UINT digits, NN_DIGIT * b, NN_UINT len)
   // b = b mod c
   void NNModSmall(NN_DIGIT * b, NN_DIGIT * c, NN_UINT digits)
   {
-    while (NN_Cmp(b, c, digits) > 0)
-      NN_Sub(b, b, c, digits);
+	  while (NN_Cmp(b, c, digits) > 0) {
+		  NN_Sub(b, b, c, digits);
+	  }
   }
    
   //Computes a = (b + c) mod d.
@@ -3993,22 +3994,36 @@ void NNEncode(unsigned char * a, NN_UINT digits, NN_DIGIT * b, NN_UINT len)
 
 /**
  * @brief Generate random, non-zero b, with b = b mod c.
+ * code taken from ECC_gen_private_key
  */
 void NNModRandom (NN_DIGIT * b, NN_DIGIT * c, NN_UINT digits) {
+	NN_UINT order_digit_len, order_bit_len;
     bool done = FALSE;
     uint8_t ri;
+    NN_DIGIT digit_mask;
 	
+    order_bit_len = NNBits(c, NUMWORDS);
+	order_digit_len = NNDigits(c, NUMWORDS);
+
     while(!done){
 		watchdog_periodic();
 		
-		for (ri=0; ri < digits; ri++){
+		for (ri=0; ri < order_digit_len; ri++){
 #ifdef THIRTYTWO_BIT_PROCESSOR
 			b[ri] = ((uint32_t)rand() << 16)^((uint32_t)rand());
 #else
 			b[ri] = (NN_DIGIT)rand();
 #endif
 		}
-		
+
+		for (ri=order_digit_len; ri<NUMWORDS; ri++){
+			b[ri] = 0;
+		}
+
+		if (order_bit_len % NN_DIGIT_BITS != 0){
+			digit_mask = MAX_NN_DIGIT >> (NN_DIGIT_BITS - order_bit_len % NN_DIGIT_BITS);
+			b[order_digit_len - 1] = b[order_digit_len - 1] & digit_mask;
+		}
 		NNModSmall(b, c, digits);
 		
 		if (NNZero(b, digits) != 1)

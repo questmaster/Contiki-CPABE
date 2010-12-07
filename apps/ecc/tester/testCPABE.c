@@ -100,7 +100,6 @@ PROCESS_THREAD(tester_process, ev, data)
 		printf("%x ", pub.g_hat_alpha[i]);
 	}
 	printf("\n");
-	printf("\n");
 	printf("CPABE_pub_h_x: ");
 	for (i = NUMWORDS-1; i >= 0; i--) {
 		printf("%x ", pub.h.x[i]);

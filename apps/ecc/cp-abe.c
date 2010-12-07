@@ -322,6 +322,96 @@ void point_from_string( Point* h, char* s )
 	SHA1Context context;
 	NN_DIGIT tmp[NUMWORDS];
 	
+#ifdef CPABE_DEBUG
+	
+	if (strcmp(s, "attr1") == 0) {
+  	 h->x[12] = 0x0000; // v- this is just for the first attribute!
+	 h->x[11] = 0x13c4;
+	 h->x[10] = 0xdf84;
+	 h->x[9] = 0xa081;
+	 h->x[8] = 0xe68c;
+	 h->x[7] = 0xd561;
+	 h->x[6] = 0x472c;
+	 h->x[5] = 0xd660;
+	 h->x[4] = 0x9239;
+	 h->x[3] = 0x66bd;
+	 h->x[2] = 0x282f;
+	 h->x[1] = 0xc0c4;
+	 h->x[0] = 0x2a98;
+	 h->y[12] = 0x0000;
+	 h->y[11] = 0x040e;
+	 h->y[10] = 0xf170;
+	 h->y[9] = 0x911c;
+	 h->y[8] = 0xff08;
+	 h->y[7] = 0x252f;
+	 h->y[6] = 0xae8c;
+	 h->y[5] = 0xc809;
+	 h->y[4] = 0xec62;
+	 h->y[3] = 0x1377;
+	 h->y[2] = 0x2d4b;
+	 h->y[1] = 0x78c6;
+	 h->y[0] = 0xad16;
+	} else {
+		if (strcmp(s, "attr2") == 0) {
+			h->x[12] = 0x0000; // v- this is just for the first attribute!
+			h->x[11] = 0x03ad;
+			h->x[10] = 0xfc87;
+			h->x[9] = 0x32f0;
+			h->x[8] = 0x3cf;
+			h->x[7] = 0x5162;
+			h->x[6] = 0xde0e;
+			h->x[5] = 0x2bcf;
+			h->x[4] = 0x927c;
+			h->x[3] = 0x4b1b;
+			h->x[2] = 0x8d17;
+			h->x[1] = 0x1d54;
+			h->x[0] = 0x2056;
+			h->y[12] = 0x0000;
+			h->y[11] = 0x0dad;
+			h->y[10] = 0x9ea8;
+			h->y[9] = 0x0e12;
+			h->y[8] = 0x94e3;
+			h->y[7] = 0x2a54;
+			h->y[6] = 0xb901;
+			h->y[5] = 0xe120;
+			h->y[4] = 0xd7cf;
+			h->y[3] = 0x1c10;
+			h->y[2] = 0x61ba;
+			h->y[1] = 0x3d6c;
+			h->y[0] = 0x31a5;
+		} else {
+			if (strcmp(s, "attr3") == 0) {
+				h->x[12] = 0x0000; // v- this is just for the first attribute!
+				h->x[11] = 0x1289;
+				h->x[10] = 0xd47d;
+				h->x[9] = 0x1286;
+				h->x[8] = 0x35de;
+				h->x[7] = 0xfc1f;
+				h->x[6] = 0xbbd3;
+				h->x[5] = 0x0d5f;
+				h->x[4] = 0x16b8;
+				h->x[3] = 0xad97;
+				h->x[2] = 0x2566;
+				h->x[1] = 0xefae;
+				h->x[0] = 0xc851;
+				h->y[12] = 0x0000;
+				h->y[11] = 0x0891;
+				h->y[10] = 0xb7a1;
+				h->y[9] = 0xde45;
+				h->y[8] = 0xa812;
+				h->y[7] = 0xd2b8;
+				h->y[6] = 0x9f46;
+				h->y[5] = 0xc97c;
+				h->y[4] = 0x9962;
+				h->y[3] = 0x0fe7;
+				h->y[2] = 0xaea4;
+				h->y[1] = 0x652b;
+				h->y[0] = 0x3238;
+			} 
+		}
+	}
+
+#else	
 	SHA1_Reset(&context);
 	SHA1_Update(&context, s, strlen(s));
 	SHA1_Digest(&context, (uint8_t *)r);
@@ -330,7 +420,7 @@ void point_from_string( Point* h, char* s )
 	NNMod(tmp, r, NUMWORDS, param.p, NUMWORDS);	/**< x = r mod p */
 	ECC_compY(h, tmp);
 	
-//	printf("DEBUG: point_from_string: %s\n", ECC_check_point(h) ? "ok" : "WRONG!");
+#endif
 }
 
 /**
@@ -341,6 +431,45 @@ void point_from_string( Point* h, char* s )
  * @param msk Master key
  * @param attributes Attributes to include in secret key (should be element wise parsed attributes?)
  */
+/*
+ daniel@ubuntu:~/cp-abe/cpabe-0.9/bin$ ./cpabe-keygen -d pub_key master_key attr1 attr2 attr3
+ r 66 11 d3 ea 4b 3b 88 81 7 6c 71 49 9e 53 45 ae 
+ g_r.x 1c aa fc 3f 69 8f d0 b 7 a5 ff 5f 3a 2c 36 45 41 f3 ee 91 3c 56 16 48 
+ g_r.y 18 df 57 e8 30 ea 8f 2d 81 72 d8 d2 99 f1 c8 61 a7 f5 7d aa fe c5 7e 5c 
+ beta_inv 48 43 b8 25 78 42 24 cf 7c 2c a6 da 85 14 a6 90 
+ prv->d.x 1d f1 d1 a3 c9 e3 3a 3a 2f 3a a8 46 69 77 84 3a 44 13 c6 5b c0 91 c1 6c 
+ prv->d.y 1 7e c9 79 6c d1 a5 31 34 45 73 cf a9 a4 7f 6f d1 28 57 b4 c3 b3 b6 24 
+ Values for attrib: attr1.
+ h_rp.x (hash) 13 c4 df 84 a0 81 e6 8c d5 61 47 2c d6 60 92 39 66 bd 28 2f c0 c4 2a 98 
+ h_rp.y (hash) 4 e f1 70 91 1c ff 8 25 2f ae 8c c8 9 ec 62 13 77 2d 4b 78 c6 ad 16 
+ rp 51 d6 84 b6 92 7b e1 96 9a 9b f5 69 d5 0 7d 62 
+ h_rp.x c d4 51 f9 db 3a ed 42 f3 72 46 53 b8 8 22 f0 76 b1 10 1b 5a 2a e4 1a 
+ h_rp.y 14 f0 92 c8 c9 49 9e eb ff 81 2d 6d 2e 4d 6d 25 9f a4 16 2a 8a d3 fa 29 
+ c.d.x 11 a3 d6 e2 19 b9 22 26 46 88 d6 f2 f4 eb 6a 4 6b 59 c1 93 d6 f6 f2 28 
+ c.d.y 17 ff ed 45 d6 1b 6 d2 50 79 11 ea 9d e 53 dd 42 73 16 9 a3 72 e2 f 
+ c.dp.x 10 4b f2 f1 ee d8 bf 57 a ec 83 8c b 7c 9 b3 5d 6e 3f ca 3f a2 0 74 
+ c.dp.y 6 67 a1 17 88 2a da e2 c 66 35 28 e8 8e 4d d5 98 3 68 d8 bb a2 e 35 
+ Values for attrib: attr2.
+ h_rp.x (hash) 3 ad fc 87 32 f0 3c 7f 51 62 de e 2b cf 92 7c 4b 1b 8d 17 1d 54 20 56 
+ h_rp.y (hash) d ad 9e a8 e 12 94 e3 2a 54 b9 1 e1 20 d7 cf 1c 10 61 ba 3d 6c 31 a5 
+ rp 30 9e e2 c0 dc eb 7c f4 3 f3 61 8f 41 da 22 b6 
+ h_rp.x 1a 79 e7 30 f2 6b 68 6c 66 83 82 42 bd eb 82 1e 29 29 f3 38 b4 97 79 74 
+ h_rp.y 17 65 ac 2c 10 c8 ab 20 b8 43 6c 7d 51 ec 29 65 cc c8 31 a0 d8 5f f4 14 
+ c.d.x c 66 e2 e9 ef 2e 72 7a 4b 42 cd 2d 3b 6e 32 a7 44 40 31 7f be de b 78 
+ c.d.y 8 6d 7c c3 8b 56 e9 68 c9 e0 a7 4e 32 8 18 43 e2 5d da e2 2a c0 7a d6 
+ c.dp.x 9 b2 bf 75 0 f9 af 80 71 67 eb 12 1f 51 c6 66 3c 66 fe 62 98 a5 57 9c 
+ c.dp.y 10 a0 60 5b 83 90 10 a9 66 29 e8 d7 65 ff b1 ae 57 6 ce b0 c5 f8 96 0 
+ Values for attrib: attr3.
+ h_rp.x (hash) 12 89 d4 7d 12 86 35 de fc 1f bb d3 d 5f 16 b8 ad 97 25 66 ef ae c8 51 
+ h_rp.y (hash) 8 91 b7 a1 de 45 a8 12 d2 b8 9f 46 c9 7c 99 62 f e7 ae a4 65 2b 32 38 
+ rp 4b 9d 41 1e fb 6b 78 5b ba 75 d0 58 7e 57 18 e9 
+ h_rp.x c cc 13 15 7e bc b3 27 b7 a9 c8 5b e5 34 34 c9 fc 27 db a5 47 5 71 9f 
+ h_rp.y d d9 cf 4a ee b2 6c bd 4c e0 2f 95 4 51 ac 66 98 96 67 cf 74 a5 e2 87 
+ c.d.x c 8e f2 d1 46 29 2a 22 7c d8 4f e4 b9 68 de 7b da 74 6d 24 d3 49 53 8c 
+ c.d.y 4 e8 d8 30 ca 9d 77 5d a5 42 10 d5 73 71 98 e6 da 2c b7 c3 5c fc 69 3e 
+ c.dp.x b 93 81 9a 9b ed 12 72 b4 f0 6f ae d9 e0 85 29 37 5f 64 a8 f5 a3 7f cf 
+ c.dp.y 19 19 b1 d7 b1 d8 50 87 c2 73 fa 29 ea 5 ef 30 d5 24 35 59 a5 da 49 d1  
+ */
 void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** attributes) {
 	Point g_r;
 	NN_DIGIT r[NUMWORDS];
@@ -349,6 +478,7 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 	cpabe_prv_comp_t *c;
 	Point h_rp;
 	NN_DIGIT rp[NUMWORDS];
+int i;
 	
 	if (prv == NULL || &pub == NULL || &msk == NULL) {
 //			printf("cpabe_setup - ERROR: pub or msk NULL! pub: %p, msk: %p", pub, msk);
@@ -359,11 +489,48 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 	list_init(prv->comps);
 	
 	// compute
-	NNModRandom(r, param.p, NUMWORDS);
+#ifdef CPABE_DEBUG
+	r[12] = 0x0000;
+	r[11] = 0x0000;
+	r[10] = 0x0000;
+	r[9] = 0x0000;
+	r[8] = 0x0000;
+	r[7] = 0x6611;
+	r[6] = 0xd3ea;
+	r[5] = 0x4b3b;
+	r[4] = 0x8881;
+	r[3] = 0x076c;
+	r[2] = 0x7149;
+	r[1] = 0x9e53;
+	r[0] = 0x45ae;
+#else
+	NNModRandom(r, param.m, NUMWORDS);
+#endif
 	ECC_mul(&g_r, &pub.gp, r);						/**< g_r = gp * r */
+#ifdef CPABE_DEBUG
+	printf("g_r_x: ");
+	for (i = NUMWORDS-1; i >= 0; i--) {
+		printf("%x ", g_r.x[i]);
+	}
+	printf("\n");
+	printf("g_r_y: ");
+	for (i = NUMWORDS-1; i >= 0; i--) {
+		printf("%x ", g_r.y[i]);
+	}
+	printf("\n");
+#endif
 	
 	ECC_add(&(prv->d), &msk.g_alpha, &g_r);			/**< d = g_alpha + g_r; here is P * P -> Add them !!! */
-	NNModInv(beta_inv, msk.beta, param.p, NUMWORDS);	/**< beta_inv = 1/beta */
+	NNModInv(beta_inv, msk.beta, param.m, NUMWORDS);	/**< beta_inv = 1/beta */
+
+#ifdef CPABE_DEBUG	
+	printf("beta_inv: ");
+	for (i = NUMWORDS-1; i >= 0; i--) {
+		printf("%x ", beta_inv[i]);
+	}
+	printf("\n");
+#endif
+	
 	ECC_assign(&tmp, &(prv->d));
 	ECC_mul(&(prv->d), &tmp, beta_inv);				/**< d = d * beta_inverted */
 	
@@ -374,15 +541,89 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 
 		c->attr = *(attributes++);
 		
- 		point_from_string(&h_rp, c->attr);
- 		NNModRandom(rp, param.p, NUMWORDS);
-		
+		point_from_string(&h_rp, c->attr);
+#ifdef CPABE_DEBUG
+printf("c_attrib: %s\n", c->attr);
+
+	if (strcmp(c->attr, "attr1") == 0) {
+		rp[12] = 0x0000;// v- this is just for the first attribute!
+		rp[11] = 0x0000;
+		rp[10] = 0x0000;
+		rp[9] = 0x0000;
+		rp[8] = 0x0000;
+		rp[7] = 0x51d6;
+		rp[6] = 0x84b6;
+		rp[5] = 0x927b;
+		rp[4] = 0xe196;
+		rp[3] = 0x9a9b;
+		rp[2] = 0xf569;
+		rp[1] = 0xd500;
+		rp[0] = 0x7d62;
+	} else {
+		if (strcmp(c->attr, "attr2") == 0) {
+			rp[12] = 0x0000;
+			rp[11] = 0x0000;
+			rp[10] = 0x0000;
+			rp[9] = 0x0000;
+			rp[8] = 0x0000;
+			rp[7] = 0x309e;
+			rp[6] = 0xe2c0;
+			rp[5] = 0xdceb;
+			rp[4] = 0x7cf4;
+			rp[3] = 0x03f3;
+			rp[2] = 0x618f;
+			rp[1] = 0x41da;
+			rp[0] = 0x22b6;
+		} else {
+			if (strcmp(c->attr, "attr3") == 0) {
+				rp[12] = 0x0000;
+				rp[11] = 0x0000;
+				rp[10] = 0x0000;
+				rp[9] = 0x0000;
+				rp[8] = 0x0000;
+				rp[7] = 0x4b9d;
+				rp[6] = 0x411e;
+				rp[5] = 0xfb6b;
+				rp[4] = 0x785b;
+				rp[3] = 0xba75;
+				rp[2] = 0xd058;
+				rp[1] = 0x7e57;
+				rp[0] = 0x18e9;
+			} 
+		}
+	}
+#else
+ 		NNModRandom(rp, param.m, NUMWORDS);
+#endif
+				
 		ECC_assign(&tmp, &h_rp);
 		ECC_mul(&h_rp, &tmp, rp);					/**< h_rp = h * rp */
 			
 		ECC_add(&(c->d), &g_r, &h_rp);				/**< d = g_r + h_rp */
 		ECC_mul(&(c->dp), &pub.g, rp);				/**< dp = g * rp */
-		
+
+#ifdef CPABE_DEBUG		
+		printf("CPABE_c_d_x: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", c->d.x[i]);
+		}
+		printf("\n");
+		printf("CPABE_c_d_y: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", c->d.y[i]);
+		}
+		printf("\n");
+		printf("CPABE_c_dp_x: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", c->dp.x[i]);
+		}
+		printf("\n");
+		printf("CPABE_c_dp_y: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", c->dp.y[i]);
+		}
+		printf("\n");
+#endif		
 		// TODO: clear h_rb, rp needed?
 		
 		list_add(prv->comps, c);
@@ -521,11 +762,11 @@ eval_poly( NN_DIGIT r[NUMWORDS], cpabe_polynomial_t* q, NN_DIGIT x[NUMWORDS] )
 	for( j = 0; j < q->deg + 1; j++ )
 	{
 		// r += q->coef[i] * t 
-		NNModMult(s, q->coef + (j * NUMWORDS), t, param.p, NUMWORDS);
-		NNModAdd(r, r, s, param.p, NUMWORDS);
+		NNModMult(s, q->coef + (j * NUMWORDS), t, param.p, NUMWORDS);			// TODO: mod m or p?
+		NNModAdd(r, r, s, param.p, NUMWORDS);									// TODO: mod m or p?
 		
 		// t *= x 
-		NNModMult(t, t, x, param.p, NUMWORDS);
+		NNModMult(t, t, x, param.p, NUMWORDS);									// TODO: mod m or p?
 	}
 }
 
@@ -568,12 +809,12 @@ void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN_DIGIT m[NUMWORDS], char *po
 	
 	// compute 
  	NNModRandom(m, param.p, NUMWORDS);
- 	NNModRandom(s, param.p, NUMWORDS);
+ 	NNModRandom(s, param.m, NUMWORDS);
 	NNModExp(cph->cs,  pub.g_hat_alpha, s, NUMWORDS, param.p, NUMWORDS);	// TODO: g_hat_alpha pow s ???
 	NNModMult(cph->cs, cph->cs, m, param.p, NUMWORDS);		/**< cs = cs * m */
 	
 	ECC_mul(&(cph->c), &(pub.h), s);						/**< c = h * s */
-	
+
 	fill_policy((cpabe_policy_t *) list_head(cph->p), pub, s);
 }
 #endif
@@ -613,7 +854,6 @@ check_sat( cpabe_policy_t * p, cpabe_prv_t * prv )
 	}
 }
 
-//#error ****** Still missing... ********* 
 
 /*
 void
@@ -741,6 +981,7 @@ lagrange_coef( NN_DIGIT r[NUMWORDS], list_t s, int i )
 
 
 /*
+#error Naive decryption code NOT ported, yet.
 void
 dec_leaf_naive( element_t r, bswabe_policy_t* p, bswabe_prv_t* prv, bswabe_pub_t* pub )
  {
@@ -804,6 +1045,7 @@ dec_naive( element_t r, bswabe_policy_t* p, bswabe_prv_t* prv, bswabe_pub_t* pub
 */
 
 /*
+#error Merge decryption code NOT ported, yet.
 void
 dec_leaf_merge( element_t exp, bswabe_policy_t* p, bswabe_prv_t* prv, bswabe_pub_t* pub )
 {
@@ -939,7 +1181,7 @@ dec_internal_flatten( NN_DIGIT * r, NN_DIGIT * exp,
 	for( i = 0; i < list_length(p->satl); i++ )
 	{
  		lagrange_coef(t, p->satl, ((satl_int_t *) list_index(p->satl, i))->k);
-		NNModMult(expnew, exp, t, param.p, NUMWORDS); /* num_muls++; */
+		NNModMult(expnew, exp, t, param.p, NUMWORDS); /* num_muls++; */			// TODO: mod m or p?
 		dec_node_flatten(r, expnew, list_index
 						 (p->children, ((satl_int_t *) list_index(p->satl, i))->k - 1), prv, pub);
 	}
