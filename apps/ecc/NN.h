@@ -73,7 +73,7 @@ typedef int8_t bool;
 #define KEY_BIT_LEN 160
 #define HYBRID_MUL_WIDTH5  //column width=5 for hybrid multiplication
 #else
-#if defined (SECP192K1) || defined (SECP192R1) || defined (SS192K2) || defined (SS192K2S)
+#if defined (SECP192K1) || defined (SECP192R1) || defined (SS192K2) || defined (SS192K2S) || defined (CPABE192K2)
 #define KEY_BIT_LEN 192
 #define HYBRID_MUL_WIDTH4
 #else
@@ -369,6 +369,11 @@ extern bool NNEven(NN_DIGIT * a, NN_UINT digits);
 //Returns the lucas exponentatiation for the Tate Pairing lucas(2*b,k)/2
 extern bool NNLucExp(NN_DIGIT * a,NN_DIGIT * b, NN_DIGIT * k,NN_DIGIT * inv2,NN_DIGIT * p,NN_UINT digits);
 
+/* TUD Extensions */
+// Generate random, non-zero b, with b = b mod c.
+extern void NNModRandom(NN_DIGIT * b, NN_DIGIT * c, NN_UINT digits);
 
+// Assign 1. a = 1.
+extern void NNAssignOne(NN_DIGIT * a, NN_UINT digits);
 
 #endif

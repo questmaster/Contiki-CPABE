@@ -68,6 +68,7 @@ PROCESS_THREAD(tester_process, ev, data)
 	PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&tester_timer));
 //	etimer_reset(&tester_timer);
 	
+#ifdef CPABE_SETUP
 	printf("CPABE_setup(0)\n");
 	time_s = clock_time();
 	
@@ -76,9 +77,9 @@ PROCESS_THREAD(tester_process, ev, data)
 	time_f = clock_time();
 	dt0 = time_f - time_s;
 	printf("CPABE_setup(0): %lu ms\n", (uint32_t)(dt0*1000/CLOCK_SECOND));
-	
+
 	/* CP-ABE Keys */
-	
+
 	printf("CPABE_msk_beta: ");
 	for (i = NUMWORDS-1; i >= 0; i--) {
 		printf("%x ", msk.beta[i]);
@@ -99,6 +100,7 @@ PROCESS_THREAD(tester_process, ev, data)
 		printf("%x ", pub.g_hat_alpha[i]);
 	}
 	printf("\n");
+	printf("\n");
 	printf("CPABE_pub_h_x: ");
 	for (i = NUMWORDS-1; i >= 0; i--) {
 		printf("%x ", pub.h.x[i]);
@@ -109,7 +111,7 @@ PROCESS_THREAD(tester_process, ev, data)
 		printf("%x ", pub.h.y[i]);
 	}
 	printf("\n");
-	
+#endif
 	
 	do {
 		// Pairing
@@ -118,6 +120,7 @@ PROCESS_THREAD(tester_process, ev, data)
 
 		// TODO: run tests
 
+#ifdef CPABE_KEYGEN
 		printf("CPABE_keygen(%d)\n", round_index);
 		time_s = clock_time();
 		cpabe_keygen(&prv, pub, msk, attributes);
@@ -136,7 +139,8 @@ PROCESS_THREAD(tester_process, ev, data)
 			printf("%x ", prv.d.y[i]);
 		}
 		printf("\n");
-
+#endif
+#ifdef CPABE_ENCRYPTION		
 		printf("CPABE_enc(%d) \n", round_index);
 		printf("m  (plain): ");
 		for (i = NUMWORDS; i > 0; i--) {
@@ -151,7 +155,8 @@ PROCESS_THREAD(tester_process, ev, data)
 		time_f = clock_time();
 		dt0 = time_f - time_s;
 		printf("CPABE_enc(%d): %lu ms\n", round_index, (uint32_t)(dt0*1000/CLOCK_SECOND));
-		
+#endif
+#ifdef CPABE_DECRYPTION
 		printf("CPABE_dec(%d) \n", round_index);
 		time_s = clock_time();
 		
@@ -165,7 +170,7 @@ PROCESS_THREAD(tester_process, ev, data)
 		}
 		printf("\n");
 		printf("CPABE_dec(%d): %lu ms\n", round_index, (uint32_t)(dt0*1000/CLOCK_SECOND));
-		
+#endif
 		
 		leds_on(LEDS_GREEN);
 		leds_off(LEDS_RED);

@@ -39,7 +39,7 @@ struct list {
 /*
  * @brief Splits a String at " ".
  */
-char **strsplit(char *s) {
+static char **strsplit(char *s) {
 	char ** tokens = NULL;
 	uint8_t i;
 	uint8_t tok_count = 1;
@@ -77,7 +77,7 @@ char **strsplit(char *s) {
 /**
  * @brief frees all memory used in toks
  */
-void freesplit(char ** toks) {
+static void freesplit(char ** toks) {
 	int8_t i = sizeof(toks) / sizeof(char*);
 	for (; i >= 0 ; i--) {
 		free(toks[i]);
@@ -85,110 +85,10 @@ void freesplit(char ** toks) {
 	free(toks);
 }
 
-/**
- * Generate random, non-zero b, with b = b mod c.
- * Copied from ECC_gen_private_key()
- * TODO: Verify
- */
-static void NNModRandom (NN_DIGIT * b, NN_DIGIT * c, NN_UINT digits) {
-	NN_UINT order_digit_len;//, order_bit_len;
-    bool done = FALSE;
-    uint8_t ri;
-//    NN_DIGIT digit_mask;
-	
-//    order_bit_len = NNBits(param.m, NUMWORDS); // TODO: m replaced r correct?
-    order_digit_len = /*NNDigits(param.m,*/ NUMWORDS/*)*/; // --^
-
-    while(!done){
-		watchdog_periodic();
-		
-		for (ri=0; ri<order_digit_len; ri++){
-#ifdef THIRTYTWO_BIT_PROCESSOR
-			b[ri] = ((uint32_t)rand() << 16)^((uint32_t)rand());
-#else
-			b[ri] = (NN_DIGIT)rand();
-#endif
-		}
-		
-//		for (ri=order_digit_len; ri<NUMWORDS; ri++){
-//			b[ri] = 0;
-//		}
-//		
-//		if (order_bit_len % NN_DIGIT_BITS != 0){
-//			digit_mask = MAX_NN_DIGIT >> (NN_DIGIT_BITS - order_bit_len % NN_DIGIT_BITS);
-//			b[order_digit_len - 1] = b[order_digit_len - 1] & digit_mask;
-//		}
-		NNModSmall(b, c, NUMWORDS);
-		
-		if (NNZero(b, NUMWORDS) != 1)
-			done = TRUE;
-		watchdog_periodic();
-	}
-}
-
-/*
- * Assign 1. a = 1.
- */
-void NNAssignOne(NN_DIGIT * a, NN_UINT digits)
-{
-    uint8_t i;
-    
-    for (i = 1; i < digits; i++)
-		a[i] = 0;
-    
-	a[0] = 1;
-}
-
-/*
- * Assign Points P0 = P1.
- */
-static void ECC_assign(Point *P0, Point *P1) {
-	NNAssign(P0->x, P1->x, NUMWORDS);
-	NNAssign(P0->y, P1->y, NUMWORDS);
-}
-
-/*
- * Find matching y to given x. P0 = (x, y) e E
- * x has to be x mod p
- */
-int ECC_compY(Point * P, NN_DIGIT * x) {
-    NN_DIGIT tmp[NUMWORDS];
-
-	// Set x
-	NNAssign(P->x, x, NUMWORDS);
-	
-	// Find y
-	NNAssign(P->y, param.E.b, NUMWORDS);			/**< (y^2) = b */
-	if (!param.E.a_zero) {
-		if (param.E.a_one) {						/**< (y^2) += a * x */
-			NNModAdd(P->y, P->y, P->x, param.p, NUMWORDS);
-		} else {
-			NNModMult(tmp, param.E.a, P->x, param.p, NUMWORDS);
-			NNModAdd(P->y, P->y, tmp, param.p, NUMWORDS);
-		}
-	}
-	NNModMult(tmp, P->x, P->x, param.p, NUMWORDS);
-	NNModMult(tmp, tmp, P->x, param.p, NUMWORDS);
-	NNModAdd(P->y, P->y, tmp, param.p, NUMWORDS);	/**< (y^2) += x^3 */
-	NNModSqrRootOpt(P->y, P->y, param.p, NUMWORDS, NULL);	/**< y = sqrt(y^2) */
-	
-	return ECC_check_point(P);
-}
-
-void ECC_Random(Point * P) {
-	NN_DIGIT x[NUMWORDS]; 
-	int res = -1;
-	
-	do {
-		NNModRandom(x, param.p, NUMWORDS);
-		res = ECC_compY(P, x);
-	} while (res < 0);
-}
-
 /*
  * @brief Return item at position index.
  */
-void * list_index(list_t list, uint8_t index) {
+static void * list_index(list_t list, uint8_t index) {
 	struct list *l;
 	uint8_t n = 0;
 	
@@ -207,7 +107,7 @@ void * list_index(list_t list, uint8_t index) {
 /**
  * This replaces an sscanf call and parses the format "%dto%d".
  */
-uint8_t sscanf_repl(char* tok, /*char * format,*/ uint8_t* k, uint8_t* n) {
+static uint8_t sscanf_repl(char* tok, /*char * format,*/ uint8_t* k, uint8_t* n) {
 	uint16_t i, pos = 0;
 	char* param1;
 	char* param2;
@@ -280,6 +180,20 @@ void cpabe_init() {
  * @param pub Public key
  * @param msk Master key
  */
+/* Nice to have (pbc-lib debug mode with cpabe192k2 curve)
+ alpha: 66 11 d3 ea 4b 3b 88 81 7 6c 71 49 9e 53 45 ae 
+ msk->beta: 51 d6 84 b6 92 7b e1 96 9a 9b f5 69 d5 0 7d 62 
+ pub->g.x 14 a7 e9 bd f7 7a 1e 18 d1 e1 e 6 6b 63 0 44 3 b 83 b 8b 37 48 69 
+ pub->g.y 14 92 7 c 79 7c ee 4b 75 eb 52 44 da 95 c6 1b 3c af d1 8a b2 4 d0 54 
+ pub->gp.x 6 9f 1f 36 80 7d 98 5a b 80 b7 65 98 68 cf 55 b9 c7 2d 57 98 fe 51 9e 
+ pub->gp.y b d9 a5 b9 f5 86 a3 49 1a 6 77 42 35 74 81 a 2c d4 12 79 23 bc 5d f9 
+ msk->g_alpha.x 1c aa fc 3f 69 8f d0 b 7 a5 ff 5f 3a 2c 36 45 41 f3 ee 91 3c 56 16 48 
+ msk->g_alpha.y 18 df 57 e8 30 ea 8f 2d 81 72 d8 d2 99 f1 c8 61 a7 f5 7d aa fe c5 7e 5c 
+ pub->h.x 10 4b f2 f1 ee d8 bf 57 a ec 83 8c b 7c 9 b3 5d 6e 3f ca 3f a2 0 74 
+ pub->h.y 6 67 a1 17 88 2a da e2 c 66 35 28 e8 8e 4d d5 98 3 68 d8 bb a2 e 35 
+ pub->g_hat_alpha.r 3 47 3f 7f c4 b e3 14 c5 f5 c4 70 d8 c3 32 3c 6d 14 b3 90 f2 d3 b0 6c 
+#not computed# pub->g_hat_alpha.i 11 e a6 b7 75 fb a8 92 f1 19 4f b1 3 14 d6 8 46 cb 68 b8 59 e8 3c 73 
+ */
 void cpabe_setup(cpabe_pub_t *pub, cpabe_msk_t *msk) {
 	// ERROR if NULL pointer 
 	if (pub == NULL || msk == NULL) {
@@ -287,7 +201,6 @@ void cpabe_setup(cpabe_pub_t *pub, cpabe_msk_t *msk) {
 	}
 	
 	NN_DIGIT alpha[NUMWORDS];
-//	NN_DIGIT beta_inv[NUMWORDS];
 
 	// init ECC with curve params
 	Params *p = ECC_get_param();
@@ -297,20 +210,100 @@ void cpabe_setup(cpabe_pub_t *pub, cpabe_msk_t *msk) {
 	// init TP with curve params
 	get_TP_param(&param);
 	
-	NNModRandom(alpha, param.p, NUMWORDS);			/**< Random alpha */
- 	NNModRandom(msk->beta, param.p, NUMWORDS);		/**< Random beta */
-//	ECC_assign(&(pub->g), &param.P);				/**< g = param.P */
+#ifdef CPABE_DEBUG
+	alpha[12] = 0x0000;
+	alpha[11] = 0x0000;
+	alpha[10] = 0x0000;
+	alpha[9] = 0x0000;
+	alpha[8] = 0x0000;
+	alpha[7] = 0x6611;
+	alpha[6] = 0xd3ea;
+	alpha[5] = 0x4b3b;
+	alpha[4] = 0x8881;
+	alpha[3] = 0x076c;
+	alpha[2] = 0x7149;
+	alpha[1] = 0x9e53;
+	alpha[0] = 0x45ae;
+
+	msk->beta[12] = 0x0000;
+	msk->beta[11] = 0x0000;
+	msk->beta[10] = 0x0000;
+	msk->beta[9] = 0x0000;
+	msk->beta[8] = 0x0000;
+	msk->beta[7] = 0x51d6;
+	msk->beta[6] = 0x84b6;
+	msk->beta[5] = 0x927b;
+	msk->beta[4] = 0xe196;
+	msk->beta[3] = 0x9a9b;
+	msk->beta[2] = 0xf569;
+	msk->beta[1] = 0xd500;
+	msk->beta[0] = 0x7d62;
+
+	pub->g.x[12] = 0x0000;
+	pub->g.x[11] = 0x14a7;
+	pub->g.x[10] = 0xe9bd;
+	pub->g.x[9] = 0xf77a;
+	pub->g.x[8] = 0x1e18;
+	pub->g.x[7] = 0xd1e1;
+	pub->g.x[6] = 0x0e06;
+	pub->g.x[5] = 0x6b63;
+	pub->g.x[4] = 0x0044;
+	pub->g.x[3] = 0x030b;
+	pub->g.x[2] = 0x830b;
+	pub->g.x[1] = 0x8b37;
+	pub->g.x[0] = 0x4869;
+	pub->g.y[12] = 0x0000;
+	pub->g.y[11] = 0x1492;
+	pub->g.y[10] = 0x070c;
+	pub->g.y[9] = 0x797c;
+	pub->g.y[8] = 0xee4b;
+	pub->g.y[7] = 0x75eb;
+	pub->g.y[6] = 0x5244;
+	pub->g.y[5] = 0xda95;
+	pub->g.y[4] = 0xc61b;
+	pub->g.y[3] = 0x3caf;
+	pub->g.y[2] = 0xd18a;
+	pub->g.y[1] = 0xb204;
+	pub->g.y[0] = 0xd054;
+
+	pub->gp.x[12] = 0x0000;
+	pub->gp.x[11] = 0x069f;
+	pub->gp.x[10] = 0x1f36;
+	pub->gp.x[9] = 0x807d;
+	pub->gp.x[8] = 0x985a;
+	pub->gp.x[7] = 0x0b80;
+	pub->gp.x[6] = 0xb765;
+	pub->gp.x[5] = 0x9868;
+	pub->gp.x[4] = 0xcf55;
+	pub->gp.x[3] = 0xb9c7;
+	pub->gp.x[2] = 0x2d57;
+	pub->gp.x[1] = 0x98fe;
+	pub->gp.x[0] = 0x519e;
+	pub->gp.y[12] = 0x0000;
+	pub->gp.y[11] = 0x0bd9;
+	pub->gp.y[10] = 0xa5b9;
+	pub->gp.y[9] = 0xf586;
+	pub->gp.y[8] = 0xa349;
+	pub->gp.y[7] = 0x1a06;
+	pub->gp.y[6] = 0x7742;
+	pub->gp.y[5] = 0x3574;
+	pub->gp.y[4] = 0x810a;
+	pub->gp.y[3] = 0x2cd4;
+	pub->gp.y[2] = 0x1279;
+	pub->gp.y[1] = 0x23bc;
+	pub->gp.y[0] = 0x5df9;
+#else
+	NNModRandom(alpha, param.m, NUMWORDS);			/**< Random alpha */
+ 	NNModRandom(msk->beta, param.m, NUMWORDS);		/**< Random beta */
 	ECC_Random(&(pub->g));		
-	ECC_Random(&(pub->gp));							// FIXME: Is this needed?
+	ECC_Random(&(pub->gp));	
+#endif
 	
 	ECC_mul(&(msk->g_alpha), &(pub->gp), alpha);	/**< g_alpha = gp * alpha */
 	ECC_mul(&(pub->h), &(pub->g), msk->beta);		/**< h = g * beta */
 
-	/** f = g * (1/beta) */
-//	NNModInv(beta_inv, msk->beta, param.p, NUMWORDS);
-//	ECC_mul(&(pub->f), &(pub->g), beta_inv);	
 	
-	TP_TatePairing(pub->g_hat_alpha, pub->g, msk->g_alpha);	/**< g_hat_alpha = e(g, gp * alpha) */
+	TP_TatePairing(&(pub->g_hat_alpha), pub->g, msk->g_alpha);	/**< g_hat_alpha = e(g, gp * alpha) */
 	
 }
 #endif

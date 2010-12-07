@@ -1031,5 +1031,56 @@ void ECC_gen_public_key(Point *PublicKey, NN_DIGIT *PrivateKey){
 #endif
   }
 
+/* --- Extension TUD -------------------------------------------------------- */
+
+/*
+ * @brief Assign Points P0 = P1.
+ */
+void ECC_assign(Point *P0, Point *P1) {
+	NNAssign(P0->x, P1->x, NUMWORDS);
+	NNAssign(P0->y, P1->y, NUMWORDS);
+}
+
+/*
+ * Find matching y to given x and return Point. P = (x, y) e E
+ * x has to be x mod p
+ * @returns if valid point
+ */
+int ECC_compY(Point * P, NN_DIGIT * x) {
+    NN_DIGIT tmp[NUMWORDS];
+	
+	// Set x
+	NNAssign(P->x, x, NUMWORDS);
+	
+	// Compute y
+	NNAssign(P->y, param.E.b, NUMWORDS);			/**< (y^2) = b */
+	if (!param.E.a_zero) {
+		if (param.E.a_one) {						/**< (y^2) += a * x */
+			NNModAdd(P->y, P->y, P->x, param.p, NUMWORDS);
+		} else {
+			NNModMultOpt(tmp, param.E.a, P->x, param.p, param.omega, NUMWORDS);
+			NNModAdd(P->y, P->y, tmp, param.p, NUMWORDS);
+		}
+	}
+	NNModSqrOpt(tmp, P->x, param.p, param.omega, NUMWORDS);
+	NNModMultOpt(tmp, tmp, P->x, param.p, param.omega, NUMWORDS);
+	NNModAdd(P->y, P->y, tmp, param.p, NUMWORDS);	/**< (y^2) += x^3 */
+	NNModSqrRootOpt(P->y, P->y, param.p, NUMWORDS, NULL);	/**< y = sqrt(y^2) */
+	
+	return ECC_check_point(P);
+}
+
+/*
+ * @brief Find random point P.
+ */
+void ECC_Random(Point * P) {
+	NN_DIGIT x[NUMWORDS]; 
+	int res = -1;
+	
+	do {
+		NNModRandom(x, param.p, NUMWORDS);
+		res = ECC_compY(P, x);
+	} while (res < 0);
+}
 
 

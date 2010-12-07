@@ -11,12 +11,13 @@ APPS = ecc
 #Cparam = SECP160R2
 #Cparam = SECP192K1
 #Cparam = SECP192R1
-Cparam = SS192K2
+#Cparam = SS192K2
 #Cparam = SS192K2S
 #Cparam = SS512K2
 #Cparam = SS512K2S
+Cparam = CPABE192K2
 
-# use test vector for secp160r1 to show the correctness of TinyECC
+# use test vector for secp160r1 to show the correctness of TinyECC (NOT TP or CPABE!)
 #Cparam = TEST_VECTOR
 #CFLAGS+=-DCODE_SIZE
 
@@ -26,6 +27,14 @@ Cparam = SS192K2
 #USE_ECDSA = TRUE
 #USE_PAIRING = TRUE
 USE_CPABE = TRUE
+
+# en-/disable different parts of CPABE code
+CFLAGS+=-DCPABE_DEBUG
+CFLAGS+=-DCPABE_SETUP
+#CFLAGS+=-DCPABE_KEYGEN
+#CFLAGS+=-DCPABE_ENCRYPTION
+#CFLAGS+=-DCPABE_DECRYPTION
+
 
 ## choose different optimization techniques
 ## NN
@@ -40,7 +49,7 @@ CFLAGS+=-DSLIDING_WIN			# sliding window method, window size is defined in ECC.h
 ## ECDSA
 CFLAGS+=-DSHAMIR_TRICK			# shamir trick, windows size is defined in ECDSA.c
 ## TP
-#CFLAGS+=-DFIXED_P			# precompute intermediate nodes, slopes for a fixed P
+#CFLAGS+=-DFIXED_P				# precompute intermediate nodes, slopes for a fixed P
 #CFLAGS+=-DPROJECTIVE_M			# ???
 
 ## activate 4/8MHz configuration (compatible to TinyOS freq's)

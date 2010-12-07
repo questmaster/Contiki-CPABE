@@ -3989,3 +3989,44 @@ void NNEncode(unsigned char * a, NN_UINT digits, NN_DIGIT * b, NN_UINT len)
    return TRUE;
   }
 
+/* --- Extension TUD -------------------------------------------------------- */
+
+/**
+ * @brief Generate random, non-zero b, with b = b mod c.
+ */
+void NNModRandom (NN_DIGIT * b, NN_DIGIT * c, NN_UINT digits) {
+    bool done = FALSE;
+    uint8_t ri;
+	
+    while(!done){
+		watchdog_periodic();
+		
+		for (ri=0; ri < digits; ri++){
+#ifdef THIRTYTWO_BIT_PROCESSOR
+			b[ri] = ((uint32_t)rand() << 16)^((uint32_t)rand());
+#else
+			b[ri] = (NN_DIGIT)rand();
+#endif
+		}
+		
+		NNModSmall(b, c, digits);
+		
+		if (NNZero(b, digits) != 1)
+			done = TRUE;
+		watchdog_periodic();
+	}
+}
+
+/*
+ * @brief Assign 1. a = 1.
+ */
+void NNAssignOne(NN_DIGIT * a, NN_UINT digits)
+{
+    uint8_t i;
+    
+    for (i = 1; i < digits; i++)
+		a[i] = 0;
+    
+	a[0] = 1;
+}
+

@@ -90,4 +90,11 @@ ecc_src += ss512k2s.c TPCurveParam.c
 CFLAGS+=-DSS512K2S -DTPSSC
 endif
 
+# CPABE pairing curves
+
+ifeq ($(Cparam), CPABE192K2)
+ecc_src += cpabe192k2.c TPCurveParam.c
+CFLAGS+=-DCPABE192K2 -DTPSSC
+endif
+
 endif
