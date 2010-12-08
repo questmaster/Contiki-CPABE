@@ -753,20 +753,21 @@ void
 eval_poly( NN_DIGIT r[NUMWORDS], cpabe_polynomial_t* q, NN_DIGIT x[NUMWORDS] )
 {
 	int j;
-	NN_DIGIT s[NUMWORDS];
-	NN_DIGIT t[NUMWORDS];
+	NN_DIGIT s[NUMWORDS]; // Zr
+	NN_DIGIT t[NUMWORDS]; // Zr
 		
 	NNAssignZero(r, NUMWORDS);
 	NNAssignOne(t, NUMWORDS);
-	
 	for( j = 0; j < q->deg + 1; j++ )
 	{
 		// r += q->coef[i] * t 
-		NNModMult(s, q->coef + (j * NUMWORDS), t, param.m, NUMWORDS);			// TODO: mod m or p?
-		NNModAdd(r, r, s, param.m, NUMWORDS);									// mod m or p?
+		NNMult(s, q->coef + (j * NUMWORDS), t, NUMWORDS);					// TODO: mod m or p? Maybe i can get this done.
+		NNMod(s, s, NUMWORDS, param.m, NNDigits(param.m, NUMWORDS));
+//		NNModMult(s, q->coef + (j * NUMWORDS), t, param.m, NUMWORDS);			// TODO: mod m or p?
+		NNModAdd(r, r, s, param.m, NUMWORDS);									// FIXME: mod m or p?
 		
 		// t *= x 
-		NNModMult(t, t, x, param.m, NUMWORDS);									// TODO: mod m or p?
+		NNModMult(t, t, x, param.m, NUMWORDS);									// FIXME: mod m or p?
 	}
 }
 
@@ -774,9 +775,9 @@ void
 fill_policy(cpabe_policy_t *p, cpabe_pub_t pub, NN_DIGIT e[NUMWORDS]) {
 	cpabe_policy_t* cp;
 	int i;
-	NN_DIGIT r[NUMWORDS];
-	NN_DIGIT t[NUMWORDS];
-	Point h;
+	NN_DIGIT r[NUMWORDS]; // Zr
+	NN_DIGIT t[NUMWORDS]; // Zr
+	Point h;			  // G2
 		
 	p->q = rand_poly(p->k - 1, e);
 	
@@ -980,13 +981,10 @@ void
 lagrange_coef( NN_DIGIT r[NUMWORDS], list_t s, int i )
 {
 	int j, k;
-	NN_DIGIT zero[NUMWORDS];
-	NN_DIGIT tmp1[NUMWORDS];
-	NN_DIGIT tmp2[NUMWORDS];
-	NN_DIGIT t[NUMWORDS];
-		
-	NNAssignZero(zero, NUMWORDS);
-	
+	NN_DIGIT tmp1[NUMWORDS]; // Zr
+	NN_DIGIT tmp2[NUMWORDS]; // Zr
+	NN_DIGIT t[NUMWORDS];	// Zr									// FIXME: mod m or p ?
+			
 	NNAssignOne(r, NUMWORDS);
 	for( k = 0; k < list_length(s); k++ )
 	{
@@ -994,16 +992,20 @@ lagrange_coef( NN_DIGIT r[NUMWORDS], list_t s, int i )
 		if( j == i )
 			continue;
 
-		NNAssignDigit(tmp1, j, NUMWORDS);									// FIXME: How to do?! -> negative number!
-		NNModSub(t, zero, tmp1, param.p, NUMWORDS);									// t = -j
+		NNAssignDigit(tmp1, j, NUMWORDS);		
+		NNModNeg(t, tmp1, param.m, NUMWORDS);							// t = -j
 
-		NNModMult(r, r, t, param.p, NUMWORDS); /* num_muls++; */
+//		NNModMult(r, r, t, param.m, NUMWORDS); /* num_muls++; */
+		NNMult(r, r, t, NUMWORDS); /* num_muls++; */
+		NNMod(r, r, NUMWORDS, param.m, NNDigits(param.m, NUMWORDS));
 
 		NNAssignDigit(tmp2, i, NUMWORDS);		
-		NNModSub(t, tmp2, tmp1, param.p, NUMWORDS);									// t = i - j
+		NNModSub(t, tmp2, tmp1, param.m, NUMWORDS);						// t = i - j
 		
-		NNModInv(t, t, param.p, NUMWORDS);
-		NNModMult(r, r, t, param.p, NUMWORDS); /* num_muls++; */
+		NNModInv(t, t, param.m, NUMWORDS);
+//		NNModMult(r, r, t, param.m, NUMWORDS); /* num_muls++; */
+		NNMult(r, r, t, NUMWORDS); /* num_muls++; */
+		NNMod(r, r, NUMWORDS, param.m, NNDigits(param.m, NUMWORDS));
 	}
 	
 	//element_clear(t);
@@ -1180,8 +1182,8 @@ dec_leaf_flatten( NN_DIGIT * r, NN_DIGIT * exp,
 				 cpabe_policy_t* p, cpabe_prv_t* prv, cpabe_pub_t* pub )
 {
 	cpabe_prv_comp_t* c;
-	NN_DIGIT s[NUMWORDS];
-	NN_DIGIT t[NUMWORDS];
+	NN_DIGIT s[NUMWORDS]; // GT
+	NN_DIGIT t[NUMWORDS]; // GT
 	
 	c = (cpabe_prv_comp_t *) list_index(prv->comps, p->attri);
 		
@@ -1205,13 +1207,13 @@ dec_internal_flatten( NN_DIGIT * r, NN_DIGIT * exp,
 					 cpabe_policy_t* p, cpabe_prv_t* prv, cpabe_pub_t* pub ) 
 {
 	int i;
-	NN_DIGIT t[NUMWORDS];
-	NN_DIGIT expnew[NUMWORDS];
+	NN_DIGIT t[NUMWORDS];		// Zr
+	NN_DIGIT expnew[NUMWORDS];	// Zr
 	
 	for( i = 0; i < list_length(p->satl); i++ )
 	{
  		lagrange_coef(t, p->satl, ((satl_int_t *) list_index(p->satl, i))->k);
-		NNModMult(expnew, exp, t, param.p, NUMWORDS); /* num_muls++; */			// TODO: mod m or p?
+		NNModMult(expnew, exp, t, param.m, NUMWORDS); /* num_muls++; */			// FIXME: mod m or p?
 		dec_node_flatten(r, expnew, list_index
 						 (p->children, ((satl_int_t *) list_index(p->satl, i))->k - 1), prv, pub);
 	}
@@ -1234,7 +1236,7 @@ dec_node_flatten( NN_DIGIT * r, NN_DIGIT * exp,
 void
 dec_flatten( NN_DIGIT * r, cpabe_policy_t* p, cpabe_prv_t* prv, cpabe_pub_t* pub )
 {
-	NN_DIGIT one[NUMWORDS];
+	NN_DIGIT one[NUMWORDS];	// Zr
 		
 	NNAssignOne(one, NUMWORDS);
 	NNAssignOne(r, NUMWORDS);
@@ -1247,7 +1249,7 @@ dec_flatten( NN_DIGIT * r, cpabe_policy_t* p, cpabe_prv_t* prv, cpabe_pub_t* pub
 
 
 int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN_DIGIT m[NUMWORDS]) {
-	NN_DIGIT t[NUMWORDS];
+	NN_DIGIT t[NUMWORDS];	// GT
 	
 	check_sat(list_head(cph.p), &prv);							// check properties saturation
 	if( !((struct cpabe_policy_s *) list_head(cph.p))->satisfiable )
@@ -1255,18 +1257,18 @@ int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN_DIGIT m[NUMW
 		printf("cannot decrypt, attributes in key do not satisfy policy\n");
 		return 0;
 	}
-	
+
 //	if( no_opt_sat ) 
 //		pick_sat_naive(list_head(cph.p), &prv); 
 //	else 
 		pick_sat_min_leaves(list_head(cph.p), &prv);				
 	
 //	if( dec_strategy == DEC_NAIVE ) 
-//		dec_naive(t, cph->p, prv, pub); // unported!
+//		dec_naive(t, cph->p, prv, pub); // not ported!
 //	else if( dec_strategy == DEC_FLATTEN ) 
 		dec_flatten(t, list_head(cph.p), &prv, &pub);
 //	else 
-//		dec_merge(t, cph->p, prv, pub); // unported!
+//		dec_merge(t, cph->p, prv, pub); // not ported!
 	
 	NNModMult(m, cph.cs, t, param.p, NUMWORDS); /* num_muls++; */
 	

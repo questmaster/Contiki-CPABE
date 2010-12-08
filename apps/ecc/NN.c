@@ -3572,7 +3572,7 @@ void NNEncode(unsigned char * a, NN_UINT digits, NN_DIGIT * b, NN_UINT len)
   // b = b mod c
   void NNModSmall(NN_DIGIT * b, NN_DIGIT * c, NN_UINT digits)
   {
-	  while (NN_Cmp(b, c, digits) > 0) {
+	  while (NN_Cmp(b, c, digits) >= 0) {
 		  NN_Sub(b, b, c, digits);
 	  }
   }

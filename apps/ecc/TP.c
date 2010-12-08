@@ -188,7 +188,7 @@ static void add_line_projective(NN2_NUMBER *u, Point *P0, NN_DIGIT *Z0, Point *P
   }
 
   //Miller's algorithm based on projective coordinate system
-bool TP_Miller(NN2_NUMBER *ef, Point P){
+static bool TP_Miller(NN2_NUMBER *ef, Point P){
     NN2_NUMBER temp1;
     Point V;
     int t;
@@ -247,6 +247,7 @@ static void dbl_line_projective_m(NN2_NUMBER *u, NN2_NUMBER *temp, Point *P0, NN
       NNLShift(t3, t2, 1, NUMWORDS);
       NNModAdd(t3, t3, t2, tpparam.p, NUMWORDS);
       NNModAdd(t3, t3, W, tpparam.p, NUMWORDS);
+
       //t2 = Z0^2
       NNModSqr(t2, Z1, tpparam.p, NUMWORDS);
       //temp->r = t1/2 - t3*(t2*XQ + X0)
@@ -377,7 +378,7 @@ static int check_m_0(NN_DIGIT *a, int start){
     return ((original_i - 1 - i) * NN_DIGIT_BITS + original_rest + NN_DIGIT_BITS - rest);
   }
 
-bool TP_Miller(NN2_NUMBER *ef, Point P){
+static bool TP_Miller(NN2_NUMBER *ef, Point P){
     NN2_NUMBER temp1;
     Point V;
     int t, m;
@@ -498,7 +499,7 @@ static void precompute(Point P){
   }
 
   // Miller's algorithm
-bool TP_Miller(NN2_NUMBER *ef) { 
+static bool TP_Miller(NN2_NUMBER *ef) { 
     NN2_NUMBER temp1;
     PointSlope *current;
 
@@ -585,7 +586,7 @@ static void aff_add(NN2_NUMBER *u, Point * P0, Point * P1, Point * P2)
   }
 
   // Miller's algorithm
-bool TP_Miller(NN2_NUMBER *ef, Point P) { 
+static bool TP_Miller(NN2_NUMBER *ef, Point P) { 
     NN2_NUMBER temp1;
     Point V;
     int t;
@@ -617,7 +618,7 @@ bool TP_Miller(NN2_NUMBER *ef, Point P) {
 #endif
   
   // initialize the Pairing with the point to be used along with the private key
-bool TP_init(Point P, Point Q) {
+static bool TP_init(Point P, Point Q) {
     NN_DIGIT Qy[NUMWORDS], two[NUMWORDS];
     
     //ECC_tpinit();
@@ -645,7 +646,7 @@ bool TP_init(Point P, Point Q) {
   
   // final exponentiation in Miller's algorithm
   // using the (u+iv)^(k-1) trick and Lucas exponentiation optimization
-bool TP_final_expon(NN_DIGIT *r,NN2_NUMBER *ef) {
+static bool TP_final_expon(NN_DIGIT *r,NN2_NUMBER *ef) {
     NN_DIGIT t1[NUMWORDS], t2[NUMWORDS], t3[NUMWORDS];
     
     NNModSqr(t1, ef->r, tpparam.p, NUMWORDS); // x^2
@@ -662,7 +663,7 @@ bool TP_final_expon(NN_DIGIT *r,NN2_NUMBER *ef) {
   }
   
   // Set the res value to be the Tate Pairing result
-bool TP_computeTP(NN_DIGIT *res, Point P) {
+static bool TP_computeTP(NN_DIGIT *res, Point P) {
     NN2_NUMBER ef;
     TP_Miller(&ef, P);
     TP_final_expon(res,&ef);

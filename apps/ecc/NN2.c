@@ -33,7 +33,6 @@
  */
 
 #include "NN2.h"
-#include "NN.h"
 #include "ECC.h"
 #include "TPCurveParam.h"
 
