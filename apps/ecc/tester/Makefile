@@ -28,7 +28,7 @@ Cparam = CPABE192K2
 #USE_PAIRING = TRUE
 USE_CPABE = TRUE
 
-# en-/disable different parts of CPABE code
+# en-/disable different parts of testCPABE code and DEBUG messages
 CFLAGS+=-DCPABE_DEBUG
 CFLAGS+=-DCPABE_SETUP
 CFLAGS+=-DCPABE_KEYGEN

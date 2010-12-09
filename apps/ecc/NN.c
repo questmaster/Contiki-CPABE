@@ -4045,3 +4045,23 @@ void NNAssignOne(NN_DIGIT * a, NN_UINT digits)
 	a[0] = 1;
 }
 
+/*
+ * @brief Computes same as NNModMult, but is more efficient with small modulo values.
+ * Computes a = b * c mod d.
+ *   a, b, c can be same
+ *   Lengths: a[cDigits], b[cDigits], c[cDigits], d[dDigits].
+ *   Assumes d > 0, cDigits < MAX_NN_DIGITS, dDigits < cDigits.
+ * /
+// TODO: does not work, but code works if copied in places ?!!
+void NNModMultVar (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT cDigits, NN_DIGIT *d, NN_UINT dDigits)
+{
+	NN_DIGIT tmp[2*cDigits];
+
+	NNMult(tmp, b, c, cDigits);		
+	NNDiv(NULL, tmp, tmp, 2*cDigits, d, dDigits);
+	NNAssignZero(a, NUMWORDS);
+	NNAssign(a, tmp, dDigits);
+
+}*/
+
+

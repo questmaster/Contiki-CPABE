@@ -303,7 +303,7 @@ void cpabe_setup(cpabe_pub_t *pub, cpabe_msk_t *msk) {
 	ECC_mul(&(pub->h), &(pub->g), msk->beta);		/**< h = g * beta */
 
 	
-	TP_TatePairing(&(pub->g_hat_alpha), pub->g, msk->g_alpha);	/**< g_hat_alpha = e(g, gp * alpha) */
+	TP_TatePairing(pub->g_hat_alpha, pub->g, msk->g_alpha);	/**< g_hat_alpha = e(g, gp * alpha) */
 	
 }
 #endif
@@ -478,7 +478,9 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 	cpabe_prv_comp_t *c;
 	Point h_rp;
 	NN_DIGIT rp[NUMWORDS];
-int i;
+#ifdef CPABE_DEBUG		
+	int i;
+#endif
 	
 	if (prv == NULL || &pub == NULL || &msk == NULL) {
 //			printf("cpabe_setup - ERROR: pub or msk NULL! pub: %p, msk: %p", pub, msk);
@@ -709,7 +711,7 @@ parse_policy_postfix( cpabe_cph_t *cph, char* s )
 			// pop n things and fill in children 
 			node = base_node(k, 0);
 			for( i = 0; i < n; i++ )
-				list_add(node->children, list_pop(cph->p));					// TODO: is order correct?! should be
+				list_push(node->children, list_pop(cph->p));
 			
 			// push result 
 			list_push(cph->p, node);
@@ -759,7 +761,7 @@ rand_poly( int deg, NN_DIGIT zero_val[NUMWORDS] )
 		(q->coef + (i * NUMWORDS))[1] = 0x7e57;
 		(q->coef + (i * NUMWORDS))[0] = 0x18e9;
 #else
- 		NNModRandom(q->coef + (i * NUMWORDS), param.m, NUMWORDS);			// FIXME: mod p or m? Array addressing correct?
+ 		NNModRandom(q->coef + (i * NUMWORDS), param.m, NUMWORDS);			// Array addressing correct?
 #endif
 	}
 		
@@ -770,21 +772,55 @@ void
 eval_poly( NN_DIGIT r[NUMWORDS], cpabe_polynomial_t* q, NN_DIGIT x[NUMWORDS] )
 {
 	int j;
+	NN_DIGIT tmp[2*NUMWORDS]; // for mult op
 	NN_DIGIT s[NUMWORDS]; // Zr
 	NN_DIGIT t[NUMWORDS]; // Zr
+#ifdef CPABE_DEBUG		
+	int i;
+#endif
 		
 	NNAssignZero(r, NUMWORDS);
 	NNAssignOne(t, NUMWORDS);
+	
 	for( j = 0; j < q->deg + 1; j++ )
 	{
 		// r += q->coef[i] * t 
-		NNMult(s, q->coef + (j * NUMWORDS), t, NUMWORDS);					// TODO: mod m or p? Maybe i can get this done.
-		NNMod(s, s, NUMWORDS, param.m, NNDigits(param.m, NUMWORDS));
-//		NNModMult(s, q->coef + (j * NUMWORDS), t, param.m, NUMWORDS);			// TODO: mod m or p?
-		NNModAdd(r, r, s, param.m, NUMWORDS);									// FIXME: mod m or p?
+		NNMult(tmp, q->coef + (j * NUMWORDS), t, NUMWORDS);		// more efficent than NNModMult, because of m!	
+//		NNMod(tmp, tmp, 2*NUMWORDS, param.m, NNDigits(param.m, NUMWORDS));
+		NNDiv(NULL, tmp, tmp, 2*NUMWORDS, param.m, NNDigits(param.m, NUMWORDS));
+		NNAssignZero(s, NUMWORDS);
+		NNAssign(s, tmp, NNDigits(param.m, NUMWORDS));
+//		NNModMultVar(s, q->coef + (j * NUMWORDS), t, NUMWORDS, param.m, NNDigits(param.m, NUMWORDS)); // TODO: should replace above
+		NNModAdd(r, r, s, param.m, NUMWORDS);
 		
 		// t *= x 
-		NNModMult(t, t, x, param.m, NUMWORDS);									// FIXME: mod m or p?
+		NNModMult(t, t, x, param.m, NUMWORDS);
+		
+#ifdef CPABE_DEBUG		
+		printf("eval_poly: j=%d, deg=%d\n", j, q->deg);
+		
+		printf("s: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", s[i]);
+		}
+		printf("\n");
+		printf("r: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", r[i]);
+		}
+		printf("\n");
+		printf("t: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ",t[i]);
+		}
+		printf("\n");
+		printf("x: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", x[i]);
+		}
+		printf("\n");
+#endif		
+
 	}
 }
 
@@ -796,6 +832,9 @@ fill_policy(cpabe_policy_t *p, cpabe_pub_t pub, NN_DIGIT e[NUMWORDS]) {
 	NN_DIGIT t[NUMWORDS]; // Zr
 	Point h;			  // G2
 		
+#ifdef CPABE_DEBUG		
+		printf("p_attrib: %s\n", p->attr);
+#endif
 	p->q = rand_poly(p->k - 1, e);
 	
 	if( list_length(p->children) == 0 )
@@ -805,7 +844,6 @@ fill_policy(cpabe_policy_t *p, cpabe_pub_t pub, NN_DIGIT e[NUMWORDS]) {
 		ECC_mul(&(p->cp), &h,     &(p->q->coef[0]));
 
 #ifdef CPABE_DEBUG		
-		printf("p_attrib: %s\n", p->attr);
 		
 		printf("CPABE_h_x: ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
@@ -855,34 +893,54 @@ fill_policy(cpabe_policy_t *p, cpabe_pub_t pub, NN_DIGIT e[NUMWORDS]) {
  * @brief generate symetric encryption key m with public key and a specified policy.
  */
 /*
- m 1b f4 66 fb af 33 f4 0 3a 92 20 2d bf 61 56 bb 87 92 de 92 e9 1a b3 a7 7 35 f4 6d 77 eb 1 8f 5a 72 41 47 db cf 9f 9e f9 c5 c0 8c c5 77 f9 fc 
- s 30 9e e2 c0 dc eb 7c f4 3 f3 61 8f 41 da 22 b6 
- cph->cs 3 e7 16 18 f7 6e be 30 8b 3b 27 24 aa f0 6e c7 2a 5d 59 74 18 ce 8e 2f 1d e2 60 7f 96 1a ff 4c c1 b3 f3 f7 b 74 82 34 0 d1 82 d9 44 dd ee 3f 
- cph->c.x 12 27 3a 28 85 bc 33 5c 67 6e c1 5a b9 53 96 1e 87 55 14 74 ac cc 22 93 
- cph->c.y 1d f3 70 6c 3a db 14 ac 50 43 61 bf 27 3b 75 de 9f 28 9a 42 16 d2 13 d1 
- policy node: (null)
- deg: 1, sizeof(q->coef): 4
- q->coef[1] 4b 9d 41 1e fb 6b 78 5b ba 75 d0 58 7e 57 18 e9 
- policy node: attr1
- deg: 0, sizeof(q->coef): 4
- h.x 13 c4 df 84 a0 81 e6 8c d5 61 47 2c d6 60 92 39 66 bd 28 2f c0 c4 2a 98 
- h.y 4 e f1 70 91 1c ff 8 25 2f ae 8c c8 9 ec 62 13 77 2d 4b 78 c6 ad 16 
- p->c.x a 83 8c 17 96 fa 71 fa 2e 7 52 2b 90 bf 89 a2 19 1a 8e ca 3e 7b 73 11 
- p->c.y 1d ac a 87 84 fc 24 69 f1 aa 68 7c ad 98 8e 7a 41 27 9f 42 4f 3d 6f 9b 
- p->cp.x 11 4 1d d 52 96 ac d6 2e 9a b5 b8 de 4b 8f ea 94 b2 af 6 a9 f4 4f 53 
- p->cp.y 9 a4 f2 f e6 c a5 dc ec 4e 4f 93 d2 5d c5 da db 34 24 6a 1 da 3b 56 
- policy node: attr3
- deg: 0, sizeof(q->coef): 4
- h.x 12 89 d4 7d 12 86 35 de fc 1f bb d3 d 5f 16 b8 ad 97 25 66 ef ae c8 51 
- h.y 8 91 b7 a1 de 45 a8 12 d2 b8 9f 46 c9 7c 99 62 f e7 ae a4 65 2b 32 38 
- p->c.x 10 a5 dc 80 45 f 18 30 41 8e 63 90 c0 27 e2 a4 8a aa e b5 40 60 27 2b 
- p->c.y d b8 76 d0 d8 68 ff d 29 c3 d7 7 68 d7 56 97 ed af a2 e3 a4 c1 c9 3d 
- p->cp.x 2 d6 ac 21 17 76 19 78 8c 56 a7 af 43 fd 18 6d 21 d8 6d 5c f8 de 9 72 
- p->cp.y e 91 f4 e2 57 af 15 92 f1 f4 7c d0 be 56 80 f9 43 70 25 de 4c 94 47 2b  
- */
+policy: attr1 attr3 2of2
+
+m 1b f4 66 fb af 33 f4 0 3a 92 20 2d bf 61 56 bb 87 92 de 92 e9 1a b3 a7 7 35 f4 6d 77 eb 1 8f 5a 72 41 47 db cf 9f 9e f9 c5 c0 8c c5 77 f9 fc 
+s 30 9e e2 c0 dc eb 7c f4 3 f3 61 8f 41 da 22 b6 
+cph->cs 3 e7 16 18 f7 6e be 30 8b 3b 27 24 aa f0 6e c7 2a 5d 59 74 18 ce 8e 2f 1d e2 60 7f 96 1a ff 4c c1 b3 f3 f7 b 74 82 34 0 d1 82 d9 44 dd ee 3f 
+cph->c.x 12 27 3a 28 85 bc 33 5c 67 6e c1 5a b9 53 96 1e 87 55 14 74 ac cc 22 93 
+cph->c.y 1d f3 70 6c 3a db 14 ac 50 43 61 bf 27 3b 75 de 9f 28 9a 42 16 d2 13 d1 
+
+policy node: (null)
+q->coef[1] 4b 9d 41 1e fb 6b 78 5b ba 75 d0 58 7e 57 18 e9 
+eval_poly: j=0, deg=1
+s 30 9e e2 c0 dc eb 7c f4 3 f3 61 8f 41 da 22 b6 
+r 30 9e e2 c0 dc eb 7c f4 3 f3 61 8f 41 da 22 b6 
+t 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+x 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+eval_poly: j=1, deg=1
+s 4b 9d 41 1e fb 6b 78 5b ba 75 d0 58 7e 57 18 e9 
+r 7c 3c 23 df d8 56 f5 4f be 69 31 e7 c0 31 3b 9f 
+t 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+x 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+
+policy node: attr1
+h.x 13 c4 df 84 a0 81 e6 8c d5 61 47 2c d6 60 92 39 66 bd 28 2f c0 c4 2a 98 
+h.y 4 e f1 70 91 1c ff 8 25 2f ae 8c c8 9 ec 62 13 77 2d 4b 78 c6 ad 16 
+p->c.x a 83 8c 17 96 fa 71 fa 2e 7 52 2b 90 bf 89 a2 19 1a 8e ca 3e 7b 73 11 
+p->c.y 1d ac a 87 84 fc 24 69 f1 aa 68 7c ad 98 8e 7a 41 27 9f 42 4f 3d 6f 9b 
+p->cp.x 11 4 1d d 52 96 ac d6 2e 9a b5 b8 de 4b 8f ea 94 b2 af 6 a9 f4 4f 53 
+p->cp.y 9 a4 f2 f e6 c a5 dc ec 4e 4f 93 d2 5d c5 da db 34 24 6a 1 da 3b 56 
+eval_poly: j=0, deg=1
+s 30 9e e2 c0 dc eb 7c f4 3 f3 61 8f 41 da 22 b6 
+r 30 9e e2 c0 dc eb 7c f4 3 f3 61 8f 41 da 22 b6 
+t 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 
+x 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 
+eval_poly: j=1, deg=1
+s 17 3a 81 fd f6 d6 f0 b7 74 eb a0 b0 fc ae 31 d1 
+r 47 d9 64 be d3 c2 6d ab 78 df 2 40 3e 88 54 87 
+t 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 4 
+x 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 
+
+policy node: attr3
+h.x 12 89 d4 7d 12 86 35 de fc 1f bb d3 d 5f 16 b8 ad 97 25 66 ef ae c8 51 
+h.y 8 91 b7 a1 de 45 a8 12 d2 b8 9f 46 c9 7c 99 62 f e7 ae a4 65 2b 32 38 
+p->c.x 10 a5 dc 80 45 f 18 30 41 8e 63 90 c0 27 e2 a4 8a aa e b5 40 60 27 2b 
+p->c.y d b8 76 d0 d8 68 ff d 29 c3 d7 7 68 d7 56 97 ed af a2 e3 a4 c1 c9 3d 
+p->cp.x 2 d6 ac 21 17 76 19 78 8c 56 a7 af 43 fd 18 6d 21 d8 6d 5c f8 de 9 72 
+p->cp.y e 91 f4 e2 57 af 15 92 f1 f4 7c d0 be 56 80 f9 43 70 25 de 4c 94 47 2b  */
 void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN_DIGIT m[NUMWORDS], char *policy) {
  	NN_DIGIT s[NUMWORDS];
-	int i;
 	
 	// initialize 
 	parse_policy_postfix(cph, policy);
@@ -1016,6 +1074,9 @@ pick_sat_min_leaves( cpabe_policy_t* p, cpabe_prv_t* prv )
 	satl_int_t * alloc_k;
 	
 //	assert(p->satisfiable == 1);
+#ifdef CPABE_DEBUG
+	printf("p->attr=%s\n", p->attr);
+#endif
 	
 	if( list_length(p->children) == 0 )
 		p->min_leaves = 1;
@@ -1047,6 +1108,10 @@ pick_sat_min_leaves( cpabe_policy_t* p, cpabe_prv_t* prv )
 				alloc_k = (satl_int_t *) malloc(sizeof(satl_int_t));
 				alloc_k->k = k;
 				list_add(p->satl, alloc_k);
+
+#ifdef CPABE_DEBUG
+	printf("p->satl[%d]->k=%d\n", i, k);
+#endif
 			}
 //		assert(l == p->k);
 		
@@ -1063,6 +1128,10 @@ lagrange_coef( NN_DIGIT r[NUMWORDS], list_t s, int i )
 	NN_DIGIT tmp1[NUMWORDS]; // Zr
 	NN_DIGIT tmp2[NUMWORDS]; // Zr
 	NN_DIGIT t[NUMWORDS];	// Zr									// FIXME: mod m or p ?
+	NN_DIGIT r_tmp[2*NUMWORDS];
+#ifdef CPABE_DEBUG		
+	int a;
+#endif
 			
 	NNAssignOne(r, NUMWORDS);
 	for( k = 0; k < list_length(s); k++ )
@@ -1075,17 +1144,57 @@ lagrange_coef( NN_DIGIT r[NUMWORDS], list_t s, int i )
 		NNModNeg(t, tmp1, param.m, NUMWORDS);							// t = -j
 
 //		NNModMult(r, r, t, param.m, NUMWORDS); /* num_muls++; */
-		NNMult(r, r, t, NUMWORDS); /* num_muls++; */
-		NNMod(r, r, NUMWORDS, param.m, NNDigits(param.m, NUMWORDS));
+		NNMult(r_tmp, r, t, NUMWORDS);		// more efficent than NNModMult, because of small m!	
+//		NNMod(r_tmp, r_tmp, 2*NUMWORDS, param.m, NNDigits(param.m, NUMWORDS));
+		NNDiv(NULL, r_tmp, r_tmp, 2*NUMWORDS, param.m, NNDigits(param.m, NUMWORDS));
+		NNAssignZero(r, NUMWORDS);
+		NNAssign(r, r_tmp, NNDigits(param.m, NUMWORDS));
+#ifdef CPABE_DEBUG		
+		printf("lag_t1[%d]: ", k);
+		for (a = NUMWORDS-1; a >= 0; a--) {
+			printf("%x ", t[a]);
+		}
+		printf("\n");
+		printf("lag_r1[%d]: ", k);
+		for (a = NUMWORDS-1; a >= 0; a--) {
+			printf("%x ",r[a]);
+		}
+		printf("\n");
+#endif		
 
+		NNAssignDigit(tmp1, j, NUMWORDS);		
 		NNAssignDigit(tmp2, i, NUMWORDS);		
 		NNModSub(t, tmp2, tmp1, param.m, NUMWORDS);						// t = i - j
-		
+
 		NNModInv(t, t, param.m, NUMWORDS);
 //		NNModMult(r, r, t, param.m, NUMWORDS); /* num_muls++; */
-		NNMult(r, r, t, NUMWORDS); /* num_muls++; */
-		NNMod(r, r, NUMWORDS, param.m, NNDigits(param.m, NUMWORDS));
+		NNMult(r_tmp, r, t, NUMWORDS);		// more efficent than NNModMult, because of small m!	
+//		NNMod(r_tmp, r_tmp, 2*NUMWORDS, param.m, NNDigits(param.m, NUMWORDS)); // does not work with neg. values
+		NNDiv(NULL, r_tmp, r_tmp, 2*NUMWORDS, param.m, NNDigits(param.m, NUMWORDS));
+		NNAssignZero(r, NUMWORDS);
+		NNAssign(r, r_tmp, NNDigits(param.m, NUMWORDS));
+
+#ifdef CPABE_DEBUG		
+		printf("lag_t2[%d]: ", k);
+		for (a = NUMWORDS-1; a >= 0; a--) {
+			printf("%x ", t[a]);
+		}
+		printf("\n");
+		printf("lag_r2[%d]: ", k);
+		for (a = NUMWORDS-1; a >= 0; a--) {
+			printf("%x ",r[a]);
+		}
+		printf("\n");
+#endif		
 	}
+
+#ifdef CPABE_DEBUG		
+		printf("lag_r: ");
+		for (a = NUMWORDS-1; a >= 0; a--) {
+			printf("%x ", r[a]);
+		}
+		printf("\n");
+#endif		
 	
 	//element_clear(t);
 }
@@ -1263,16 +1372,56 @@ dec_leaf_flatten( NN_DIGIT * r, NN_DIGIT * exp,
 	cpabe_prv_comp_t* c;
 	NN_DIGIT s[NUMWORDS]; // GT
 	NN_DIGIT t[NUMWORDS]; // GT
+#ifdef CPABE_DEBUG		
+	int a;
+#endif
 	
 	c = (cpabe_prv_comp_t *) list_index(prv->comps, p->attri);
 		
 	TP_TatePairing(s, p->c,  c->d); /* num_pairings++; */
 	TP_TatePairing(t, p->cp, c->dp); /* num_pairings++; */
+
+#ifdef CPABE_DEBUG	
+		printf("p->attr=%s\n", p->attr);
+	
+		printf("leaf_tp_t: ");
+		for (a = NUMWORDS-1; a >= 0; a--) {
+			printf("%x ", t[a]);
+		}
+		printf("\n");
+		printf("leaf_tp_s: ");
+		for (a = NUMWORDS-1; a >= 0; a--) {
+			printf("%x ", s[a]);
+		}
+		printf("\n");
+#endif		
+
 	NNModInv(t, t, param.p, NUMWORDS);
 	NNModMult(s, s, t, param.p, NUMWORDS); /* num_muls++; */
 	NNModExp(s, s, exp, NUMWORDS, param.p, NUMWORDS); /* num_exps++; */
+
+#ifdef CPABE_DEBUG		
+		printf("leaf_t: ");
+		for (a = NUMWORDS-1; a >= 0; a--) {
+			printf("%x ", t[a]);
+		}
+		printf("\n");
+		printf("leaf_s: ");
+		for (a = NUMWORDS-1; a >= 0; a--) {
+			printf("%x ", s[a]);
+		}
+		printf("\n");
+#endif		
 	
 	NNModMult(r, r, s, param.p, NUMWORDS); /* num_muls++; */
+
+#ifdef CPABE_DEBUG		
+		printf("leaf_r: ");
+		for (a = NUMWORDS-1; a >= 0; a--) {
+			printf("%x ",r[a]);
+		}
+		printf("\n");
+#endif		
 	
 	//element_clear(s);		
 	//element_clear(t);
@@ -1288,13 +1437,30 @@ dec_internal_flatten( NN_DIGIT * r, NN_DIGIT * exp,
 	int i;
 	NN_DIGIT t[NUMWORDS];		// Zr
 	NN_DIGIT expnew[NUMWORDS];	// Zr
+	NN_DIGIT tmp[2*NUMWORDS];
+#ifdef CPABE_DEBUG		
+	int a;
+#endif
 	
 	for( i = 0; i < list_length(p->satl); i++ )
 	{
  		lagrange_coef(t, p->satl, ((satl_int_t *) list_index(p->satl, i))->k);
-		NNModMult(expnew, exp, t, param.m, NUMWORDS); /* num_muls++; */			// FIXME: mod m or p?
+//		NNModMult(expnew, exp, t, param.m, NUMWORDS); /* num_muls++; */			// FIXME: mod m or p?
+		NNMult(tmp, exp, t, NUMWORDS);		// more efficent than NNModMult, because of small m!	
+//		NNMod(tmp, tmp, 2*NUMWORDS, param.m, NNDigits(param.m, NUMWORDS));
+		NNDiv(NULL, tmp, tmp, 2*NUMWORDS, param.m, NNDigits(param.m, NUMWORDS));
+		NNAssignZero(expnew, NUMWORDS);
+		NNAssign(expnew, tmp, NNDigits(param.m, NUMWORDS));
 		dec_node_flatten(r, expnew, list_index
 						 (p->children, ((satl_int_t *) list_index(p->satl, i))->k - 1), prv, pub);
+
+#ifdef CPABE_DEBUG		
+		printf("int_r[%d]: ", i);
+		for (a = NUMWORDS-1; a >= 0; a--) {
+			printf("%x ",r[a]);
+		}
+		printf("\n");
+#endif		
 	}
 	
 	//element_clear(t);
@@ -1326,9 +1492,45 @@ dec_flatten( NN_DIGIT * r, cpabe_policy_t* p, cpabe_prv_t* prv, cpabe_pub_t* pub
 }
 
 
-
+/*
+p->attr=(null)
+p->attr=attr1
+p->attr=attr3
+p->satl[0]=1
+p->satl[1]=2
+lag_t1[1] 80 0 0 3f ff ff ff ff ff ff ff ff ff ff ff ff 
+lag_r1[1] 80 0 0 3f ff ff ff ff ff ff ff ff ff ff ff ff 
+lag_t2[1] 80 0 0 40 0 0 0 0 0 0 0 0 0 0 0 0 
+lag_r2[1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 
+lag_r 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 
+p->attr=attr1
+leaf_tp_t 17 77 27 43 df 87 56 2f 4c fe 15 64 2c 73 42 20 4d ee 96 9e 95 83 7f f5 8 68 eb 43 88 aa 30 37 28 d9 b8 db d3 22 94 e ff bb 7e d0 18 df 55 94 
+leaf_tp_s 16 1 4a 8e 79 c0 bd 54 68 87 b aa 7d 82 96 79 ee 4 e c8 9a 9b 1 c9 15 a8 7e 5d 57 a 44 94 2b 3f b7 4b b1 4e 9a 74 ed 50 7a de b7 11 75 ee 
+leaf_t 17 77 27 43 df 87 56 2f 4c fe 15 64 2c 73 42 20 4d ee 96 9e 95 83 7f f5 17 d5 ac 1b f9 eb 41 30 7c b 22 24 2c dd 6b f1 40 c1 af ce ad b4 3d d7 
+leaf_s 15 af 2c d2 b5 94 32 54 c6 44 bd eb b8 40 72 b c9 d3 5e 49 35 da 6a c9 1 58 c0 c2 5a 16 8 cb f8 65 8e 31 ee 28 84 20 d5 57 62 b8 74 29 55 b9 
+leaf_r 15 af 2c d2 b5 94 32 54 c6 44 bd eb b8 40 72 b c9 d3 5e 49 35 da 6a c9 1 58 c0 c2 5a 16 8 cb f8 65 8e 31 ee 28 84 20 d5 57 62 b8 74 29 55 b9 
+int_r[0] 15 af 2c d2 b5 94 32 54 c6 44 bd eb b8 40 72 b c9 d3 5e 49 35 da 6a c9 1 58 c0 c2 5a 16 8 cb f8 65 8e 31 ee 28 84 20 d5 57 62 b8 74 29 55 b9 
+lag_t1[0] 80 0 0 40 0 0 0 0 0 0 0 0 0 0 0 0 
+lag_r1[0] 80 0 0 40 0 0 0 0 0 0 0 0 0 0 0 0 
+lag_t2[0] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+lag_r2[0] 80 0 0 40 0 0 0 0 0 0 0 0 0 0 0 0 
+lag_r 80 0 0 40 0 0 0 0 0 0 0 0 0 0 0 0 
+p->attr=attr3
+leaf_tp_t 1a 30 38 53 c8 e7 40 ac 32 6f 9b cc da 5d e0 c0 e 57 b5 3f 7f fe 1a f2 a 6b d5 55 87 e0 ca 6c b0 e 46 b b7 1f db d6 da ac 3e ac 99 e6 11 39 
+leaf_tp_s 1 63 8b f6 be 8 5d 53 e6 80 ed 23 6c a5 fd 11 ae 3 cd 36 96 62 3c 18 d 30 60 2b e1 8 bd cb d0 fb ac 86 38 81 ab 9d 4e 8c 21 e 6d 94 87 57 
+leaf_t 1a 30 38 53 c8 e7 40 ac 32 6f 9b cc da 5d e0 c0 e 57 b5 3f 7f fe 1a f2 15 d2 c2 9 fa b4 a6 fa f4 d6 94 f4 48 e0 24 29 65 d0 ef f2 2c ad 82 32 
+leaf_s 5 d5 d5 ea a4 8b 83 b 17 3a 8c 89 60 34 7c 39 ad 43 b7 b6 1d a5 71 1a 1c b2 96 96 4a b3 7d e2 ec 10 e0 f 27 3d b0 c2 5 55 9d c5 13 2 6c 88 
+leaf_r 3 e5 24 76 8c 30 a9 40 b1 3 63 f0 cc 6d 16 57 5e c8 a8 6b e1 18 d9 e1 0 d6 7e c8 cf be 86 b1 55 e4 a4 fc 4 21 f8 67 4c 78 de 85 e8 5d 7e 30 
+int_r[1] 3 e5 24 76 8c 30 a9 40 b1 3 63 f0 cc 6d 16 57 5e c8 a8 6b e1 18 d9 e1 0 d6 7e c8 cf be 86 b1 55 e4 a4 fc 4 21 f8 67 4c 78 de 85 e8 5d 7e 30 
+dec_flat_t 3 e5 24 76 8c 30 a9 40 b1 3 63 f0 cc 6d 16 57 5e c8 a8 6b e1 18 d9 e1 0 d6 7e c8 cf be 86 b1 55 e4 a4 fc 4 21 f8 67 4c 78 de 85 e8 5d 7e 30 
+dec_t 3 c5 82 15 89 55 47 af a8 d7 68 ad 84 13 bc 32 1a 7 d8 8d c9 2 27 d4 1a e7 4b cb b4 69 2 e7 f8 40 7d 3f da a9 49 90 1d 4c 39 80 b4 18 cb 37 
+dec_m 1b f4 66 fb af 33 f4 0 3a 92 20 2d bf 61 56 bb 87 92 de 92 e9 1a b3 a7 7 35 f4 6d 77 eb 1 8f 5a 72 41 47 db cf 9f 9e f9 c5 c0 8c c5 77 f9 fc 
+ */
 int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN_DIGIT m[NUMWORDS]) {
 	NN_DIGIT t[NUMWORDS];	// GT
+#ifdef CPABE_DEBUG		
+	int i;
+#endif
 	
 	check_sat(list_head(cph.p), &prv);							// check properties saturation
 	if( !((struct cpabe_policy_s *) list_head(cph.p))->satisfiable )
@@ -1336,7 +1538,6 @@ int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN_DIGIT m[NUMW
 		printf("cannot decrypt, attributes in key do not satisfy policy\n");
 		return 0;
 	}
-
 //	if( no_opt_sat ) 
 //		pick_sat_naive(list_head(cph.p), &prv); 
 //	else 
@@ -1348,13 +1549,29 @@ int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN_DIGIT m[NUMW
 		dec_flatten(t, list_head(cph.p), &prv, &pub);
 //	else 
 //		dec_merge(t, cph->p, prv, pub); // not ported!
+
+#ifdef CPABE_DEBUG
+		printf("dec_flat_t: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ",t[i]);
+		}
+		printf("\n");
+#endif
 	
 	NNModMult(m, cph.cs, t, param.p, NUMWORDS); /* num_muls++; */
 	
 	TP_TatePairing(t, cph.c, prv.d); /* num_pairings++; */
 	NNModInv(t, t, param.p, NUMWORDS);
 	NNModMult(m, m, t, param.p, NUMWORDS); /* num_muls++; */ 
-	
+
+#ifdef CPABE_DEBUG
+		printf("dec_t: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ",t[i]);
+		}
+		printf("\n");
+#endif
+
 	return 1;
 }
 #endif

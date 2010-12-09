@@ -376,4 +376,8 @@ extern void NNModRandom(NN_DIGIT * b, NN_DIGIT * c, NN_UINT digits);
 // Assign 1. a = 1.
 extern void NNAssignOne(NN_DIGIT * a, NN_UINT digits);
 
+// More efficient as NNModMult for d. (TODO: does not work, but code works if copied ?!!)
+//extern void NNModMultVar (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT cDigits, NN_DIGIT *d, NN_UINT dDigits);
+
 #endif
+
