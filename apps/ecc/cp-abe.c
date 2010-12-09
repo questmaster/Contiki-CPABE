@@ -743,9 +743,26 @@ rand_poly( int deg, NN_DIGIT zero_val[NUMWORDS] )
 	
 	NNAssign(q->coef, zero_val, NUMWORDS);
 	
-	for( i = 1; i < q->deg + 1; i++ )
- 		NNModRandom(q->coef + (i * NUMWORDS), param.p, NUMWORDS);			// FIXME: Array addressing correct?
-	
+	for( i = 1; i < q->deg + 1; i++ ) {
+#ifdef CPABE_DEBUG
+		(q->coef + (i * NUMWORDS))[12] = 0x0000;
+		(q->coef + (i * NUMWORDS))[11] = 0x0000;
+		(q->coef + (i * NUMWORDS))[10] = 0x0000;
+		(q->coef + (i * NUMWORDS))[9] = 0x0000;
+		(q->coef + (i * NUMWORDS))[8] = 0x0000;
+		(q->coef + (i * NUMWORDS))[7] = 0x4b9d;
+		(q->coef + (i * NUMWORDS))[6] = 0x411e;
+		(q->coef + (i * NUMWORDS))[5] = 0xfb6b;
+		(q->coef + (i * NUMWORDS))[4] = 0x785b;
+		(q->coef + (i * NUMWORDS))[3] = 0xba75;
+		(q->coef + (i * NUMWORDS))[2] = 0xd058;
+		(q->coef + (i * NUMWORDS))[1] = 0x7e57;
+		(q->coef + (i * NUMWORDS))[0] = 0x18e9;
+#else
+ 		NNModRandom(q->coef + (i * NUMWORDS), param.m, NUMWORDS);			// FIXME: mod p or m? Array addressing correct?
+#endif
+	}
+		
 	return q;
 }
 
@@ -786,6 +803,41 @@ fill_policy(cpabe_policy_t *p, cpabe_pub_t pub, NN_DIGIT e[NUMWORDS]) {
 		point_from_string(&h, p->attr);
 		ECC_mul(&(p->c),  &pub.g, &(p->q->coef[0]));
 		ECC_mul(&(p->cp), &h,     &(p->q->coef[0]));
+
+#ifdef CPABE_DEBUG		
+		printf("p_attrib: %s\n", p->attr);
+		
+		printf("CPABE_h_x: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", h.x[i]);
+		}
+		printf("\n");
+		printf("CPABE_h_y: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", h.y[i]);
+		}
+		printf("\n");
+		printf("CPABE_p_c_x: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", p->c.x[i]);
+		}
+		printf("\n");
+		printf("CPABE_p_c_y: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", p->c.y[i]);
+		}
+		printf("\n");
+		printf("CPABE_p_cp_x: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", p->cp.x[i]);
+		}
+		printf("\n");
+		printf("CPABE_p_cp_y: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", p->cp.y[i]);
+		}
+		printf("\n");
+#endif		
 	} else {
 		i = 1;
 		for(cp = list_head(p->children); cp != NULL; cp = cp->next )
@@ -802,41 +854,68 @@ fill_policy(cpabe_policy_t *p, cpabe_pub_t pub, NN_DIGIT e[NUMWORDS]) {
 /**
  * @brief generate symetric encryption key m with public key and a specified policy.
  */
+/*
+ m 1b f4 66 fb af 33 f4 0 3a 92 20 2d bf 61 56 bb 87 92 de 92 e9 1a b3 a7 7 35 f4 6d 77 eb 1 8f 5a 72 41 47 db cf 9f 9e f9 c5 c0 8c c5 77 f9 fc 
+ s 30 9e e2 c0 dc eb 7c f4 3 f3 61 8f 41 da 22 b6 
+ cph->cs 3 e7 16 18 f7 6e be 30 8b 3b 27 24 aa f0 6e c7 2a 5d 59 74 18 ce 8e 2f 1d e2 60 7f 96 1a ff 4c c1 b3 f3 f7 b 74 82 34 0 d1 82 d9 44 dd ee 3f 
+ cph->c.x 12 27 3a 28 85 bc 33 5c 67 6e c1 5a b9 53 96 1e 87 55 14 74 ac cc 22 93 
+ cph->c.y 1d f3 70 6c 3a db 14 ac 50 43 61 bf 27 3b 75 de 9f 28 9a 42 16 d2 13 d1 
+ policy node: (null)
+ deg: 1, sizeof(q->coef): 4
+ q->coef[1] 4b 9d 41 1e fb 6b 78 5b ba 75 d0 58 7e 57 18 e9 
+ policy node: attr1
+ deg: 0, sizeof(q->coef): 4
+ h.x 13 c4 df 84 a0 81 e6 8c d5 61 47 2c d6 60 92 39 66 bd 28 2f c0 c4 2a 98 
+ h.y 4 e f1 70 91 1c ff 8 25 2f ae 8c c8 9 ec 62 13 77 2d 4b 78 c6 ad 16 
+ p->c.x a 83 8c 17 96 fa 71 fa 2e 7 52 2b 90 bf 89 a2 19 1a 8e ca 3e 7b 73 11 
+ p->c.y 1d ac a 87 84 fc 24 69 f1 aa 68 7c ad 98 8e 7a 41 27 9f 42 4f 3d 6f 9b 
+ p->cp.x 11 4 1d d 52 96 ac d6 2e 9a b5 b8 de 4b 8f ea 94 b2 af 6 a9 f4 4f 53 
+ p->cp.y 9 a4 f2 f e6 c a5 dc ec 4e 4f 93 d2 5d c5 da db 34 24 6a 1 da 3b 56 
+ policy node: attr3
+ deg: 0, sizeof(q->coef): 4
+ h.x 12 89 d4 7d 12 86 35 de fc 1f bb d3 d 5f 16 b8 ad 97 25 66 ef ae c8 51 
+ h.y 8 91 b7 a1 de 45 a8 12 d2 b8 9f 46 c9 7c 99 62 f e7 ae a4 65 2b 32 38 
+ p->c.x 10 a5 dc 80 45 f 18 30 41 8e 63 90 c0 27 e2 a4 8a aa e b5 40 60 27 2b 
+ p->c.y d b8 76 d0 d8 68 ff d 29 c3 d7 7 68 d7 56 97 ed af a2 e3 a4 c1 c9 3d 
+ p->cp.x 2 d6 ac 21 17 76 19 78 8c 56 a7 af 43 fd 18 6d 21 d8 6d 5c f8 de 9 72 
+ p->cp.y e 91 f4 e2 57 af 15 92 f1 f4 7c d0 be 56 80 f9 43 70 25 de 4c 94 47 2b  
+ */
 void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN_DIGIT m[NUMWORDS], char *policy) {
  	NN_DIGIT s[NUMWORDS];
+	int i;
 	
 	// initialize 
 	parse_policy_postfix(cph, policy);
 	
 	// compute 
-#ifdef CPABE_DEBUG_OFF
+#ifdef CPABE_DEBUG
 	m[12] = 0x0000;
-	m[11] = 0x;
-	m[10] = 0x;
-	m[9] = 0x;
-	m[8] = 0x;
-	m[7] = 0x;
-	m[6] = 0x;
-	m[5] = 0x;
-	m[4] = 0x;
-	m[3] = 0x;
-	m[2] = 0x;
-	m[1] = 0x;
-	m[0] = 0x;
+	m[11] = 0x1bf4;
+	m[10] = 0x66fb;
+	m[9] = 0xaf33;
+	m[8] = 0xf400;
+	m[7] = 0x3a92;
+	m[6] = 0x202d;
+	m[5] = 0xbf61;
+	m[4] = 0x56bb;
+	m[3] = 0x8792;
+	m[2] = 0xde92;
+	m[1] = 0xe91a;
+	m[0] = 0xb3a7;
 
 	s[12] = 0x0000;
 	s[11] = 0x0000;
 	s[10] = 0x0000;
 	s[9] = 0x0000;
 	s[8] = 0x0000;
-	s[7] = 0x;
-	s[6] = 0x;
-	s[5] = 0x;
-	s[4] = 0x;
-	s[3] = 0x;
-	s[2] = 0x;
-	s[1] = 0x;
-	s[0] = 0x;
+	s[7] = 0x309e;
+	s[6] = 0xe2c0;
+	s[5] = 0xdceb;
+	s[4] = 0x7cf4;
+	s[3] = 0x03f3;
+	s[2] = 0x618f;
+	s[1] = 0x41da;
+	s[0] = 0x22b6;
 #else
  	NNModRandom(m, param.p, NUMWORDS);
  	NNModRandom(s, param.m, NUMWORDS);
@@ -845,7 +924,7 @@ void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN_DIGIT m[NUMWORDS], char *po
 	NNModMult(cph->cs, cph->cs, m, param.p, NUMWORDS);		/**< cs = cs * m */
 	
 	ECC_mul(&(cph->c), &(pub.h), s);						/**< c = h * s */
-
+	
 	fill_policy((cpabe_policy_t *) list_head(cph->p), pub, s);
 }
 #endif

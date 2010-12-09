@@ -33,8 +33,8 @@
  */
 
 #include "NN2.h"
-#include "ECC.h"
-#include "TPCurveParam.h"
+//#include "ECC.h"
+//#include "TPCurveParam.h"
 
 
    //Computes a = (b.r*c.r - b.i*c.i) mod d + i*(b.i*c.r + b.r*c.i) mod d

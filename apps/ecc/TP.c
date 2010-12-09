@@ -661,7 +661,34 @@ static bool TP_final_expon(NN_DIGIT *r,NN2_NUMBER *ef) {
     NNLucExp(r,t1,tpparam.c,inv2,tpparam.p,NUMWORDS); // Lucas exponentiation 
     return TRUE;
   }
-  
+
+/*
+static bool TP_final_expon_nonopt(NN2_NUMBER *r,NN2_NUMBER *ef) {
+    NN_DIGIT t1[NUMWORDS], t2[NUMWORDS], t3[NUMWORDS];
+    NN_DIGIT two[NUMWORDS];
+	
+    NNModSqr(t1, ef->r, tpparam.p, NUMWORDS); // x^2
+    NNModSqr(t2, ef->i, tpparam.p, NUMWORDS); // y^2
+    NNModAdd(t3, t1, t2, tpparam.p, NUMWORDS); // x^2+y^2
+    NNModSub(t1, t1, t2, tpparam.p, NUMWORDS); // x^2-y^2
+#ifdef IMOTE2
+    NNModDiv(t1, t1, t3, tpparam.p, NUMWORDS); //(x^2-y^2)/(x^2+y^2)
+#else
+    NNModDivOpt(t1, t1, t3, tpparam.p, NUMWORDS);
+#endif
+
+	NNAssignDigit(two, 2, NUMWORDS);
+    NNModMult(t2, ef->r, ef->i, tpparam.p, NUMWORDS); // u*v
+	NNModMult(t2, t2, two, tpparam.p, NUMWORDS);	// 2*u*v
+	
+	NNModDivOpt(t2, t2, t3, tpparam.p, NUMWORDS);  // (2uv / u^2+v+2)i
+	
+	
+	
+	return TRUE;
+}
+*/
+
   // Set the res value to be the Tate Pairing result
 static bool TP_computeTP(NN_DIGIT *res, Point P) {
     NN2_NUMBER ef;
