@@ -33,6 +33,7 @@
  */
 
 #include "NN2.h"
+#include <string.h>
 //#include "ECC.h"
 //#include "TPCurveParam.h"
 
@@ -69,4 +70,72 @@ void NN2Assign(NN2_NUMBER * a,NN2_NUMBER * b,NN_UINT digits) {
      NNAssign(a->r,b->r,digits);
      NNAssign(a->i,b->i,digits);
    } 	  
+
+// Returns the e{k-1}(b) Lucas function
+static void NN2_Lucas (NN2_NUMBER * a,NN2_NUMBER * b, NN_DIGIT * k,NN_DIGIT * d,NN_UINT digits) {
+	int i;
+	NN_DIGIT two[NUMWORDS], k2[NUMWORDS];
+	NN_DIGIT tmp[NUMWORDS], alpha[NUMWORDS];
+	
+	memset(two, 0, NUMWORDS*NN_DIGIT_LEN);
+	two[0]= 0x1;
+	NNSub(k2,k,two,digits);
+	two[0]= 0x2;
+	
+	memset(alpha, 0, NUMWORDS*NN_DIGIT_LEN);
+	alpha[0]=0x2;
+	NNAssign(a->r,b->r,digits); //beta=b
+	
+	i = (NNBits(k2,NUMWORDS))-1;
+	
+	while (i>-1) {
+		if (NNTestBit(k2,i)) {
+			NNModMult(alpha,alpha,a->r,d,digits); 
+			NNModSub(alpha,alpha,b->r,d,digits); //a=a*beta-P
+			NNModSqr(a->r, a->r, d, digits);
+			NNModSub(a->r,a->r,two,d,digits); //beta=beta^2-2
+		}
+		
+		else {
+			NNModMult(a->r,alpha,a->r,d,digits);
+			NNModSub(a->r,a->r,b->r,d,digits); //beta=a*beta-P
+			NNModSqr(alpha, alpha, d, digits);
+			NNModSub(alpha,alpha,two,d,digits); //a=a^2-2
+		}
+		i--;
+	}
+	
+	NNModMult(tmp, a->r, b->r,d,digits);
+	NNModMult(alpha, alpha, two,d,digits);
+	NNModSub(alpha, alpha, tmp,d,digits);
+	
+	NNModSqr(tmp, b->r,d,digits);
+	NNModSub(tmp, tmp, two,d,digits);
+	NNModSub(tmp, tmp, two,d,digits);
+	NNModDivOpt(alpha, alpha, tmp,d,digits);
+	
+	NNAssign(a->i, alpha, NUMWORDS);
+
+}
+
+// Return the lucas exponentatiation for the Tate Pairing lucas(2*b,k)/2
+bool NN2LucExp(NN2_NUMBER * a,NN2_NUMBER * b, NN_DIGIT * k,NN_DIGIT * inv2,NN_DIGIT * d,NN_UINT digits) {
+	
+    NN2_NUMBER  temp1, temp2;
+	/*    NN_DIGIT two[NUMWORDS];
+	 memset(two, 0, NUMWORDS*NN_DIGIT_LEN);
+	 two[0] = 0x02;
+	 
+	 NN_ModMult(temp1,two,b,d,digits); // 2b */
+	// 2b it is faster with shif than the above line
+	NNLShift(temp1.r, b->r, 1, digits);
+	if(NNCmp(temp1.r, d, digits) >= 0)
+		NNSub(temp1.r, temp1.r, d, digits);
+	
+	NN2_Lucas(&temp2,&temp1,k,d,digits); // lucas(2b,k)
+	NNModMult(a->r,temp2.r,inv2,d,digits); // lucas(2b,k)*2^(-1)
+	NNModMult(a->i, temp2.i, b->i,d,digits);
+	
+	return TRUE;
+}
 

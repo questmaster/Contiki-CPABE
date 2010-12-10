@@ -646,8 +646,9 @@ static bool TP_init(Point P, Point Q) {
   
   // final exponentiation in Miller's algorithm
   // using the (u+iv)^(k-1) trick and Lucas exponentiation optimization
-static bool TP_final_expon(NN_DIGIT *r,NN2_NUMBER *ef) {
-    NN_DIGIT t1[NUMWORDS], t2[NUMWORDS], t3[NUMWORDS];
+static bool TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef) {
+    NN_DIGIT t1[NUMWORDS], t2[NUMWORDS], t3[NUMWORDS], two[NUMWORDS];
+	NN2_NUMBER in;
     
     NNModSqr(t1, ef->r, tpparam.p, NUMWORDS); // x^2
     NNModSqr(t2, ef->i, tpparam.p, NUMWORDS); // y^2
@@ -658,15 +659,40 @@ static bool TP_final_expon(NN_DIGIT *r,NN2_NUMBER *ef) {
 #else
     NNModDivOpt(t1, t1, t3, tpparam.p, NUMWORDS);
 #endif
-    NNLucExp(r,t1,tpparam.c,inv2,tpparam.p,NUMWORDS); // Lucas exponentiation 
+	NNAssignDigit(two, 2, NUMWORDS);
+	NNModMult(t2, ef->r, ef->i, tpparam.p, NUMWORDS);
+	NNModMult(t2, t2, two, tpparam.p, NUMWORDS); // 2*x*y
+	NNModDivOpt(t2, t2, t3, tpparam.p, NUMWORDS);
+	
+	NNAssign(in.r, t1, NUMWORDS);
+	NNAssign(in.i, t2, NUMWORDS);
+	
+    NN2LucExp(r,&in,tpparam.c,inv2,tpparam.p,NUMWORDS); // Lucas exponentiation 
     return TRUE;
   }
 
   // Set the res value to be the Tate Pairing result
 static bool TP_computeTP(NN_DIGIT *res, Point P) {
-    NN2_NUMBER ef;
+    NN2_NUMBER ef, r;
+	int i;
+	
     TP_Miller(&ef, P);
-    TP_final_expon(res,&ef);
+    TP_final_expon(&r,&ef);
+	
+	NNAssign(res, r.r, NUMWORDS);
+	
+	printf("TP_r: ");
+	for (i = NUMWORDS-1; i >= 0; i--) {
+		printf("%x ",r.r[i]);
+	}
+	printf("\n");
+	printf("TP_i: ");
+	for (i = NUMWORDS-1; i >= 0; i--) {
+		printf("%x ",r.i[i]);
+	}
+	printf("\n");
+
+	
     return TRUE;
   }
 

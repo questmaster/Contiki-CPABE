@@ -51,6 +51,7 @@ extern void NN2ModMult(NN2_NUMBER * a, NN2_NUMBER * b, NN2_NUMBER * c, NN_DIGIT 
 extern void NN2ModSqr(NN2_NUMBER * a, NN2_NUMBER * b, NN_DIGIT * d, NN_UINT digits);
 //assign a = b
 extern void NN2Assign(NN2_NUMBER * a,NN2_NUMBER * b,NN_UINT digits);
-
+//Return the lucas exponentatiation for the Tate Pairing lucas(2*b,k)/2
+extern bool NN2LucExp(NN2_NUMBER * a,NN2_NUMBER * b, NN_DIGIT * k,NN_DIGIT * inv2,NN_DIGIT * d,NN_UINT digits);
 
 #endif
