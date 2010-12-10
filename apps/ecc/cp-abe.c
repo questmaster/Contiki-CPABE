@@ -1006,10 +1006,10 @@ void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN_DIGIT m[NUMWORDS], char *po
  	NNModRandom(m, param.p, NUMWORDS);
  	NNModRandom(s, param.m, NUMWORDS);
 #endif
-	NNModExp(cph->cs,  pub.g_hat_alpha, s, NUMWORDS, param.p, NUMWORDS);	// TODO: g_hat_alpha pow s ???
-	NNModMult(cph->cs, cph->cs, m, param.p, NUMWORDS);		/**< cs = cs * m */
+	NNModExp(cph->cs,  pub.g_hat_alpha, s, NUMWORDS, param.p, NUMWORDS);	
+	NNModMult(cph->cs, cph->cs, m, param.p, NUMWORDS);		/**< cs = e(g, g)^(alpha * s) * m */
 	
-	ECC_mul(&(cph->c), &(pub.h), s);						/**< c = h * s */
+	ECC_mul(&(cph->c), &(pub.h), s);						/**< c = h ^ s */
 	
 	fill_policy((cpabe_policy_t *) list_head(cph->p), pub, s);
 }
@@ -1022,6 +1022,7 @@ void
 check_sat( cpabe_policy_t * p, cpabe_prv_t * prv )
 {
 	int i, l;
+	
 	p->satisfiable = 0;
 	if( list_length(p->children) == 0 )
 	{
@@ -1114,7 +1115,7 @@ pick_sat_min_leaves( cpabe_policy_t* p, cpabe_prv_t* prv )
 			if( ((cpabe_policy_t*) list_index(p->children, i))->satisfiable )
 				pick_sat_min_leaves(list_index(p->children, i), prv);
 		
-		c = malloc(sizeof(int) * list_length(p->children));						// FIXME: memb?
+		c = malloc(sizeof(int) * list_length(p->children));	
 		for( i = 0; i < list_length(p->children); i++ )
 			c[i] = i;
 		
@@ -1172,8 +1173,7 @@ lagrange_coef( NN_DIGIT r[NUMWORDS], list_t s, int i )
 		NNModNeg(t, tmp1, param.m, NUMWORDS);							// t = -j
 
 //		NNModMult(r, r, t, param.m, NUMWORDS); /* num_muls++; */
-		NNMult(r_tmp, r, t, NUMWORDS);		// more efficent than NNModMult, because of small m!	
-//		NNMod(r_tmp, r_tmp, 2*NUMWORDS, param.m, NNDigits(param.m, NUMWORDS));
+		NNMult(r_tmp, r, t, NUMWORDS);		// faster than NNModMult, because of small m!	
 		NNDiv(NULL, r_tmp, r_tmp, 2*NUMWORDS, param.m, NNDigits(param.m, NUMWORDS));
 		NNAssignZero(r, NUMWORDS);
 		NNAssign(r, r_tmp, NNDigits(param.m, NUMWORDS));
@@ -1196,8 +1196,7 @@ lagrange_coef( NN_DIGIT r[NUMWORDS], list_t s, int i )
 
 		NNModInv(t, t, param.m, NUMWORDS);
 //		NNModMult(r, r, t, param.m, NUMWORDS); /* num_muls++; */
-		NNMult(r_tmp, r, t, NUMWORDS);		// more efficent than NNModMult, because of small m!	
-//		NNMod(r_tmp, r_tmp, 2*NUMWORDS, param.m, NNDigits(param.m, NUMWORDS)); // does not work with neg. values
+		NNMult(r_tmp, r, t, NUMWORDS);		// faster than NNModMult, because of small m!	
 		NNDiv(NULL, r_tmp, r_tmp, 2*NUMWORDS, param.m, NNDigits(param.m, NUMWORDS));
 		NNAssignZero(r, NUMWORDS);
 		NNAssign(r, r_tmp, NNDigits(param.m, NUMWORDS));
@@ -1475,7 +1474,6 @@ dec_internal_flatten( NN_DIGIT * r, NN_DIGIT * exp,
  		lagrange_coef(t, p->satl, ((satl_int_t *) list_index(p->satl, i))->k);
 //		NNModMult(expnew, exp, t, param.m, NUMWORDS); /* num_muls++; */			// FIXME: mod m or p?
 		NNMult(tmp, exp, t, NUMWORDS);		// more efficent than NNModMult, because of small m!	
-//		NNMod(tmp, tmp, 2*NUMWORDS, param.m, NNDigits(param.m, NUMWORDS));
 		NNDiv(NULL, tmp, tmp, 2*NUMWORDS, param.m, NNDigits(param.m, NUMWORDS));
 		NNAssignZero(expnew, NUMWORDS);
 		NNAssign(expnew, tmp, NNDigits(param.m, NUMWORDS));

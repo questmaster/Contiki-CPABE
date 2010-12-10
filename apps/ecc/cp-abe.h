@@ -11,7 +11,6 @@
 #define _CP_ABE_H_
 
 #include "NN.h"
-#include "NN2.h"
 #include "ECC.h"
 #include <list.h>
 
@@ -24,8 +23,7 @@ typedef struct cpabe_pub_s {
 	Point g;           /* G_1 */
 	Point h;           /* G_1 */
 	Point gp;          /* G_2 */
-//	NN_DIGIT g_hat_alpha[NUMWORDS]; /* G_T */
-	NN2_NUMBER g_hat_alpha; /* G_T */
+	NN_DIGIT g_hat_alpha[NUMWORDS]; /* G_T */
 } cpabe_pub_t;
 
 /*
@@ -100,8 +98,7 @@ typedef struct cpabe_policy_s {
  hybrid encryption (which you do yourself).
  */
 typedef struct cpabe_cph_s {
-//	NN_DIGIT cs[NUMWORDS]; /* G_T */
-	NN2_NUMBER cs[NUMWORDS]; /* G_T */
+	NN_DIGIT cs[NUMWORDS]; /* G_T */
 	Point c;  /* G_1 */
 	list_t p;	/* tree of cpabe_policy_t */
 	void * p_list; /* used by list lib */

@@ -42,7 +42,7 @@ struct nn2_num
    	// curve's coefficients
    	NN_DIGIT r[NUMWORDS];
    	NN_DIGIT i[NUMWORDS];
-}
+};
 typedef struct nn2_num NN2_NUMBER;
 
 //multiplies two complex numbers
