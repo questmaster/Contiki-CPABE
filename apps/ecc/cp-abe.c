@@ -303,8 +303,36 @@ void cpabe_setup(cpabe_pub_t *pub, cpabe_msk_t *msk) {
 	ECC_mul(&(pub->h), &(pub->g), msk->beta);		/**< h = g * beta */
 
 	
+#ifdef CPABE_DEBUG_TP
+	pub->g_hat_alpha.r[12] = 0x0000;
+	pub->g_hat_alpha.r[11] = 0x0347;
+	pub->g_hat_alpha.r[10] = 0x3f7f;
+	pub->g_hat_alpha.r[9] = 0xc40b;
+	pub->g_hat_alpha.r[8] = 0xe314;
+	pub->g_hat_alpha.r[7] = 0xc5f5;
+	pub->g_hat_alpha.r[6] = 0xc470;
+	pub->g_hat_alpha.r[5] = 0xd8c3;
+	pub->g_hat_alpha.r[4] = 0x323c;
+	pub->g_hat_alpha.r[3] = 0x6d14;
+	pub->g_hat_alpha.r[2] = 0xb390;
+	pub->g_hat_alpha.r[1] = 0xf2d3;
+	pub->g_hat_alpha.r[0] = 0xb06c;
+	pub->g_hat_alpha.i[12] = 0x0000;
+	pub->g_hat_alpha.i[11] = 0x110e;
+	pub->g_hat_alpha.i[10] = 0xa6b7;
+	pub->g_hat_alpha.i[9] = 0x75fb;
+	pub->g_hat_alpha.i[8] = 0xa892;
+	pub->g_hat_alpha.i[7] = 0xf119;
+	pub->g_hat_alpha.i[6] = 0x4fb1;
+	pub->g_hat_alpha.i[5] = 0x0314;
+	pub->g_hat_alpha.i[4] = 0xd608;
+	pub->g_hat_alpha.i[3] = 0x46cb;
+	pub->g_hat_alpha.i[2] = 0x68b8;
+	pub->g_hat_alpha.i[1] = 0x59e8;
+	pub->g_hat_alpha.i[0] = 0x3c73;
+#else
 	TP_TatePairing(pub->g_hat_alpha, pub->g, msk->g_alpha);	/**< g_hat_alpha = e(g, gp * alpha) */
-	
+#endif	
 }
 #endif
 
