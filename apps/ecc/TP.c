@@ -198,7 +198,7 @@ static bool TP_Miller(NN2_NUMBER *ef, Point P){
     ef->r[0] = 0x1;
     memset(ef->i, 0, NUMWORDS*NN_DIGIT_LEN);
     //V = P; // V=P
-    NNAssign(V.x, P.x, NUMWORDS);
+   NNAssign(V.x, P.x, NUMWORDS);
     NNAssign(V.y, P.y, NUMWORDS);
     memset(Z, 0, NUMWORDS*NN_DIGIT_LEN);
     Z[0] = 0x1;
@@ -618,7 +618,7 @@ static bool TP_Miller(NN2_NUMBER *ef, Point P) {
 #endif
   
   // initialize the Pairing with the point to be used along with the private key
-static bool TP_init(Point P, Point Q) {
+static void TP_init(Point P, Point Q) {
     NN_DIGIT Qy[NUMWORDS], two[NUMWORDS];
     
     //ECC_tpinit();
@@ -640,13 +640,12 @@ static bool TP_init(Point P, Point Q) {
     precompute(P);
 #endif
     
-    return TRUE;
   }
 
   
   // final exponentiation in Miller's algorithm
   // using the (u+iv)^(k-1) trick and Lucas exponentiation optimization
-static bool TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef) {
+static void TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef) {
     NN_DIGIT t1[NUMWORDS], t2[NUMWORDS], t3[NUMWORDS], two[NUMWORDS];
 	NN2_NUMBER in;
     
@@ -659,6 +658,7 @@ static bool TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef) {
 #else
     NNModDivOpt(t1, t1, t3, tpparam.p, NUMWORDS);
 #endif
+
 	NNAssignDigit(two, 2, NUMWORDS);
 	NNModMult(t2, ef->r, ef->i, tpparam.p, NUMWORDS);
 	NNModMult(t2, t2, two, tpparam.p, NUMWORDS); // 2*x*y
@@ -668,37 +668,23 @@ static bool TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef) {
 	NNAssign(in.i, t2, NUMWORDS);
 	
     NN2LucExp(r,&in,tpparam.c,inv2,tpparam.p,NUMWORDS); // Lucas exponentiation 
-    return TRUE;
   }
 
   // Set the res value to be the Tate Pairing result
-static bool TP_computeTP(NN_DIGIT *res, Point P) {
-    NN2_NUMBER ef, r;
-	int i;
+/*static void TP_computeTP(NN2_NUMBER *res, Point P) {
+    NN2_NUMBER ef;
 	
     TP_Miller(&ef, P);
-    TP_final_expon(&r,&ef);
+    TP_final_expon(res,&ef);
 	
-	NNAssign(res, r.r, NUMWORDS);
-	
-	printf("TP_r: ");
-	for (i = NUMWORDS-1; i >= 0; i--) {
-		printf("%x ",r.r[i]);
-	}
-	printf("\n");
-	printf("TP_i: ");
-	for (i = NUMWORDS-1; i >= 0; i--) {
-		printf("%x ",r.i[i]);
-	}
-	printf("\n");
-
-	
-    return TRUE;
   }
+*/
+void TP_TatePairing(NN2_NUMBER *res, Point P, Point Q) {
+    NN2_NUMBER ef;
 
-void TP_TatePairing(NN_DIGIT *res, Point P, Point Q) {
 	TP_init(P, Q);
-	TP_computeTP(res, P);
+    TP_Miller(&ef, P);
+    TP_final_expon(res,&ef);
 }
 
 TPParams *TP_getTPparams() {

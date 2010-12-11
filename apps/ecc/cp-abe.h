@@ -10,7 +10,7 @@
 #ifndef _CP_ABE_H_
 #define _CP_ABE_H_
 
-#include "NN.h"
+#include "NN2.h"
 #include "ECC.h"
 #include <list.h>
 
@@ -23,7 +23,8 @@ typedef struct cpabe_pub_s {
 	Point g;           /* G_1 */
 	Point h;           /* G_1 */
 	Point gp;          /* G_2 */
-	NN_DIGIT g_hat_alpha[NUMWORDS]; /* G_T */
+//	NN_DIGIT g_hat_alpha[NUMWORDS]; /* G_T */
+	NN2_NUMBER g_hat_alpha; /* G_T */
 } cpabe_pub_t;
 
 /*
@@ -62,6 +63,7 @@ typedef struct cpabe_polynomial_s {
 	int deg;
 	/* coefficients from [0] x^0 to [deg] x^deg */
 	NN_DIGIT *coef; /* G_T (of length deg + 1) */
+//	NN2_NUMBER *coef; /* G_T (of length deg + 1), but seems Zr?! */
 } cpabe_polynomial_t;
 
 typedef struct satl_int_s {
@@ -98,7 +100,8 @@ typedef struct cpabe_policy_s {
  hybrid encryption (which you do yourself).
  */
 typedef struct cpabe_cph_s {
-	NN_DIGIT cs[NUMWORDS]; /* G_T */
+//	NN_DIGIT cs[NUMWORDS]; /* G_T */
+	NN2_NUMBER cs; /* G_T */
 	Point c;  /* G_1 */
 	list_t p;	/* tree of cpabe_policy_t */
 	void * p_list; /* used by list lib */
@@ -144,7 +147,7 @@ extern void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, cha
  Returns null if an error occured, in which case a description can be
  retrieved by calling cpabe_error().
  */
-extern void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN_DIGIT m[NUMWORDS], char *policy);
+extern void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN2_NUMBER * m, char *policy);
 
 /*
  Decrypt the specified ciphertext using the given private key,
@@ -154,6 +157,6 @@ extern void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN_DIGIT m[NUMWORDS], c
  Returns true if decryption succeeded, false if this key does not
  satisfy the policy of the ciphertext (in which case m is unaltered).
  */
-extern int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN_DIGIT m[NUMWORDS]);
+extern int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN2_NUMBER * m);
 
 #endif

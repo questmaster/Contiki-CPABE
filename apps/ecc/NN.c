@@ -3380,7 +3380,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
   }
 
  // Returns the e{k-1}(b) Lucas function
- void NN_Lucas (NN_DIGIT * a,NN_DIGIT * b, NN_DIGIT * k,NN_DIGIT * d,NN_UINT digits) {
+ /*void NN_Lucas (NN_DIGIT * a,NN_DIGIT * b, NN_DIGIT * k,NN_DIGIT * d,NN_UINT digits) {
    int i;
    NN_DIGIT two[NUMWORDS], k2[NUMWORDS];
    NN_DIGIT alpha[NUMWORDS];
@@ -3412,7 +3412,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
 	}
 	i--;
    }
- }
+ }*/
 
 /* CONVERSIONS */
 void NNDecode(NN_DIGIT * a, NN_UINT digits, unsigned char * b, NN_UINT len)
@@ -3971,14 +3971,14 @@ void NNEncode(unsigned char * a, NN_UINT digits, NN_DIGIT * b, NN_UINT len)
   }
 
   // Return the lucas exponentatiation for the Tate Pairing lucas(2*b,k)/2
-  bool NNLucExp(NN_DIGIT * a,NN_DIGIT * b, NN_DIGIT * k,NN_DIGIT * inv2,NN_DIGIT * d,NN_UINT digits) {
+/*  bool NNLucExp(NN_DIGIT * a,NN_DIGIT * b, NN_DIGIT * k,NN_DIGIT * inv2,NN_DIGIT * d,NN_UINT digits) {
 
     NN_DIGIT  temp1[NUMWORDS], temp2[NUMWORDS];
-/*    NN_DIGIT two[NUMWORDS];
+/ *    NN_DIGIT two[NUMWORDS];
     memset(two, 0, NUMWORDS*NN_DIGIT_LEN);
     two[0] = 0x02;
 
-   NN_ModMult(temp1,two,b,d,digits); // 2b */
+   NN_ModMult(temp1,two,b,d,digits); // 2b * /
    // 2b it is faster with shif than the above line
    NN_LShift(temp1, b, 1, digits);
    if(NN_Cmp(temp1, d, digits) >= 0)
@@ -3988,7 +3988,7 @@ void NNEncode(unsigned char * a, NN_UINT digits, NN_DIGIT * b, NN_UINT len)
    NNModMult(a,temp2,inv2,d,digits); // lucas(2b,k)*2^(-1)
 
    return TRUE;
-  }
+  }*/
 
 /* --- Extension TUD -------------------------------------------------------- */
 

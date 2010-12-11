@@ -31,8 +31,8 @@ static cpabe_cph_t cph;
 static uint8_t round_index = 0;
 static char * attributes[4];
 static char * policy;
-static NN_DIGIT m[NUMWORDS];
-static NN_DIGIT m2[NUMWORDS];
+static NN2_NUMBER m;
+static NN2_NUMBER m2;
 
 /* declaration of scopes process */
 PROCESS(tester_process, "CP-ABE tester process");
@@ -45,9 +45,9 @@ PROCESS_THREAD(tester_process, ev, data)
 	int8_t i = 0;
     uint32_t time_s, time_f, dt0;
 	
-	for (i = 0; i < NUMWORDS-1; i++) {
-		m[i] = i;
-	}
+//	for (i = 0; i < NUMWORDS-1; i++) {
+//		m[i] = i;
+//	}
 	
 	policy = "attr1 attr3 2of2"; 
 	attributes[0] = "attr1";
@@ -80,7 +80,7 @@ PROCESS_THREAD(tester_process, ev, data)
 
 	/* CP-ABE Keys */
 
-	printf("CPABE_msk_beta: ");
+/*	printf("CPABE_msk_beta: ");
 	for (i = NUMWORDS-1; i >= 0; i--) {
 		printf("%x ", msk.beta[i]);
 	}
@@ -95,9 +95,14 @@ PROCESS_THREAD(tester_process, ev, data)
 		printf("%x ", msk.g_alpha.y[i]);
 	}
 	printf("\n");
-	printf("CPABE_pub_g-hat-alpha: ");
+	printf("CPABE_pub_g-hat-alpha_r: ");
 	for (i = NUMWORDS-1; i >= 0; i--) {
-		printf("%x ", pub.g_hat_alpha[i]);
+		printf("%x ", pub.g_hat_alpha.r[i]);
+	}
+	printf("\n");
+	printf("CPABE_pub_g-hat-alpha_i: ");
+	for (i = NUMWORDS-1; i >= 0; i--) {
+		printf("%x ", pub.g_hat_alpha.i[i]);
 	}
 	printf("\n");
 	printf("CPABE_pub_h_x: ");
@@ -109,7 +114,7 @@ PROCESS_THREAD(tester_process, ev, data)
 	for (i = NUMWORDS-1; i >= 0; i--) {
 		printf("%x ", pub.h.y[i]);
 	}
-	printf("\n");
+	printf("\n");*/
 #endif
 	
 	do {
@@ -128,7 +133,7 @@ PROCESS_THREAD(tester_process, ev, data)
 		dt0 = time_f - time_s;
 		printf("CPABE_keygen(%d): %lu ms\n", round_index, (uint32_t)(dt0*1000/CLOCK_SECOND));
 
-		printf("CPABE_prv_d_x: ");
+/*		printf("CPABE_prv_d_x: ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
 			printf("%x ", prv.d.x[i]);
 		}
@@ -137,27 +142,37 @@ PROCESS_THREAD(tester_process, ev, data)
 		for (i = NUMWORDS-1; i >= 0; i--) {
 			printf("%x ", prv.d.y[i]);
 		}
-		printf("\n");
+		printf("\n");*/
 #endif
 #ifdef CPABE_ENCRYPTION		
 		printf("CPABE_enc(%d) \n", round_index);
-		printf("m  (plain): ");
-		for (i = NUMWORDS; i > 0; i--) {
-			printf("%x ", m[i-1]);
-		}
-		printf("\n");
 		printf("enc policy: %s\n", policy);
 		time_s = clock_time();
 		
-		cpabe_enc(&cph, pub, m, policy); 
+		cpabe_enc(&cph, pub, &m, policy); 
 		
 		time_f = clock_time();
 		dt0 = time_f - time_s;
 		printf("CPABE_enc(%d): %lu ms\n", round_index, (uint32_t)(dt0*1000/CLOCK_SECOND));
 		
-		printf("CPABE_cph_cs: ");
+		printf("m.r  (plain): ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
-			printf("%x ", cph.cs[i]);
+			printf("%x ", m.r[i]);
+		}
+		printf("\n");
+		printf("m.i  (plain): ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", m.i[i]);
+		}
+		printf("\n");
+		printf("CPABE_cph_cs_r: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", cph.cs.r[i]);
+		}
+		printf("\n");
+		printf("CPABE_cph_cs_i: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", cph.cs.i[i]);
 		}
 		printf("\n");
 		printf("CPABE_cph_c_x: ");
@@ -175,15 +190,18 @@ PROCESS_THREAD(tester_process, ev, data)
 		printf("CPABE_dec(%d) \n", round_index);
 		time_s = clock_time();
 		
-		cpabe_dec(pub, prv, cph, m2); 
+		cpabe_dec(pub, prv, cph, &m2); 
 		
 		time_f = clock_time();
 		dt0 = time_f - time_s;
-		printf("m2 (plain): ");
+		printf("m2.r (plain): ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
-			printf("%x ", m2[i]);
+			printf("%x ", m2.r[i]);
 		}
-		printf("\n");
+		printf("m2.i (plain): ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", m2.i[i]);
+		}
 		printf("CPABE_dec(%d): %lu ms\n", round_index, (uint32_t)(dt0*1000/CLOCK_SECOND));
 #endif
 		

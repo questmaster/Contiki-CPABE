@@ -31,16 +31,16 @@ USE_CPABE = TRUE
 # en-/disable different parts of testCPABE code and DEBUG messages
 CFLAGS+=-DCPABE_DEBUG
 CFLAGS+=-DCPABE_SETUP
-#CFLAGS+=-DCPABE_KEYGEN
-#CFLAGS+=-DCPABE_ENCRYPTION
-#CFLAGS+=-DCPABE_DECRYPTION
+CFLAGS+=-DCPABE_KEYGEN
+CFLAGS+=-DCPABE_ENCRYPTION
+CFLAGS+=-DCPABE_DECRYPTION
 
 
 ## choose different optimization techniques
 ## NN
 CFLAGS+=-DBARRETT_REDUCTION		# barrett reduction
 CFLAGS+=-DHYBRID_MULT			# hybrid multipliation
-CFLAGS+=-DHYBRID_SQR			# hybrid squre
+CFLAGS+=-DHYBRID_SQR			# hybrid square
 #CFLAGS+=-DCURVE_OPT			# optimization for secg curve 
 								# (Not possible for TP -> non-functioning omega optimization)
 ## ECC
