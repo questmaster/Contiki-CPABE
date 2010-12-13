@@ -194,15 +194,18 @@ PROCESS_THREAD(tester_process, ev, data)
 		
 		time_f = clock_time();
 		dt0 = time_f - time_s;
+		printf("CPABE_dec(%d): %lu ms\n", round_index, (uint32_t)(dt0*1000/CLOCK_SECOND));
+
 		printf("m2.r (plain): ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
 			printf("%x ", m2.r[i]);
 		}
+		printf("\n");
 		printf("m2.i (plain): ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
 			printf("%x ", m2.i[i]);
 		}
-		printf("CPABE_dec(%d): %lu ms\n", round_index, (uint32_t)(dt0*1000/CLOCK_SECOND));
+		printf("\n");
 #endif
 		
 		leds_on(LEDS_GREEN);

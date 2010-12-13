@@ -991,14 +991,14 @@ void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN2_NUMBER * m, char *policy) 
 	s[1] = 0x41da;
 	s[0] = 0x22b6;
 #else
- 	NNModRandom(m, param.p, NUMWORDS); // TODO: change to NN2_NUMBERS!
+ 	NN2ModRandom(m, param.p, NUMWORDS);
  	NNModRandom(s, param.m, NUMWORDS);
 #endif
 //	NNModExp(cph->cs,  pub.g_hat_alpha, s, NUMWORDS, param.p, NUMWORDS);	
 //	NNModMult(cph->cs, cph->cs, m, param.p, NUMWORDS);		/**< cs = e(g, g)^(alpha * s) * m */
 	NN2AssignNN(&tmp, s, NUMWORDS);
-	NN2ModMult(&(cph->cs),  &(pub.g_hat_alpha), &tmp, param.p, NUMWORDS);	
-	NN2ModAdd(&(cph->cs), &(cph->cs), m, param.p, NUMWORDS);		/**< cs = e(g, g)^(alpha * s) * m */
+	NN2ModExp(&(cph->cs),  &(pub.g_hat_alpha), &tmp, param.p, NUMWORDS);	
+	NN2ModMult(&(cph->cs), &(cph->cs), m, param.p, NUMWORDS);		/**< cs = e(g, g)^(alpha * s) * m */
 	
 	ECC_mul(&(cph->c), &(pub.h), s);						/**< c = h ^ s */
 	
@@ -1426,9 +1426,9 @@ dec_leaf_flatten( NN2_NUMBER * r, NN_DIGIT * exp,
 #endif		
 
 	NN2ModInv(&t, &t, param.p, NUMWORDS);
-	NN2ModAdd(&s, &s, &t, param.p, NUMWORDS); /* num_muls++; */
+	NN2ModMult(&s, &s, &t, param.p, NUMWORDS); /* num_muls++; */
 	NN2AssignNN(&tmp, exp, NUMWORDS);
-	NN2ModMult(&s, &s, &tmp, param.p, NUMWORDS); /* num_exps++; */
+	NN2ModExp(&s, &s, &tmp, param.p, NUMWORDS); /* num_exps++; */
 
 #ifdef CPABE_DEBUG		
 		printf("leaf_t_r: ");
@@ -1453,7 +1453,7 @@ dec_leaf_flatten( NN2_NUMBER * r, NN_DIGIT * exp,
 		printf("\n");
 #endif		
 	
-	NN2ModAdd(r, r, &s, param.p, NUMWORDS); /* num_muls++; */
+	NN2ModMult(r, r, &s, param.p, NUMWORDS); /* num_muls++; */
 
 #ifdef CPABE_DEBUG		
 		printf("leaf_r_r: ");
@@ -1577,7 +1577,7 @@ dec_t 3 c5 82 15 89 55 47 af a8 d7 68 ad 84 13 bc 32 1a 7 d8 8d c9 2 27 d4 1a e7
 dec_m 1b f4 66 fb af 33 f4 0 3a 92 20 2d bf 61 56 bb 87 92 de 92 e9 1a b3 a7 7 35 f4 6d 77 eb 1 8f 5a 72 41 47 db cf 9f 9e f9 c5 c0 8c c5 77 f9 fc 
  */
 int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN2_NUMBER * m) {
-	NN2_NUMBER t[NUMWORDS];	// GT
+	NN2_NUMBER t;	// GT
 #ifdef CPABE_DEBUG		
 	int i;
 #endif
@@ -1596,38 +1596,38 @@ int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN2_NUMBER * m)
 //	if( dec_strategy == DEC_NAIVE ) 
 //		dec_naive(t, cph->p, prv, pub); // not ported!
 //	else if( dec_strategy == DEC_FLATTEN ) 
-		dec_flatten(t, list_head(cph.p), &prv, &pub);
+		dec_flatten(&t, list_head(cph.p), &prv, &pub);
 //	else 
 //		dec_merge(t, cph->p, prv, pub); // not ported!
 
 #ifdef CPABE_DEBUG
 		printf("dec_flat_t_r: ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
-			printf("%x ",t->r[i]);
+			printf("%x ",t.r[i]);
 		}
 		printf("\n");
 		printf("dec_flat_t_i: ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
-			printf("%x ",t->i[i]);
+			printf("%x ",t.i[i]);
 		}
 		printf("\n");
 #endif
 	
-	NN2ModAdd(m, &(cph.cs), t, param.p, NUMWORDS); /* num_muls++; */
+	NN2ModMult(m, &(cph.cs), &t, param.p, NUMWORDS); /* num_muls++; */
 	
-	TP_TatePairing(t, cph.c, prv.d); /* num_pairings++; */
-	NN2ModInv(t, t, param.p, NUMWORDS);
-	NN2ModAdd(m, m, t, param.p, NUMWORDS); /* num_muls++; */ 
+	TP_TatePairing(&t, cph.c, prv.d); /* num_pairings++; */
+	NN2ModInv(&t, &t, param.p, NUMWORDS);
+	NN2ModMult(m, m, &t, param.p, NUMWORDS); /* num_muls++; */ 
 
 #ifdef CPABE_DEBUG
 		printf("dec_t_r: ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
-			printf("%x ",t->r[i]);
+			printf("%x ",t.r[i]);
 		}
 		printf("\n");
 		printf("dec_t_i: ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
-			printf("%x ",t->i[i]);
+			printf("%x ",t.i[i]);
 		}
 		printf("\n");
 #endif

@@ -35,10 +35,10 @@
 #include "NN2.h"
 #include <string.h>
 
-   //Computes a = (b.r + c.r) mod d + i*(b.i + c.i) mod d
-void NN2ModAdd(NN2_NUMBER * a, NN2_NUMBER * b, NN2_NUMBER * c, NN_DIGIT * d, NN_UINT digits) {
-	NNModAdd(a->r, b->r, c->r, d, digits);
-	NNModAdd(a->i, b->i, c->i, d, digits);
+	//generadts random NN2_NUMBER
+void NN2ModRandom(NN2_NUMBER * a, NN_DIGIT * b, NN_UINT digits) {
+	NNModRandom(a->r, b, digits);
+	NNModRandom(a->i, b, digits);
 }
 
    //Computes a = (b.r*c.r - b.i*c.i) mod d + i*(b.i*c.r + b.r*c.i) mod d
@@ -68,6 +68,11 @@ void NN2ModSqr(NN2_NUMBER * a, NN2_NUMBER * b, NN_DIGIT * d, NN_UINT digits) {
      NNModAdd(a->i, a->i, t1, d, digits);
    }
 
+   //Computes a = b^c mod d
+void NN2ModExp(NN2_NUMBER * a, NN2_NUMBER * b, NN_DIGIT * c, NN_DIGIT * d, NN_UINT digits) {
+#error NN2ModExp not implemented!
+}
+
    //assign a = b
 void NN2Assign(NN2_NUMBER * a,NN2_NUMBER * b,NN_UINT digits) {
      NNAssign(a->r,b->r,digits);
@@ -80,18 +85,11 @@ void NN2AssignNN(NN2_NUMBER * a,NN_DIGIT * b,NN_UINT digits) {
      NNAssignZero(a->i,digits);
    } 	
    
-   //assign a = b^-1 mod c
+   //assign a = (b.r, -b.i) mod c
 void NN2ModInv(NN2_NUMBER * a,NN2_NUMBER * b,NN_DIGIT * c,NN_UINT digits) {
-	NN_DIGIT r2[NUMWORDS], i2[NUMWORDS], d[NUMWORDS];
-
-	NNModSqr(r2, b->r, c, digits); // x^2
-    NNModSqr(i2, b->i, c, digits); // y^2
-    NNModAdd(d, r2, i2, c, digits); // x^2+y^2
-
-	NNModDivOpt(a->r, b->r, d, c, digits); // a.r = b.r / (...) mod c
-	NNModInv(i2, b->i, c, digits);
-	NNModDivOpt(a->i, i2, d, c, digits); // a.r = -b.i / (...) mod c
-}     
+	NNAssign(a->r, b->r, digits);
+	NNModNeg(a->i, b->i, c, digits);
+}
 
 // Returns the e{k-1}(b) Lucas function
 static void NN2_Lucas (NN2_NUMBER * a,NN2_NUMBER * b, NN_DIGIT * k,NN_DIGIT * d,NN_UINT digits) {

@@ -45,12 +45,12 @@ struct nn2_num
 };
 typedef struct nn2_num NN2_NUMBER;
 
-//Computes a = (b.r + c.r) mod d + i*(b.i + c.i) mod d
-extern void NN2ModAdd(NN2_NUMBER * a, NN2_NUMBER * b, NN2_NUMBER * c, NN_DIGIT * d, NN_UINT digits);
 //multiplies two complex numbers
 extern void NN2ModMult(NN2_NUMBER * a, NN2_NUMBER * b, NN2_NUMBER * c, NN_DIGIT * d, NN_UINT digits);
-//squre of a complex number
+//square of a complex number
 extern void NN2ModSqr(NN2_NUMBER * a, NN2_NUMBER * b, NN_DIGIT * d, NN_UINT digits);
+//computes a = b^c mod d
+extern void NN2ModExp(NN2_NUMBER * a, NN2_NUMBER * b, NN_DIGIT * c, NN_DIGIT * d, NN_UINT digits) {
 //assign a = b^-1 mod c
 extern void NN2ModInv(NN2_NUMBER * a,NN2_NUMBER * b,NN_DIGIT * c,NN_UINT digits);
 //assign a = b
