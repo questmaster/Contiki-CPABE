@@ -1041,24 +1041,22 @@ void ECC_assign(Point *P0, Point *P1) {
 	NNAssign(P0->y, P1->y, NUMWORDS);
 }
 
-/*
-int ECC_y_is_sqr(NN_DIGIT * a) {
-	NN_DIGIT t[NUMWORDS];
+// Legendre-Symbol L(a/r) == 1? is a quadratic residue?
+/*int ECC_is_sqr(NN_DIGIT * a, NN_UINT digits) {
+	NN_DIGIT z[NUMWORDS];
 	NN_DIGIT u[NUMWORDS];
 	int res;
 	
-	if (NNEven(a, NUMWORDS)) {
-		NNAssignOne(u, NUMWORDS);
-		NNModSub(t, param.r, u, param.p, NUMWORDS);
-		NNAssignDigit(u, 2, NUMWORDS);
-		NNModDivOpt(t, t, u, param.p, NUMWORDS);
-		NNModExp(u, a, t, NUMWORDS, param.p, NUMWORDS);
-		res = NNOne(u, NUMWORDS);
-		
-		return res;
-	}
+	if (NNZero(a, NUMWORDS)) return 1;
 	
-	return 1;
+	NNAssignOne(u, NUMWORDS);
+	NNModSub(z, param.r, u, param.p, NUMWORDS);
+	NNAssignDigit(u, 2, NUMWORDS);
+	NNModDivOpt(z, z, u, param.p, NUMWORDS);
+	NNModExp(u, a, z, NUMWORDS, param.p, NUMWORDS);
+	res = NNOne(u, NUMWORDS);
+		
+	return res;
 }*/
 
 /*
@@ -1066,41 +1064,70 @@ int ECC_y_is_sqr(NN_DIGIT * a) {
  * x has to be x mod p
  * @returns if valid point
  */
-void ECC_compY(Point * P, NN_DIGIT * x) {
+/*void ECC_compY(Point * P) {
     NN_DIGIT tmp[NUMWORDS];
+	NN_DIGIT x[NUMWORDS];
 	
-	// Set x
-	NNAssign(P->x, x, NUMWORDS);
-
 	// Compute y
-//	for(;;) {
-		NNModSqrOpt(tmp, P->x, param.p, param.omega, NUMWORDS);
+	for(;;) {
+		NNModRandom(x, param.r, NUMWORDS);
+		NNModSqrOpt(tmp, x, param.p, param.omega, NUMWORDS);
 		NNModAdd(tmp, tmp, param.E.a, param.p, NUMWORDS);
 		NNModMultOpt(tmp, tmp, P->x, param.p, param.omega, NUMWORDS);
 		NNModAdd(tmp, tmp, param.E.b, param.p, NUMWORDS);	
-//		if (ECC_y_is_sqr(tmp)) {
-//			break;
-//		}
-//		NNModSqrOpt(P->x, P->x, param.p, param.omega, NUMWORDS);
-//		NNAssignOne(tmp, NUMWORDS);
-//		NNModAdd(P->x, P->x, tmp, param.p, NUMWORDS);
-//	}
-	NNModSqrRootOpt(P->y, tmp, param.p, NUMWORDS, NULL);	/**< y = sqrt(y^2) */	
+//		if (NNEven(param.r, NUMWORDS)) {
+			if (ECC_is_sqr(tmp, NUMWORDS)) {
+				break;
+			}
+//		} else break;
+		NNModSqrOpt(P->x, P->x, param.p, param.omega, NUMWORDS);
+		NNAssignOne(tmp, NUMWORDS);
+		NNModAdd(P->x, P->x, tmp, param.p, NUMWORDS);
+	}
+	NNModSqrRootOpt(P->y, tmp, param.p, NUMWORDS, NULL);	
+
+	// Set x
+	NNAssign(P->x, x, NUMWORDS);
 	
 //	if (element_sgn(p->y) < 0) element_neg(p->y, p->y);
 //	
 //	if (cdp->cofac) element_mul_mpz(a, a, cdp->cofac);
 	
+}*/
+
+/*
+ * @brief Find random point P based on generator G.
+ */
+//void ECC_Random_solvefory(Point * P) {
+//	NN_DIGIT x[NUMWORDS]; 
+//	
+//	NNModRandom(x, param.r, NUMWORDS);
+//	ECC_compY(P, x);
+//}
+
+/*
+ * @brief Find point P based on generator G and hash. (~10sec per call)
+ */
+void ECC_Random_Hash(Point * P, NN_DIGIT * h) {
+	NN_DIGIT x[NUMWORDS]; 
+	NN_DIGIT tmp[NUMWORDS]; 
+	
+//	NNMod(x, h, NUMWORDS, param.r, NUMWORDS);
+	NNDiv(NULL, tmp, h, 2*NUMWORDS, param.r, NNDigits(param.r, NUMWORDS));
+	NNAssignZero(x, NUMWORDS);
+	NNAssign(x, tmp, NNDigits(param.r, NUMWORDS));
+
+	ECC_mul(P, &(param.G), x);
 }
 
 /*
- * @brief Find random point P.
+ * @brief Find random point P based on generator G.(~10sec per call)
  */
-void ECC_Random(Point * P) {
+void ECC_Random_PointMul(Point * P) {
 	NN_DIGIT x[NUMWORDS]; 
 	
-	NNModRandom(x, param.p, NUMWORDS);
-	ECC_compY(P, x);
+	NNModRandom(x, param.r, NUMWORDS);
+	ECC_mul(P, &(param.G), x);
 }
 
 

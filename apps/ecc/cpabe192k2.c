@@ -97,32 +97,32 @@ void get_TP_param(TPParams *tppara)
 	  
 	  // point P
 	  tppara->P.x[12] = 0x0000;
-	  tppara->P.x[11] = 0x0;
-	  tppara->P.x[10] = 0x0;
-	  tppara->P.x[9] = 0x0;
-	  tppara->P.x[8] = 0x0;
-	  tppara->P.x[7] = 0x0;
-	  tppara->P.x[6] = 0x0;
-	  tppara->P.x[5] = 0x0;
-	  tppara->P.x[4] = 0x0;
-	  tppara->P.x[3] = 0x0;
-	  tppara->P.x[2] = 0x0;
-	  tppara->P.x[1] = 0x0;
-	  tppara->P.x[0] = 0x0;
-	  
+	  tppara->P.x[11] = 0x14a7;
+	  tppara->P.x[10] = 0xe9bd;
+	  tppara->P.x[9] = 0xf77a;
+	  tppara->P.x[8] = 0x1e18;
+	  tppara->P.x[7] = 0xd1e1;
+	  tppara->P.x[6] = 0x0e06;
+	  tppara->P.x[5] = 0x6b63;
+	  tppara->P.x[4] = 0x0044;
+	  tppara->P.x[3] = 0x030b;
+	  tppara->P.x[2] = 0x830b;
+	  tppara->P.x[1] = 0x8b37;
+	  tppara->P.x[0] = 0x4869;
+
 	  tppara->P.y[12] = 0x0000;
-	  tppara->P.y[11] = 0x0;
-	  tppara->P.y[10] = 0x0;
-	  tppara->P.y[9] = 0x0;
-	  tppara->P.y[8] = 0x0;
-	  tppara->P.y[7] = 0x0;
-	  tppara->P.y[6] = 0x0;
-	  tppara->P.y[5] = 0x0;
-	  tppara->P.y[4] = 0x0;
-	  tppara->P.y[3] = 0x0;
-	  tppara->P.y[2] = 0x0;
-	  tppara->P.y[1] = 0x0;
-	  tppara->P.y[0] = 0x0;
+	  tppara->P.y[11] = 0x1492;
+	  tppara->P.y[10] = 0x070c;
+	  tppara->P.y[9] = 0x797c;
+	  tppara->P.y[8] = 0xee4b;
+	  tppara->P.y[7] = 0x75eb;
+	  tppara->P.y[6] = 0x5244;
+	  tppara->P.y[5] = 0xda95;
+	  tppara->P.y[4] = 0xc61b;
+	  tppara->P.y[3] = 0x3caf;
+	  tppara->P.y[2] = 0xd18a;
+	  tppara->P.y[1] = 0xb204;
+	  tppara->P.y[0] = 0xd054;
 	  
 	  // group order m
 	  memset(tppara->m, 0, NUMWORDS*NN_DIGIT_LEN);

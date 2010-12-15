@@ -24,6 +24,7 @@
 #define _SHA1_H_
 
 #include <stdint.h>
+#include "NN.h"
 /*
  * If you do not have the ISO standard stdint.h header file, then you
  * must typdef the following:
@@ -44,7 +45,8 @@ enum
     shaStateError       /* called Input after Result */
 };
 #endif
-#define SHA1HashSize 20
+//#define SHA1HashSize 20
+#define SHA1HashSize (KEYDIGITS * NN_DIGIT_LEN)
 
 /*
  *  This structure will hold context information for the SHA-1

@@ -165,7 +165,7 @@ PROCESS_THREAD(tester_process, ev, data)
 			printf("%x ", m.i[i]);
 		}
 		printf("\n");
-		printf("CPABE_cph_cs_r: ");
+/*		printf("CPABE_cph_cs_r: ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
 			printf("%x ", cph.cs.r[i]);
 		}
@@ -184,7 +184,7 @@ PROCESS_THREAD(tester_process, ev, data)
 		for (i = NUMWORDS-1; i >= 0; i--) {
 			printf("%x ", cph.c.y[i]);
 		}
-		printf("\n");
+		printf("\n");*/
 #endif
 #ifdef CPABE_DECRYPTION
 		printf("CPABE_dec(%d) \n", round_index);
