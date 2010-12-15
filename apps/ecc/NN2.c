@@ -68,9 +68,28 @@ void NN2ModSqr(NN2_NUMBER * a, NN2_NUMBER * b, NN_DIGIT * d, NN_UINT digits) {
      NNModAdd(a->i, a->i, t1, d, digits);
    }
 
-   //Computes a = b^c mod d
+   //Computes a = b^c mod d; 
 void NN2ModExp(NN2_NUMBER * a, NN2_NUMBER * b, NN_DIGIT * c, NN_DIGIT * d, NN_UINT digits) {
-#error NN2ModExp not implemented!
+	int16_t i;
+	NN2_NUMBER res;
+	
+	// Find first '1'
+	i = NNBits(c, digits) - 2; // First index with a bit, skip first bit
+	
+	// Init algorithm
+	NN2Assign(&res, b, digits);  // res = b;
+	
+	// Start Square&Multiply
+	for (; i >= 0; i--) {
+		if (NNTestBit(c, i)) { // 1
+			NN2ModSqr(&res, &res, d, digits);
+			NN2ModMult(&res, &res, b, d, digits);
+		} else { // 0
+			NN2ModSqr(&res, &res, d, digits);
+		}
+	}
+	
+	NN2Assign(a, &res, digits);
 }
 
    //assign a = b
@@ -158,4 +177,5 @@ bool NN2LucExp(NN2_NUMBER * a,NN2_NUMBER * b, NN_DIGIT * k,NN_DIGIT * inv2,NN_DI
 	
 	return TRUE;
 }
+
 

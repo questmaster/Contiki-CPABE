@@ -1042,32 +1042,55 @@ void ECC_assign(Point *P0, Point *P1) {
 }
 
 /*
+int ECC_y_is_sqr(NN_DIGIT * a) {
+	NN_DIGIT t[NUMWORDS];
+	NN_DIGIT u[NUMWORDS];
+	int res;
+	
+	if (NNEven(a, NUMWORDS)) {
+		NNAssignOne(u, NUMWORDS);
+		NNModSub(t, param.r, u, param.p, NUMWORDS);
+		NNAssignDigit(u, 2, NUMWORDS);
+		NNModDivOpt(t, t, u, param.p, NUMWORDS);
+		NNModExp(u, a, t, NUMWORDS, param.p, NUMWORDS);
+		res = NNOne(u, NUMWORDS);
+		
+		return res;
+	}
+	
+	return 1;
+}*/
+
+/*
  * Find matching y to given x and return Point. P = (x, y) e E
  * x has to be x mod p
  * @returns if valid point
  */
-int ECC_compY(Point * P, NN_DIGIT * x) {
+void ECC_compY(Point * P, NN_DIGIT * x) {
     NN_DIGIT tmp[NUMWORDS];
 	
 	// Set x
 	NNAssign(P->x, x, NUMWORDS);
-	
+
 	// Compute y
-	NNAssign(P->y, param.E.b, NUMWORDS);			/**< (y^2) = b */
-	if (!param.E.a_zero) {
-		if (param.E.a_one) {						/**< (y^2) += a * x */
-			NNModAdd(P->y, P->y, P->x, param.p, NUMWORDS);
-		} else {
-			NNModMultOpt(tmp, param.E.a, P->x, param.p, param.omega, NUMWORDS);
-			NNModAdd(P->y, P->y, tmp, param.p, NUMWORDS);
-		}
-	}
-	NNModSqrOpt(tmp, P->x, param.p, param.omega, NUMWORDS);
-	NNModMultOpt(tmp, tmp, P->x, param.p, param.omega, NUMWORDS);
-	NNModAdd(P->y, P->y, tmp, param.p, NUMWORDS);	/**< (y^2) += x^3 */
-	NNModSqrRootOpt(P->y, P->y, param.p, NUMWORDS, NULL);	/**< y = sqrt(y^2) */
+//	for(;;) {
+		NNModSqrOpt(tmp, P->x, param.p, param.omega, NUMWORDS);
+		NNModAdd(tmp, tmp, param.E.a, param.p, NUMWORDS);
+		NNModMultOpt(tmp, tmp, P->x, param.p, param.omega, NUMWORDS);
+		NNModAdd(tmp, tmp, param.E.b, param.p, NUMWORDS);	
+//		if (ECC_y_is_sqr(tmp)) {
+//			break;
+//		}
+//		NNModSqrOpt(P->x, P->x, param.p, param.omega, NUMWORDS);
+//		NNAssignOne(tmp, NUMWORDS);
+//		NNModAdd(P->x, P->x, tmp, param.p, NUMWORDS);
+//	}
+	NNModSqrRootOpt(P->y, tmp, param.p, NUMWORDS, NULL);	/**< y = sqrt(y^2) */	
 	
-	return ECC_check_point(P);
+//	if (element_sgn(p->y) < 0) element_neg(p->y, p->y);
+//	
+//	if (cdp->cofac) element_mul_mpz(a, a, cdp->cofac);
+	
 }
 
 /*
@@ -1075,12 +1098,9 @@ int ECC_compY(Point * P, NN_DIGIT * x) {
  */
 void ECC_Random(Point * P) {
 	NN_DIGIT x[NUMWORDS]; 
-	int res = -1;
 	
-	do {
-		NNModRandom(x, param.p, NUMWORDS);
-		res = ECC_compY(P, x);
-	} while (res < 0);
+	NNModRandom(x, param.p, NUMWORDS);
+	ECC_compY(P, x);
 }
 
 

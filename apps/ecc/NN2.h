@@ -50,7 +50,7 @@ extern void NN2ModMult(NN2_NUMBER * a, NN2_NUMBER * b, NN2_NUMBER * c, NN_DIGIT 
 //square of a complex number
 extern void NN2ModSqr(NN2_NUMBER * a, NN2_NUMBER * b, NN_DIGIT * d, NN_UINT digits);
 //computes a = b^c mod d
-extern void NN2ModExp(NN2_NUMBER * a, NN2_NUMBER * b, NN_DIGIT * c, NN_DIGIT * d, NN_UINT digits) {
+extern void NN2ModExp(NN2_NUMBER * a, NN2_NUMBER * b, NN_DIGIT * c, NN_DIGIT * d, NN_UINT digits);
 //assign a = b^-1 mod c
 extern void NN2ModInv(NN2_NUMBER * a,NN2_NUMBER * b,NN_DIGIT * c,NN_UINT digits);
 //assign a = b
@@ -59,5 +59,7 @@ extern void NN2Assign(NN2_NUMBER * a,NN2_NUMBER * b,NN_UINT digits);
 extern void NN2AssignNN(NN2_NUMBER * a,NN_DIGIT * b,NN_UINT digits);
 //Return the lucas exponentatiation for the Tate Pairing lucas(2*b,k)/2
 extern bool NN2LucExp(NN2_NUMBER * a,NN2_NUMBER * b, NN_DIGIT * k,NN_DIGIT * inv2,NN_DIGIT * d,NN_UINT digits);
+//Generates Random Complex number modulo b
+extern void NN2ModRandom(NN2_NUMBER * a, NN_DIGIT * b, NN_UINT digits);
 
 #endif

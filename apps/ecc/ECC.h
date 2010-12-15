@@ -236,7 +236,7 @@ typedef struct PointSlope PointSlope;
 	extern void ECC_assign(Point *P0, Point *P1);
 
 	// Find matching y to given x. P = (x, y) e E
-	extern int ECC_compY(Point * P, NN_DIGIT * x);
+	extern void ECC_compY(Point * P, NN_DIGIT * x);
 
 	// Find random point P.
 	extern void ECC_Random(Point * P);
