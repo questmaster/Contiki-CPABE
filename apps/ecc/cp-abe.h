@@ -159,4 +159,6 @@ extern void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN2_NUMBER * m, char *p
  */
 extern int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN2_NUMBER * m);
 
+#warning Still missing: Methods to free keys and store/read them to/from flash.
+
 #endif

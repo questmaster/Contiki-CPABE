@@ -31,7 +31,9 @@
 #include <string.h>
 #include <dev/watchdog.h>
 #include <lib/rand.h>
-
+#ifdef TPSSC // used by ECC_compY
+#include "TPCurveParam.h"
+#endif
   //parameters for ECC operations
 static Params param;
 
@@ -1042,7 +1044,7 @@ void ECC_assign(Point *P0, Point *P1) {
 }
 
 // Legendre-Symbol L(a/r) == 1? is a quadratic residue?
-/*int ECC_is_sqr(NN_DIGIT * a, NN_UINT digits) {
+/*bool ECC_is_sqr(NN_DIGIT * a, NN_UINT digits) {
 	NN_DIGIT z[NUMWORDS];
 	NN_DIGIT u[NUMWORDS];
 	int res;
@@ -1054,7 +1056,7 @@ void ECC_assign(Point *P0, Point *P1) {
 	NNAssignDigit(u, 2, NUMWORDS);
 	NNModDivOpt(z, z, u, param.p, NUMWORDS);
 	NNModExp(u, a, z, NUMWORDS, param.p, NUMWORDS);
-	res = NNOne(u, NUMWORDS);
+	res = NNOne(u, NUMWORDS) == TRUE;
 		
 	return res;
 }*/
@@ -1068,6 +1070,7 @@ void ECC_assign(Point *P0, Point *P1) {
     NN_DIGIT tmp[NUMWORDS];
 	NN_DIGIT x[NUMWORDS];
 	
+	NNAssign(x, h, NUMWORDS);
 	// Compute y
 	for(;;) {
 		NNModRandom(x, param.r, NUMWORDS);
@@ -1075,24 +1078,31 @@ void ECC_assign(Point *P0, Point *P1) {
 		NNModAdd(tmp, tmp, param.E.a, param.p, NUMWORDS);
 		NNModMultOpt(tmp, tmp, P->x, param.p, param.omega, NUMWORDS);
 		NNModAdd(tmp, tmp, param.E.b, param.p, NUMWORDS);	
+printf("1\n");
 //		if (NNEven(param.r, NUMWORDS)) {
 			if (ECC_is_sqr(tmp, NUMWORDS)) {
 				break;
 			}
-//		} else break;
+//		}
 		NNModSqrOpt(P->x, P->x, param.p, param.omega, NUMWORDS);
 		NNAssignOne(tmp, NUMWORDS);
 		NNModAdd(P->x, P->x, tmp, param.p, NUMWORDS);
+printf("2\n");
 	}
 	NNModSqrRootOpt(P->y, tmp, param.p, NUMWORDS, NULL);	
+printf("3\n");
 
 	// Set x
 	NNAssign(P->x, x, NUMWORDS);
 	
 //	if (element_sgn(p->y) < 0) element_neg(p->y, p->y);
 //	
-//	if (cdp->cofac) element_mul_mpz(a, a, cdp->cofac);
-	
+#ifdef TPSSC
+	TPParams tp;
+	get_TP_param(&tp);
+	ECC_mul(P, P, tp.c);
+printf("4\n");
+#endif
 }*/
 
 /*
