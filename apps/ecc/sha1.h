@@ -45,8 +45,8 @@ enum
     shaStateError       /* called Input after Result */
 };
 #endif
-//#define SHA1HashSize 20
-#define SHA1HashSize (KEYDIGITS * NN_DIGIT_LEN)
+#define SHA1HashSize 20
+//#define SHA1HashSize (KEYDIGITS * NN_DIGIT_LEN)
 
 /*
  *  This structure will hold context information for the SHA-1

@@ -63,7 +63,7 @@ static char **strsplit(char *s) {
 	for (i = 1; i < tok_count; i++) {
 		tmp1 = strchr(tmp, ' ');						/**< get pos of next ' ' char */
 		if (tmp1 != NULL) {
-			*tmp1 = 0;									/**< replace ' ' by '\0', tmp points to rest of string */
+			*tmp1 = '\0';								/**< replace ' ' by '\0', tmp points to rest of string */
 			tmp = ++tmp1;
 		}
 		
@@ -210,7 +210,7 @@ void cpabe_setup(cpabe_pub_t *pub, cpabe_msk_t *msk) {
 	// init TP with curve params
 	get_TP_param(&param);
 	
-#ifdef CPABE_DEBUG_OFF
+#ifdef CPABE_DEBUG
 	alpha[12] = 0x0000;
 	alpha[11] = 0x0000;
 	alpha[10] = 0x0000;
@@ -316,7 +316,7 @@ void cpabe_setup(cpabe_pub_t *pub, cpabe_msk_t *msk) {
  */
 void point_from_string( Point* h, char* s )
 {
-	NN_DIGIT r[NUMWORDS/*SHA1HashSize*/]; 
+	NN_DIGIT r[NUMWORDS/*SHA1HashSize*/]; // result is fixed 20bytes!
 	SHA1Context context;
 //	NN_DIGIT tmp[NUMWORDS];
 	
@@ -328,14 +328,11 @@ void point_from_string( Point* h, char* s )
 		
 #ifdef CPABE_DEBUG	
 	int i ;
-	printf("attr: %s -> r: ", s);
+	printf("(not used in debug!) attr: %s -> SHA-1 hash: ", s);
 	for (i = NUMWORDS-1; i >= 0; i--) {
 		printf("%x ", r[i]);
 	}
 	printf("\n");
-#endif
-
-#ifdef CPABE_DEBUG
 	
 	if (strcmp(s, "attr1") == 0) {
   	 h->x[12] = 0x0000; // v- this is just for the first attribute!
@@ -488,7 +485,7 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 	cpabe_prv_comp_t *c;
 	Point h_rp;
 	NN_DIGIT rp[NUMWORDS];
-#ifdef CPABE_DEBUG_OFF		
+#ifdef CPABE_DEBUG		
 	int i;
 #endif
 	
@@ -501,7 +498,7 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 	list_init(prv->comps);
 	
 	// compute
-#ifdef CPABE_DEBUG_OFF
+#ifdef CPABE_DEBUG
 	r[12] = 0x0000;
 	r[11] = 0x0000;
 	r[10] = 0x0000;
@@ -519,7 +516,7 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 	NNModRandom(r, param.m, NUMWORDS);
 #endif
 	ECC_mul(&g_r, &pub.gp, r);						/**< g_r = gp * r */
-#ifdef CPABE_DEBUG_OFF
+#ifdef CPABE_DEBUG
 	printf("g_r_x: ");
 	for (i = NUMWORDS-1; i >= 0; i--) {
 		printf("%x ", g_r.x[i]);
@@ -535,7 +532,7 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 	ECC_add(&(prv->d), &msk.g_alpha, &g_r);			/**< d = g_alpha + g_r; here is P * P -> Add them !!! */
 	NNModInv(beta_inv, msk.beta, param.m, NUMWORDS);	/**< beta_inv = 1/beta */
 
-#ifdef CPABE_DEBUG_OFF	
+#ifdef CPABE_DEBUG	
 	printf("beta_inv: ");
 	for (i = NUMWORDS-1; i >= 0; i--) {
 		printf("%x ", beta_inv[i]);
@@ -554,7 +551,7 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 		c->attr = *(attributes++);
 		
 		point_from_string(&h_rp, c->attr);
-#ifdef CPABE_DEBUG_OFF
+#ifdef CPABE_DEBUG
 printf("c_attrib: %s\n", c->attr);
 
 	if (strcmp(c->attr, "attr1") == 0) {
@@ -614,7 +611,7 @@ printf("c_attrib: %s\n", c->attr);
 		ECC_add(&(c->d), &g_r, &h_rp);				/**< d = g_r + h_rp */
 		ECC_mul(&(c->dp), &pub.g, rp);				/**< dp = g * rp */
 
-#ifdef CPABE_DEBUG_OFF		
+#ifdef CPABE_DEBUG		
 		printf("CPABE_c_d_x: ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
 			printf("%x ", c->d.x[i]);
@@ -655,7 +652,7 @@ base_node( int k, char* s )
 	p->k = k;
 	if (s != NULL) {
 		p->attr = (char *) malloc (strlen(s)+1);					// FIXME: memb?
-		strncpy(p->attr, s, strlen(s));								// replaced strdup()
+		memcpy(p->attr, s, strlen(s)+1);							// replaced strdup()
 	} else {
 		p->attr = 0;
 	}
@@ -756,7 +753,7 @@ rand_poly( int deg, NN_DIGIT zero_val[NUMWORDS] )
 	NNAssign(q->coef, zero_val, NUMWORDS);
 	
 	for( i = 1; i < q->deg + 1; i++ ) {
-#ifdef CPABE_DEBUG_OFF
+#ifdef CPABE_DEBUG
 		(q->coef + (i * NUMWORDS))[12] = 0x0000;
 		(q->coef + (i * NUMWORDS))[11] = 0x0000;
 		(q->coef + (i * NUMWORDS))[10] = 0x0000;
@@ -785,7 +782,7 @@ eval_poly( NN_DIGIT r[NUMWORDS], cpabe_polynomial_t* q, NN_DIGIT x[NUMWORDS] )
 	NN_DIGIT tmp[2*NUMWORDS]; // for mult op
 	NN_DIGIT s[NUMWORDS]; // Zr
 	NN_DIGIT t[NUMWORDS]; // Zr
-#ifdef CPABE_DEBUG_OFF		
+#ifdef CPABE_DEBUG		
 	int i;
 #endif
 		
@@ -806,7 +803,7 @@ eval_poly( NN_DIGIT r[NUMWORDS], cpabe_polynomial_t* q, NN_DIGIT x[NUMWORDS] )
 		// t *= x 
 		NNModMult(t, t, x, param.m, NUMWORDS);
 		
-#ifdef CPABE_DEBUG_OFF		
+#ifdef CPABE_DEBUG		
 		printf("eval_poly: j=%d, deg=%d\n", j, q->deg);
 		
 		printf("s: ");
@@ -842,7 +839,7 @@ fill_policy(cpabe_policy_t *p, cpabe_pub_t pub, NN_DIGIT e[NUMWORDS]) {
 	NN_DIGIT t[NUMWORDS]; // Zr
 	Point h;			  // G2
 		
-#ifdef CPABE_DEBUG_OFF		
+#ifdef CPABE_DEBUG		
 		printf("p_attrib: %s\n", p->attr);
 #endif
 	p->q = rand_poly(p->k - 1, e);
@@ -853,7 +850,7 @@ fill_policy(cpabe_policy_t *p, cpabe_pub_t pub, NN_DIGIT e[NUMWORDS]) {
 		ECC_mul(&(p->c),  &pub.g, &(p->q->coef[0]));
 		ECC_mul(&(p->cp), &h,     &(p->q->coef[0]));
 
-#ifdef CPABE_DEBUG_OFF		
+#ifdef CPABE_DEBUG		
 		
 		printf("CPABE_h_x: ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
@@ -960,7 +957,7 @@ void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN2_NUMBER * m, char *policy) 
 	parse_policy_postfix(cph, policy);
 	
 	// compute 
-#ifdef CPABE_DEBUG_OFF
+#ifdef CPABE_DEBUG
 	m->r[12] = 0x0000;
 	m->r[11] = 0x1bf4;
 	m->r[10] = 0x66fb;
@@ -1104,7 +1101,7 @@ pick_sat_min_leaves( cpabe_policy_t* p, cpabe_prv_t* prv )
 	satl_int_t * alloc_k;
 	
 //	assert(p->satisfiable == 1);
-#ifdef CPABE_DEBUG_OFF
+#ifdef CPABE_DEBUG
 	printf("p->attr=%s\n", p->attr);
 #endif
 	
@@ -1139,7 +1136,7 @@ pick_sat_min_leaves( cpabe_policy_t* p, cpabe_prv_t* prv )
 				alloc_k->k = k;
 				list_add(p->satl, alloc_k);
 
-#ifdef CPABE_DEBUG_OFF
+#ifdef CPABE_DEBUG
 	printf("p->satl[%d]->k=%d\n", i, k);
 #endif
 			}
@@ -1159,7 +1156,7 @@ lagrange_coef( NN_DIGIT r[NUMWORDS], list_t s, int i )
 	NN_DIGIT tmp2[NUMWORDS]; // Zr
 	NN_DIGIT t[NUMWORDS];	// Zr
 	NN_DIGIT r_tmp[2*NUMWORDS];
-#ifdef CPABE_DEBUG_OFF		
+#ifdef CPABE_DEBUG		
 	int a;
 #endif
 			
@@ -1178,7 +1175,7 @@ lagrange_coef( NN_DIGIT r[NUMWORDS], list_t s, int i )
 		NNDiv(NULL, r_tmp, r_tmp, 2*NUMWORDS, param.m, NNDigits(param.m, NUMWORDS));
 		NNAssignZero(r, NUMWORDS);
 		NNAssign(r, r_tmp, NNDigits(param.m, NUMWORDS));
-#ifdef CPABE_DEBUG_OFF		
+#ifdef CPABE_DEBUG		
 		printf("lag_t1[%d]: ", k);
 		for (a = NUMWORDS-1; a >= 0; a--) {
 			printf("%x ", t[a]);
@@ -1202,7 +1199,7 @@ lagrange_coef( NN_DIGIT r[NUMWORDS], list_t s, int i )
 		NNAssignZero(r, NUMWORDS);
 		NNAssign(r, r_tmp, NNDigits(param.m, NUMWORDS));
 
-#ifdef CPABE_DEBUG_OFF		
+#ifdef CPABE_DEBUG		
 		printf("lag_t2[%d]: ", k);
 		for (a = NUMWORDS-1; a >= 0; a--) {
 			printf("%x ", t[a]);
@@ -1216,7 +1213,7 @@ lagrange_coef( NN_DIGIT r[NUMWORDS], list_t s, int i )
 #endif		
 	}
 
-#ifdef CPABE_DEBUG_OFF		
+#ifdef CPABE_DEBUG		
 		printf("lag_r: ");
 		for (a = NUMWORDS-1; a >= 0; a--) {
 			printf("%x ", r[a]);
@@ -1400,7 +1397,7 @@ dec_leaf_flatten( NN2_NUMBER * r, NN_DIGIT * exp,
 	cpabe_prv_comp_t* c;
 	NN2_NUMBER s; // GT
 	NN2_NUMBER t; // GT
-#ifdef CPABE_DEBUG_OFF		
+#ifdef CPABE_DEBUG		
 	int a;
 #endif
 	
@@ -1409,7 +1406,7 @@ dec_leaf_flatten( NN2_NUMBER * r, NN_DIGIT * exp,
 	TP_TatePairing(&s, p->c,  c->d); /* num_pairings++; */
 	TP_TatePairing(&t, p->cp, c->dp); /* num_pairings++; */
 
-#ifdef CPABE_DEBUG_OFF	
+#ifdef CPABE_DEBUG	
 		printf("p->attr=%s\n", p->attr);
 	
 		printf("leaf_tp_t_r: ");
@@ -1438,7 +1435,7 @@ dec_leaf_flatten( NN2_NUMBER * r, NN_DIGIT * exp,
 	NN2ModMult(&s, &s, &t, param.p, NUMWORDS); /* num_muls++; */
 	NN2ModExp(&s, &s, exp, param.p, NUMWORDS); /* num_exps++; */
 
-#ifdef CPABE_DEBUG_OFF		
+#ifdef CPABE_DEBUG		
 		printf("leaf_t_r: ");
 		for (a = NUMWORDS-1; a >= 0; a--) {
 			printf("%x ", t.r[a]);
@@ -1463,7 +1460,7 @@ dec_leaf_flatten( NN2_NUMBER * r, NN_DIGIT * exp,
 	
 	NN2ModMult(r, r, &s, param.p, NUMWORDS); /* num_muls++; */
 
-#ifdef CPABE_DEBUG_OFF		
+#ifdef CPABE_DEBUG		
 		printf("leaf_r_r: ");
 		for (a = NUMWORDS-1; a >= 0; a--) {
 			printf("%x ",r->r[a]);
@@ -1491,7 +1488,7 @@ dec_internal_flatten( NN2_NUMBER * r, NN_DIGIT * exp,
 	NN_DIGIT t[NUMWORDS];		// Zr
 	NN_DIGIT expnew[NUMWORDS];	// Zr
 	NN_DIGIT tmp[2*NUMWORDS];
-#ifdef CPABE_DEBUG_OFF		
+#ifdef CPABE_DEBUG		
 	int a;
 #endif
 	
@@ -1506,7 +1503,7 @@ dec_internal_flatten( NN2_NUMBER * r, NN_DIGIT * exp,
 		dec_node_flatten(r, expnew, list_index
 						 (p->children, ((satl_int_t *) list_index(p->satl, i))->k - 1), prv, pub);
 
-#ifdef CPABE_DEBUG_OFF		
+#ifdef CPABE_DEBUG		
 		printf("int_r_r[%d]: ", i);
 		for (a = NUMWORDS-1; a >= 0; a--) {
 			printf("%x ",r->r[a]);
@@ -1585,7 +1582,7 @@ dec_m 1b f4 66 fb af 33 f4 0 3a 92 20 2d bf 61 56 bb 87 92 de 92 e9 1a b3 a7 7 3
  */
 int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN2_NUMBER * m) {
 	NN2_NUMBER t;	// GT
-#ifdef CPABE_DEBUG_OFF		
+#ifdef CPABE_DEBUG		
 	int i;
 #endif
 	
@@ -1607,7 +1604,7 @@ int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN2_NUMBER * m)
 //	else 
 //		dec_merge(t, cph->p, prv, pub); // not ported!
 
-#ifdef CPABE_DEBUG_OFF
+#ifdef CPABE_DEBUG
 		printf("dec_flat_t_r: ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
 			printf("%x ",t.r[i]);
@@ -1626,7 +1623,7 @@ int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN2_NUMBER * m)
 	NN2ModInv(&t, &t, param.p, NUMWORDS);
 	NN2ModMult(m, m, &t, param.p, NUMWORDS); /* num_muls++; */ 
 
-#ifdef CPABE_DEBUG_OFF
+#ifdef CPABE_DEBUG
 		printf("dec_t_r: ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
 			printf("%x ",t.r[i]);
