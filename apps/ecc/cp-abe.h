@@ -12,7 +12,7 @@
 
 #include "NN2.h"
 #include "ECC.h"
-#include <list.h>
+#include "list-ext.h"
 
 /*
  * A public key.
@@ -62,8 +62,7 @@ typedef struct cpabe_prv_s {
 typedef struct cpabe_polynomial_s {
 	int deg;
 	/* coefficients from [0] x^0 to [deg] x^deg */
-	NN_DIGIT *coef; /* G_T (of length deg + 1) */
-//	NN2_NUMBER *coef; /* G_T (of length deg + 1), but seems Zr?! */
+	NN_DIGIT *coef; /* Zr (of length deg + 1) */
 } cpabe_polynomial_t;
 
 typedef struct satl_int_s {
@@ -100,7 +99,6 @@ typedef struct cpabe_policy_s {
  hybrid encryption (which you do yourself).
  */
 typedef struct cpabe_cph_s {
-//	NN_DIGIT cs[NUMWORDS]; /* G_T */
 	NN2_NUMBER cs; /* G_T */
 	Point c;  /* G_1 */
 	list_t p;	/* tree of cpabe_policy_t */
@@ -159,6 +157,33 @@ extern void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN2_NUMBER * m, char *p
  */
 extern int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN2_NUMBER * m);
 
-#warning Still missing: Methods to free keys and store/read them to/from flash.
+
+
+/*
+ Exactly what it seems.
+ */
+extern uint8_t* cpabe_pub_serialize( cpabe_pub_t* pub );
+extern uint8_t* cpabe_msk_serialize( cpabe_msk_t* msk );
+extern uint8_t* cpabe_prv_serialize( cpabe_prv_t* prv );
+extern uint8_t* cpabe_cph_serialize( cpabe_cph_t* cph );
+
+/*
+ Also exactly what it seems. If free is true, the GByteArray passed
+ in will be free'd after it is read.
+ */
+extern void cpabe_pub_unserialize( cpabe_pub_t* pub, uint8_t* b, int free ); // FIXME: is free still needed
+extern void cpabe_msk_unserialize( cpabe_msk_t* msk, uint8_t* b, int free );
+extern void cpabe_prv_unserialize( cpabe_prv_t* prv, uint8_t* b, int free );
+extern void cpabe_cph_unserialize( cpabe_cph_t* cph, uint8_t* b, int free );
+
+/*
+ Again, exactly what it seems.
+ */
+//extern void cpabe_pub_free( cpabe_pub_t* pub ); // these have no dynamically allocated parts!
+//extern void cpabe_msk_free( cpabe_msk_t* msk );// 
+extern void cpabe_prv_free( cpabe_prv_t* prv );
+extern void cpabe_cph_free( cpabe_cph_t* cph );
+
+
 
 #endif

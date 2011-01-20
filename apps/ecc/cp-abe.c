@@ -26,14 +26,6 @@ MEMB(enc_polynomial_m, cpabe_polynomial_t, 10);				/**< This limits the number o
 
 /* -- Utility functions ----------------------------------------------------- */
 
-/*
- * @brief These two are needed for the list to work with my setup.
- */ 
-#define MYLIST(name) \
-name = (list_t)&LIST_CONCAT(name,_list)
-struct list {
-	struct list *next;
-};
 
 
 /*
@@ -53,7 +45,7 @@ static char **strsplit(char *s) {
 	}
 	
 	// alloc base array
-	tmp = (char *) malloc((tok_count+1) * sizeof(char *) + strlen(s) + 1);		// FIXME: memb?
+	tmp = (char *) malloc((tok_count+1) * sizeof(char *) + strlen(s) + 1);
 	tokens = (char **) tmp;
 	tmp = tmp + ((tok_count+1) * sizeof(char *));
 	memcpy(tmp, s, strlen(s) + 1);
@@ -85,24 +77,6 @@ static void freesplit(char ** toks) {
 	free(toks);
 }
 
-/*
- * @brief Return item at position index.
- */
-static void * list_index(list_t list, uint8_t index) {
-	struct list *l;
-	uint8_t n = 0;
-	
-	for(l = *list; l != NULL; l = l->next) {
-		if (n != index) {
-			++n;
-		} else {
-			break;
-		}
-
-	}
-	
-	return l;
-} 
 
 /**
  * This replaces an sscanf call and parses the format "%dto%d".
@@ -633,7 +607,7 @@ printf("c_attrib: %s\n", c->attr);
 		}
 		printf("\n");
 #endif		
-		// TODO: clear h_rb, rp needed?
+		// clear h_rb, rp 
 		
 		list_add(prv->comps, c);
 	}
@@ -651,7 +625,7 @@ base_node( int k, char* s )
 	p = (cpabe_policy_t*) memb_alloc(&enc_policy_m);
 	p->k = k;
 	if (s != NULL) {
-		p->attr = (char *) malloc (strlen(s)+1);					// FIXME: memb?
+		p->attr = (char *) malloc (strlen(s)+1);
 		memcpy(p->attr, s, strlen(s)+1);							// replaced strdup()
 	} else {
 		p->attr = 0;
@@ -797,7 +771,7 @@ eval_poly( NN_DIGIT r[NUMWORDS], cpabe_polynomial_t* q, NN_DIGIT x[NUMWORDS] )
 		NNDiv(NULL, tmp, tmp, 2*NUMWORDS, param.m, NNDigits(param.m, NUMWORDS));
 		NNAssignZero(s, NUMWORDS);
 		NNAssign(s, tmp, NNDigits(param.m, NUMWORDS));
-//		NNModMultVar(s, q->coef + (j * NUMWORDS), t, NUMWORDS, param.m, NNDigits(param.m, NUMWORDS)); // TODO: should replace above
+//		NNModMultVar(s, q->coef + (j * NUMWORDS), t, NUMWORDS, param.m, NNDigits(param.m, NUMWORDS)); // FIXME: should replace above
 		NNModAdd(r, r, s, param.m, NUMWORDS);
 		
 		// t *= x 
@@ -1002,8 +976,6 @@ void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN2_NUMBER * m, char *policy) 
  	NN2ModRandom(m, param.p, NUMWORDS);
  	NNModRandom(s, param.m, NUMWORDS);
 #endif
-//	NNModExp(cph->cs,  pub.g_hat_alpha, s, NUMWORDS, param.p, NUMWORDS);	
-//	NNModMult(cph->cs, cph->cs, m, param.p, NUMWORDS);		/**< cs = e(g, g)^(alpha * s) * m */
 	NN2ModExp(&(cph->cs),  &(pub.g_hat_alpha), s, param.p, NUMWORDS);	
 	NN2ModMult(&(cph->cs), &(cph->cs), m, param.p, NUMWORDS);		/**< cs = e(g, g)^(alpha * s) * m */
 	
@@ -1495,7 +1467,7 @@ dec_internal_flatten( NN2_NUMBER * r, NN_DIGIT * exp,
 	for( i = 0; i < list_length(p->satl); i++ )
 	{
  		lagrange_coef(t, p->satl, ((satl_int_t *) list_index(p->satl, i))->k);
-//		NNModMult(expnew, exp, t, param.m, NUMWORDS); /* num_muls++; */			// FIXME: mod m or p?
+//		NNModMult(expnew, exp, t, param.m, NUMWORDS); /* num_muls++; */
 		NNMult(tmp, exp, t, NUMWORDS);		// more efficent than NNModMult, because of small m!	
 		NNDiv(NULL, tmp, tmp, 2*NUMWORDS, param.m, NNDigits(param.m, NUMWORDS));
 		NNAssignZero(expnew, NUMWORDS);
@@ -1638,5 +1610,364 @@ int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN2_NUMBER * m)
 
 	return 1;
 }
+
+
+/* *** Serializer and free ************************************************** */
+
+static uint8_t* serialize_bytewise(uint8_t* b, uint8_t* data, uint16_t len) {
+	uint16_t i;
+	
+	for( i = 0; i < len; i++ )
+	{
+		b[i] = data[i]; 
+	}
+	
+	return b + len;
+}
+
+static uint8_t* unserialize_bytewise(uint8_t* b, uint8_t* data, uint16_t len) {
+	uint16_t i;
+	
+	for( i = 0; i < len; i++ )
+	{
+		data[i] = b[i]; 
+	}
+	
+	return b + len;
+}
+
+/* int */
+static uint8_t* serialize_uint(uint8_t* b, uint data) {
+	uint8_t len = sizeof(uint);
+	
+	return serialize_bytewise(b, (uint8_t*) &data, len);
+}
+
+static uint8_t* unserialize_uint(uint8_t* b, uint* data) {
+	uint8_t len = sizeof(uint);
+	
+	return unserialize_bytewise(b, (uint8_t*) data, len);
+}
+
+/* NN_DIGIT */
+static uint8_t* serialize_nndigit(uint8_t* b, NN_DIGIT* data) {
+	uint16_t len = sizeof(NN_DIGIT) * NUMWORDS;
+	
+	return serialize_bytewise(b, (uint8_t*) data, len);
+}
+
+static uint8_t* unserialize_nndigit(uint8_t* b, NN_DIGIT* data) {
+	uint16_t len = sizeof(NN_DIGIT) * NUMWORDS;
+	
+	return unserialize_bytewise(b, (uint8_t*) data, len);
+}
+
+/* Point */
+static uint8_t* serialize_point(uint8_t* b, Point data) {
+	uint16_t len = sizeof(NN_DIGIT) * NUMWORDS;
+	uint8_t * pos;
+	
+	pos = serialize_bytewise(b, (uint8_t*) data.x, len);
+	return serialize_bytewise(pos, (uint8_t*) data.y, len);
+}
+
+static uint8_t* unserialize_point(uint8_t* b, Point* data) {
+	uint16_t len = sizeof(NN_DIGIT) * NUMWORDS;
+	uint8_t * pos;
+	
+	pos = serialize_bytewise(b, (uint8_t*) data->x, len);
+	return unserialize_bytewise(pos, (uint8_t*) data->y, len);
+}
+
+/* NN2_NUMBER */
+static uint8_t* serialize_nn2number(uint8_t* b, NN2_NUMBER data) {
+	uint16_t len = sizeof(NN_DIGIT) * NUMWORDS;
+	uint8_t * pos;
+	
+	pos = serialize_bytewise(b, (uint8_t*) data.r, len);
+	return serialize_bytewise(pos, (uint8_t*) data.i, len);
+}
+
+static uint8_t* unserialize_nn2number(uint8_t* b, NN2_NUMBER* data) {
+	uint16_t len = sizeof(NN_DIGIT) * NUMWORDS;
+	uint8_t * pos;
+	
+	pos = serialize_bytewise(b, (uint8_t*) data->r, len);
+	return unserialize_bytewise(pos, (uint8_t*) data->i, len);
+}
+
+/* String */
+static uint8_t* serialize_string(uint8_t* b, char* data) {
+	uint8_t len = sizeof(data);
+	
+	b[0] = len;
+	b++;
+	return serialize_bytewise(b, (uint8_t*) data, len);
+}
+
+static uint8_t* unserialize_string(uint8_t* b, char* data) {
+	uint8_t len = b[0];
+	
+	b++;
+	return unserialize_bytewise(b, (uint8_t*) data, len);
+}
+
+
+
+uint8_t* cpabe_pub_serialize( cpabe_pub_t* pub )
+{
+	uint8_t* b = (uint8_t *) malloc(8 * sizeof(NN_DIGIT) * NUMWORDS);
+	uint8_t* pos;
+	
+	pos = serialize_point(b, pub->g);
+	pos = serialize_point(pos, pub->h);
+	pos = serialize_point(pos, pub->gp);
+	serialize_nn2number(pos, pub->g_hat_alpha);
+	
+	return b;
+}
+
+void cpabe_pub_unserialize( cpabe_pub_t* pub, uint8_t* b, int f )
+{
+	uint8_t* pos;
+	
+	pos = unserialize_point(b, &(pub->g));
+	pos = unserialize_point(pos, &(pub->h));
+	pos = unserialize_point(pos, &(pub->gp));
+	unserialize_nn2number(pos, &(pub->g_hat_alpha));
+	
+	if( f )
+		free(b);
+}
+
+uint8_t* cpabe_msk_serialize( cpabe_msk_t* msk )
+{
+	uint8_t* b = (uint8_t*) malloc(3 * sizeof(NN_DIGIT) * NUMWORDS);
+	uint8_t* pos;
+	
+	pos = serialize_nndigit(b, msk->beta);
+	serialize_point(pos, msk->g_alpha);
+	
+	return b;
+}
+
+void cpabe_msk_unserialize( cpabe_msk_t* msk, uint8_t* b, int f )
+{
+	uint8_t* pos;
+	
+	pos = unserialize_nndigit(b, msk->beta);
+	unserialize_point(pos, &(msk->g_alpha));
+	
+	if( f )
+		free(b);
+}
+
+uint8_t*
+cpabe_prv_serialize( cpabe_prv_t* prv )
+{
+	uint8_t i;
+	uint list_len = list_length(prv->comps);
+	uint8_t* b = NULL;//(uint8_t*) malloc(xxx); // TODO: malloc size? get size of strings!
+	uint8_t* pos;
+	
+	pos = serialize_point(b, prv->d);
+	pos = serialize_uint( pos, list_len);
+	
+	for( i = 0; i < list_len; i++ )
+	{
+		pos = serialize_string(pos, ((cpabe_prv_comp_t*) list_index(prv->comps, i))->attr);
+		pos = serialize_point( pos, ((cpabe_prv_comp_t*) list_index(prv->comps, i))->d);
+		pos = serialize_point( pos, ((cpabe_prv_comp_t*) list_index(prv->comps, i))->dp);
+	}
+	
+	return b;
+}
+
+void cpabe_prv_unserialize( cpabe_prv_t* prv, uint8_t* b, int f )
+{
+	int i;
+	int len;
+	cpabe_prv_comp_t* c;
+	uint8_t* pos;
+	
+	pos = unserialize_point(b, &(prv->d));
+	
+	pos = unserialize_uint(pos, &len);
+	
+	// init
+	MYLIST(prv->comps);
+	list_init(prv->comps);
+	
+	for( i = 0; i < len; i++ )
+	{
+		c = (cpabe_prv_comp_t *) memb_alloc(&prv_comps_m);
+		
+		pos = unserialize_string(pos, c->attr);
+		pos = unserialize_point( pos, &(c->d));
+		pos = unserialize_point( pos, &(c->dp));
+		
+		list_add(prv->comps, c);
+	}
+	
+	if( f )
+		free(b);
+}
+
+uint8_t* serialize_policy( uint8_t* b, cpabe_policy_t *p )
+{
+	int i;
+	uint8_t* pos;
+	
+	pos = serialize_uint(b, p->k);
+	
+	pos = serialize_uint(pos, list_length(p->children));
+	if( list_length(p->children) == 0 )
+	{
+		pos = serialize_string(pos, p->attr);
+		pos = serialize_point( pos, p->c);
+		pos = serialize_point( pos, p->cp);
+	}
+	else
+		for( i = 0; i < list_length(p->children); i++ )
+			pos = serialize_policy(pos, list_index(p->children, i));
+	
+	return pos;
+}
+
+cpabe_policy_t*
+unserialize_policy( uint8_t* b, cpabe_policy_t* p )
+{
+	int i;
+	int n;
+	cpabe_policy_t* p_next;
+	uint8_t *pos;
+	
+	
+	pos = unserialize_uint(b, &(p->k));
+	p->attr = 0;
+	MYLIST(p->children);
+	list_init(p->children);
+	
+	pos = unserialize_uint(pos, &n);
+	if( n == 0 )
+	{
+		pos = unserialize_string(pos, p->attr);
+		pos = unserialize_point(pos, &(p->c));
+		pos = unserialize_point(pos, &(p->cp));
+	}
+	else
+		for( i = 0; i < n; i++ ) {
+			p_next = (cpabe_policy_t*) memb_alloc(&enc_policy_m);
+			list_add(p->children, unserialize_policy(pos, p_next));
+		}
+	
+	return p;
+}
+
+uint8_t* cpabe_cph_serialize( cpabe_cph_t* cph )
+{
+	uint8_t* b = NULL;//(uint8_t*) malloc(xxx); // TODO: malloc size? get size of policy!
+	uint8_t* pos;
+	
+	pos = serialize_nn2number(b, cph->cs);
+	pos = serialize_point(pos, cph->c);
+	serialize_policy( pos, list_head(cph->p));
+	
+	return b;
+}
+
+void cpabe_cph_unserialize( cpabe_cph_t* cph, uint8_t* b, int f )
+{
+	uint8_t* pos;
+	
+	MYLIST(cph->p);
+	list_init(cph->p);
+	list_add(cph->p, (cpabe_policy_t*) memb_alloc(&enc_policy_m));
+	
+	pos = unserialize_nn2number(b, &(cph->cs));
+	pos = unserialize_point(pos, &(cph->c));
+	unserialize_policy(pos, list_head(cph->p));
+	
+	if( f )
+		free(b);
+}
+
+/*
+ void
+ cpabe_pub_free( cpabe_pub_t* pub )
+ {
+ element_clear(pub->g);
+ element_clear(pub->h);
+ element_clear(pub->gp);
+ element_clear(pub->g_hat_alpha);
+ pairing_clear(pub->p);
+ free(pub->pairing_desc);
+ free(pub);
+ }
+ *//*
+	void
+	cpabe_msk_free( cpabe_msk_t* msk )
+	{
+	element_clear(msk->beta);
+	element_clear(msk->g_alpha);
+	free(msk);
+	}
+	*/
+void cpabe_prv_free( cpabe_prv_t* prv )
+{
+	/*	int i;
+	 
+	 element_clear(prv->d);
+	 
+	 for( i = 0; i < prv->comps->len; i++ )
+	 {
+	 cpabe_prv_comp_t c;
+	 
+	 c = g_array_index(prv->comps, cpabe_prv_comp_t, i);
+	 free(c.attr);
+	 element_clear(c.d);
+	 element_clear(c.dp);
+	 }
+	 
+	 g_array_free(prv->comps, 1);
+	 
+	 free(prv);
+	 */
+	while (list_length(prv->comps) > 0) {
+		cpabe_prv_comp_t *c = list_pop(prv->comps);
+		
+		free(c->attr);
+		
+		memb_free(&prv_comps_m, c);
+	}
+	
+	
+}
+
+void cpabe_policy_free( cpabe_policy_t* p )
+{
+	if( p->attr )
+	{
+		free(p->attr);
+		//		element_clear(p->c);
+		//		element_clear(p->cp);
+	}
+	
+	while(list_length(p->children) > 0 ) {
+		cpabe_policy_t* pol = list_pop(p->children);
+		cpabe_policy_free(pol);
+	}
+	
+	memb_free(&enc_policy_m, p);
+}
+
+void cpabe_cph_free( cpabe_cph_t* cph )
+{
+	//	element_clear(cph->cs);
+	//	element_clear(cph->c);
+	cpabe_policy_free(list_head(cph->p));
+}
+
+
 #endif
 

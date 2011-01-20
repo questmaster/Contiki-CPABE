@@ -17,7 +17,7 @@ endif
 
 # Files for CP-ABE
 ifeq ($(USE_CPABE), TRUE)
-ecc_src += cp-abe.c qsort.c
+ecc_src += cp-abe.c qsort.c list-ext.c
 USE_PAIRING=TRUE
 endif
 

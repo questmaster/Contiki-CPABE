@@ -22,7 +22,7 @@
 #include "ECC.h"
 #include "cp-abe.h"
 
-#define MAX_ROUNDS 1//0
+#define MAX_ROUNDS 10
 
 static cpabe_pub_t pub;
 static cpabe_msk_t msk;
@@ -211,6 +211,10 @@ PROCESS_THREAD(tester_process, ev, data)
 		leds_on(LEDS_GREEN);
 		leds_off(LEDS_RED);
 				
+		// free dynamic memory
+		cpabe_prv_free(&prv);
+		cpabe_cph_free(&cph);
+		
 		round_index++;
 	} while(round_index < MAX_ROUNDS);
 
