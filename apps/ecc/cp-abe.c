@@ -549,9 +549,8 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 	{
 		c = (cpabe_prv_comp_t *) memb_alloc(&prv_comps_m);
 
-		c->attr = (char *) malloc(strlen(*(attributes)) + 1);		// TODO: exists strlen() in msp430-libc?
+		c->attr = (char *) malloc(strlen(*(attributes)) + 1);
 		memcpy(c->attr, *(attributes++), strlen(*(attributes))+1);
-//		c->attr = *(attributes++);
 		
 		point_from_string(&h_rp, c->attr);
 #ifdef CPABE_DEBUG

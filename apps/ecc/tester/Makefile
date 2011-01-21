@@ -54,7 +54,7 @@ CFLAGS+=-DSHAMIR_TRICK			# shamir trick, windows size is defined in ECDSA.c
 
 ## activate 4/8MHz configuration (compatible to TinyOS freq's)
 #CFLAGS += -DMSP430_4MHZ_ENABLE
-CFLAGS += -DMSP430_8MHZ_ENABLE
+#CFLAGS += -DMSP430_8MHZ_ENABLE
 
 ifndef CONTIKI
 	CONTIKI = ../..

@@ -80,7 +80,7 @@ PROCESS_THREAD(tester_process, ev, data)
 
 	/* CP-ABE Keys */
 
-/*	printf("CPABE_msk_beta: ");
+	printf("CPABE_msk_beta: ");
 	for (i = NUMWORDS-1; i >= 0; i--) {
 		printf("%x ", msk.beta[i]);
 	}
@@ -114,7 +114,7 @@ PROCESS_THREAD(tester_process, ev, data)
 	for (i = NUMWORDS-1; i >= 0; i--) {
 		printf("%x ", pub.h.y[i]);
 	}
-	printf("\n");*/
+	printf("\n");
 #endif
 	
 	do {

@@ -134,7 +134,7 @@ int main(void)
 		printf("\n");
 		printf("m.i  (plain): ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
-			printf("%x %x ", (uint16_t)(m.r[i] >> 16), (uint16_t) m.r[i]);
+			printf("%x %x ", (uint16_t)(m.i[i] >> 16), (uint16_t) m.i[i]);
 		}
 		printf("\n");
 /*		printf("CPABE_cph_cs_r: ");
@@ -170,12 +170,12 @@ int main(void)
 
 		printf("m2.r (plain): ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
-			printf("%x %x ", (uint16_t)(m.r[i] >> 16), (uint16_t) m.r[i]);
+			printf("%x %x ", (uint16_t)(m2.r[i] >> 16), (uint16_t) m2.r[i]);
 		}
 		printf("\n");
 		printf("m2.i (plain): ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
-			printf("%x %x ", (uint16_t)(m.r[i] >> 16), (uint16_t) m.r[i]);
+			printf("%x %x ", (uint16_t)(m2.i[i] >> 16), (uint16_t) m2.i[i]);
 		}
 		printf("\n");
 #endif
