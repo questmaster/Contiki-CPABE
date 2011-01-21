@@ -12,7 +12,7 @@
 
 #include "NN2.h"
 #include "ECC.h"
-#include "list-ext.h"
+#include <list.h>
 
 /*
  * A public key.
@@ -73,7 +73,7 @@ typedef struct satl_int_s {
 typedef struct cpabe_policy_s {
 	struct cpabe_policy_s* next;
 	/* serialized */
-	int k;            /* one if leaf, otherwise threshold */
+	uint16_t k;            /* one if leaf, otherwise threshold */
 	char* attr;       /* attribute string if leaf, otherwise null */
 	Point c;      /* G_1, only for leaves */
 	Point cp;     /* G_1, only for leaves */

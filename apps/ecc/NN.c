@@ -144,7 +144,7 @@ NN_DOUBLE_DIGIT NN_DigitMult(NN_DIGIT b, NN_DIGIT c)
   
 #endif
 
-#ifdef CONTIKI_TARGET_IMOTE2 // Not yet supported by Contiki
+#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_GUMSTIX) // Not yet supported by Contiki
 #define NN_DigitMult(b, c) (NN_DOUBLE_DIGIT)(b) * (c)
 #endif
 
@@ -317,7 +317,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     return carry;
 #endif
 
-#ifdef CONTIKI_TARGET_IMOTE2 // Not yet supported by Contiki
+#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_GUMSTIX) // Not yet supported by Contiki
     NN_DIGIT carry, ai;
     NN_UINT i;
 
@@ -412,7 +412,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     return borrow;
 #endif
 
-#ifdef CONTIKI_TARGET_IMOTE2 // Not yet supported by Contiki
+#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_GUMSTIX) // Not yet supported by Contiki
     NN_DIGIT ai, borrow;
     NN_UINT i;
 
@@ -459,7 +459,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
   void NN_Mult (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT digits) 
   {
 	  watchdog_periodic();
-    //#ifdef INLINE_ASM
+	  //#ifdef INLINE_ASM
 #ifdef HYBRID_MULT
 #ifdef CONTIKI_TARGET_MICAZ
 #ifdef HYBRID_MUL_WIDTH4
@@ -1673,7 +1673,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     */
 #endif //CONTIKI_TARGET_SKY
 
-#ifdef CONTIKI_TARGET_IMOTE2 // Not yet supported by Contiki
+#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_GUMSTIX) // Not yet supported by Contiki
     //r0~r2
     //r3 b
     //r4 i
@@ -2620,7 +2620,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     */
 #endif  //end of CONTIKI_TARGET_SKY
 
-#ifdef CONTIKI_TARGET_IMOTE2 // Not yet supported by Contiki
+#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_GUMSTIX) // Not yet supported by Contiki
 
     //r0~r2
     //r3 b
@@ -3220,7 +3220,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     return (carry);
 #endif
 
-#ifdef CONTIKI_TARGET_IMOTE2 // Not yet supported by Contiki
+#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_GUMSTIX) // Not yet supported by Contiki
     NN_DIGIT carry;
     unsigned int i;
     NN_DOUBLE_DIGIT t;
@@ -3322,7 +3322,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     return (borrow);
 #endif
 
-#ifdef CONTIKI_TARGET_IMOTE2 // Not yet supported by Contiki
+#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_GUMSTIX) // Not yet supported by Contiki
     NN_DIGIT borrow;
     unsigned int i;
     NN_DOUBLE_DIGIT t;

@@ -24,10 +24,10 @@
  */
 
 /**
- * Module for curve ss192k2
+ * Module for curve cpabe192k2
  *
- * Author: Panos Kampanakis
- * Date: 02/04/2007
+ * Author: Daniel Jacobi
+ * Date: 02/04/2010
  */
 
 #include "ECC.h"
@@ -57,11 +57,11 @@ sign0 1
 Done.
  */
 
-// TODO: 8-bit
 
 void get_TP_param(TPParams *tppara)
   {
 #ifdef EIGHT_BIT_PROCESSOR
+// TODO: 8-bit
 	  
 #elif defined(SIXTEEN_BIT_PROCESSOR)
 	  //init parameters
@@ -134,7 +134,54 @@ void get_TP_param(TPParams *tppara)
 	  tppara->c[0] = 0x936c;
 	  
 #elif defined(THIRTYTWO_BIT_PROCESSOR)
-
+	  //init parameters
+	  //prime p
+	  tppara->p[6] = 0x00000000;
+	  tppara->p[5] = 0x203e975f;
+	  tppara->p[4] = 0x82957167;
+	  tppara->p[3] = 0xa4e4db00;
+	  tppara->p[2] = 0x00000000;
+	  tppara->p[1] = 0x407d2e9e;
+	  tppara->p[0] = 0xc693936b;
+	  
+	  // a = 1 
+	  memset(tppara->E.a, 0, NUMWORDS*NN_DIGIT_LEN);
+	  tppara->E.a[0] =  0x00000001;
+	  // b = 0
+	  memset(tppara->E.b, 0, NUMWORDS*NN_DIGIT_LEN);
+	  
+	  tppara->E.a_minus3 = FALSE;
+	  tppara->E.a_zero = FALSE;
+	  tppara->E.a_one = TRUE;
+	  
+	  
+	  // point P
+	  tppara->P.x[6] = 0x00000000;
+	  tppara->P.x[5] = 0x14a7e9bd;
+	  tppara->P.x[4] = 0xf77a1e18;
+	  tppara->P.x[3] = 0xd1e10e06;
+	  tppara->P.x[2] = 0x6b630044;
+	  tppara->P.x[1] = 0x030b830b;
+	  tppara->P.x[0] = 0x8b374869;
+	  
+	  tppara->P.y[6] = 0x00000000;
+	  tppara->P.y[5] = 0x1492070c;
+	  tppara->P.y[4] = 0x797cee4b;
+	  tppara->P.y[3] = 0x75eb5244;
+	  tppara->P.y[2] = 0xda95c61b;
+	  tppara->P.y[1] = 0x3cafd18a;
+	  tppara->P.y[0] = 0xb204d054;
+	  
+	  // group order m
+	  memset(tppara->m, 0, NUMWORDS*NN_DIGIT_LEN);
+	  tppara->m[4] = 0x80000040;
+	  tppara->m[0] = 0x00000001;
+	  
+	  // c= ((p^(k-1))+1)/m
+	  memset(tppara->c, 0, NUMWORDS*NN_DIGIT_LEN);
+	  tppara->c[1] = 0x407d2e9e;
+	  tppara->c[0] = 0xc693936c;
+	  
 #endif
   }
 

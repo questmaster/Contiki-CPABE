@@ -26,6 +26,33 @@ MEMB(enc_polynomial_m, cpabe_polynomial_t, 10);				/**< This limits the number o
 
 /* -- Utility functions ----------------------------------------------------- */
 
+/*
+ * @brief These two are needed for the list to work with my setup.
+ */ 
+#define MYLIST(name) \
+name = (list_t)&LIST_CONCAT(name,_list)
+struct list {
+	struct list *next;
+};
+
+/*
+ * @brief Return item at position index.
+ */
+void * list_index(list_t list, uint8_t index) {
+	struct list *l;
+	uint8_t n = 0;
+	
+	for(l = *list; l != NULL; l = l->next) {
+		if (n != index) {
+			++n;
+		} else {
+			break;
+		}
+		
+	}
+	
+	return l;
+} 
 
 
 /*
@@ -70,10 +97,10 @@ static char **strsplit(char *s) {
  * @brief frees all memory used in toks
  */
 static void freesplit(char ** toks) {
-	int8_t i = sizeof(toks) / sizeof(char*);
-	for (; i >= 0 ; i--) {
-		free(toks[i]);
-	}
+//	int8_t i = sizeof(toks) / sizeof(char*);
+//	for (; i >= 0 ; i--) {
+//		free(toks[i]);
+//	}
 	free(toks);
 }
 
@@ -522,7 +549,9 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 	{
 		c = (cpabe_prv_comp_t *) memb_alloc(&prv_comps_m);
 
-		c->attr = *(attributes++);
+		c->attr = (char *) malloc(strlen(*(attributes)) + 1);		// TODO: exists strlen() in msp430-libc?
+		memcpy(c->attr, *(attributes++), strlen(*(attributes))+1);
+//		c->attr = *(attributes++);
 		
 		point_from_string(&h_rp, c->attr);
 #ifdef CPABE_DEBUG
@@ -1637,14 +1666,14 @@ static uint8_t* unserialize_bytewise(uint8_t* b, uint8_t* data, uint16_t len) {
 }
 
 /* int */
-static uint8_t* serialize_uint(uint8_t* b, uint data) {
-	uint8_t len = sizeof(uint);
+static uint8_t* serialize_uint16(uint8_t* b, uint16_t data) {
+	uint8_t len = sizeof(uint16_t);
 	
 	return serialize_bytewise(b, (uint8_t*) &data, len);
 }
 
-static uint8_t* unserialize_uint(uint8_t* b, uint* data) {
-	uint8_t len = sizeof(uint);
+static uint8_t* unserialize_uint16(uint8_t* b, uint16_t* data) {
+	uint8_t len = sizeof(uint16_t);
 	
 	return unserialize_bytewise(b, (uint8_t*) data, len);
 }
@@ -1766,12 +1795,12 @@ uint8_t*
 cpabe_prv_serialize( cpabe_prv_t* prv )
 {
 	uint8_t i;
-	uint list_len = list_length(prv->comps);
+	uint16_t list_len = list_length(prv->comps);
 	uint8_t* b = NULL;//(uint8_t*) malloc(xxx); // TODO: malloc size? get size of strings!
 	uint8_t* pos;
 	
 	pos = serialize_point(b, prv->d);
-	pos = serialize_uint( pos, list_len);
+	pos = serialize_uint16( pos, list_len);
 	
 	for( i = 0; i < list_len; i++ )
 	{
@@ -1786,13 +1815,13 @@ cpabe_prv_serialize( cpabe_prv_t* prv )
 void cpabe_prv_unserialize( cpabe_prv_t* prv, uint8_t* b, int f )
 {
 	int i;
-	int len;
+	uint16_t len;
 	cpabe_prv_comp_t* c;
 	uint8_t* pos;
 	
 	pos = unserialize_point(b, &(prv->d));
 	
-	pos = unserialize_uint(pos, &len);
+	pos = unserialize_uint16(pos, &len);
 	
 	// init
 	MYLIST(prv->comps);
@@ -1818,9 +1847,9 @@ uint8_t* serialize_policy( uint8_t* b, cpabe_policy_t *p )
 	int i;
 	uint8_t* pos;
 	
-	pos = serialize_uint(b, p->k);
+	pos = serialize_uint16(b, p->k);
 	
-	pos = serialize_uint(pos, list_length(p->children));
+	pos = serialize_uint16(pos, list_length(p->children));
 	if( list_length(p->children) == 0 )
 	{
 		pos = serialize_string(pos, p->attr);
@@ -1838,17 +1867,17 @@ cpabe_policy_t*
 unserialize_policy( uint8_t* b, cpabe_policy_t* p )
 {
 	int i;
-	int n;
+	uint16_t n;
 	cpabe_policy_t* p_next;
 	uint8_t *pos;
 	
 	
-	pos = unserialize_uint(b, &(p->k));
+	pos = unserialize_uint16(b, &(p->k));
 	p->attr = 0;
 	MYLIST(p->children);
 	list_init(p->children);
 	
-	pos = unserialize_uint(pos, &n);
+	pos = unserialize_uint16(pos, &n);
 	if( n == 0 )
 	{
 		pos = unserialize_string(pos, p->attr);
@@ -1933,12 +1962,15 @@ void cpabe_prv_free( cpabe_prv_t* prv )
 	 
 	 free(prv);
 	 */
+	cpabe_prv_comp_t *c;
+	
 	while (list_length(prv->comps) > 0) {
-		cpabe_prv_comp_t *c = list_pop(prv->comps);
+		c = list_pop(prv->comps);
 		
-		free(c->attr);
-		
-		memb_free(&prv_comps_m, c);
+		if (c != NULL) {
+			free(c->attr);
+			memb_free(&prv_comps_m, c);
+		}
 	}
 	
 	

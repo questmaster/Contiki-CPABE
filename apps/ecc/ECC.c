@@ -29,8 +29,8 @@
  */
 #include <ECC.h>
 #include <string.h>
-#include <dev/watchdog.h>
-#include <lib/rand.h>
+#include <watchdog.h>
+#include <rand.h>
 #ifdef TPSSC // used by ECC_compY
 #include "TPCurveParam.h"
 #endif
