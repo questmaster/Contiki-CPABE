@@ -182,11 +182,8 @@ int main(void)
 #endif
 						
 		// free dynamic memory
-printf("1\n");
 		cpabe_prv_free(&prv);
-printf("2\n");
 		cpabe_cph_free(&cph);
-printf("3\n");
 		
 		round_index++;
 	} while(round_index < MAX_ROUNDS);

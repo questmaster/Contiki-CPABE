@@ -54,9 +54,9 @@ CFLAGS+=-DSHAMIR_TRICK			# shamir trick, windows size is defined in ECDSA.c
 include ../Makefile.ecc
 
 
-#########################
-## Start build process ##
-#########################
+################################################################################
+## Start build process ## Don't change anything except you know what you do! ###
+################################################################################
 
 CC=gcc
 TARGET=testCPABE
