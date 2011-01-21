@@ -11,7 +11,6 @@
 #include <string.h>
 #include <time.h>
 
-#include "testCPABE.h"
 #include "NN.h"
 #include "NN2.h"
 #include "TP.h"
