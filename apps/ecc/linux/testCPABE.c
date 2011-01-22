@@ -56,42 +56,43 @@ int main(void)
 	printf("CPABE_setup(0): %lu ms\n", (uint32_t)(dt0*1000/CLOCK_SECOND));
 
 	/* CP-ABE Keys */
-
-/*	printf("CPABE_msk_beta: ");
+#ifdef CPABE_DEBUG
+	printf("CPABE_msk_beta: ");
 	for (i = NUMWORDS-1; i >= 0; i--) {
-		printf("%x ", msk.beta[i]);
+		printf("%x %x ", (uint16_t)(msk.beta[i] >> 16), (uint16_t) msk.beta[i]);
 	}
 	printf("\n");
 	printf("CPABE_msk_g-alpha_x: ");
 	for (i = NUMWORDS-1; i >= 0; i--) {
-		printf("%x ", msk.g_alpha.x[i]);
+		printf("%x %x ", (uint16_t)(msk.g_alpha.x[i] >> 16), (uint16_t) msk.g_alpha.x[i]);
 	}
 	printf("\n");
 	printf("CPABE_msk_g-alpha_y: ");
 	for (i = NUMWORDS-1; i >= 0; i--) {
-		printf("%x ", msk.g_alpha.y[i]);
+		printf("%x %x ", (uint16_t)(msk.g_alpha.y[i] >> 16), (uint16_t) msk.g_alpha.y[i]);
 	}
 	printf("\n");
 	printf("CPABE_pub_g-hat-alpha_r: ");
 	for (i = NUMWORDS-1; i >= 0; i--) {
-		printf("%x ", pub.g_hat_alpha.r[i]);
+		printf("%x %x ", (uint16_t)(pub.g_hat_alpha.r[i] >> 16), (uint16_t) pub.g_hat_alpha.r[i]);
 	}
 	printf("\n");
 	printf("CPABE_pub_g-hat-alpha_i: ");
 	for (i = NUMWORDS-1; i >= 0; i--) {
-		printf("%x ", pub.g_hat_alpha.i[i]);
+		printf("%x %x ", (uint16_t)(pub.g_hat_alpha.i[i] >> 16), (uint16_t) pub.g_hat_alpha.i[i]);
 	}
 	printf("\n");
 	printf("CPABE_pub_h_x: ");
 	for (i = NUMWORDS-1; i >= 0; i--) {
-		printf("%x ", pub.h.x[i]);
+		printf("%x %x ", (uint16_t)(pub.h.x[i] >> 16), (uint16_t) pub.h.x[i]);
 	}
 	printf("\n");
 	printf("CPABE_pub_h_y: ");
 	for (i = NUMWORDS-1; i >= 0; i--) {
-		printf("%x ", pub.h.y[i]);
+		printf("%x %x ", (uint16_t)(pub.h.y[i] >> 16), (uint16_t) pub.h.y[i]);
 	}
-	printf("\n");*/
+	printf("\n");
+#endif
 #endif
 	
 	do {

@@ -212,6 +212,7 @@ void cpabe_setup(cpabe_pub_t *pub, cpabe_msk_t *msk) {
 	get_TP_param(&param);
 	
 #ifdef CPABE_DEBUG
+#ifdef SIXTEEN_BIT_PROCESSOR
 	alpha[12] = 0x0000;
 	alpha[11] = 0x0000;
 	alpha[10] = 0x0000;
@@ -293,6 +294,54 @@ void cpabe_setup(cpabe_pub_t *pub, cpabe_msk_t *msk) {
 	pub->gp.y[2] = 0x1279;
 	pub->gp.y[1] = 0x23bc;
 	pub->gp.y[0] = 0x5df9;
+#endif
+#ifdef THIRTYTWO_BIT_PROCESSOR
+	alpha[6] = 0x00000000;
+	alpha[5] = 0x00000000;
+	alpha[4] = 0x00000000;
+	alpha[3] = 0x6611d3ea;
+	alpha[2] = 0x4b3b8881;
+	alpha[1] = 0x076c7149;
+	alpha[0] = 0x9e5345ae;
+
+	msk->beta[6] = 0x00000000;
+	msk->beta[5] = 0x00000000;
+	msk->beta[4] = 0x00000000;
+	msk->beta[3] = 0x51d684b6;
+	msk->beta[2] = 0x927be196;
+	msk->beta[1] = 0x9a9bf569;
+	msk->beta[0] = 0xd5007d62;
+
+	pub->g.x[6] = 0x00000000;
+	pub->g.x[5] = 0x14a7e9bd;
+	pub->g.x[4] = 0xf77a1e18;
+	pub->g.x[3] = 0xd1e10e06;
+	pub->g.x[2] = 0x6b630044;
+	pub->g.x[1] = 0x030b830b;
+	pub->g.x[0] = 0x8b374869;
+	pub->g.y[6] = 0x00000000;
+	pub->g.y[5] = 0x1492070c;
+	pub->g.y[4] = 0x797cee4b;
+	pub->g.y[3] = 0x75eb5244;
+	pub->g.y[2] = 0xda95c61b;
+	pub->g.y[1] = 0x3cafd18a;
+	pub->g.y[0] = 0xb204d054;
+
+	pub->gp.x[6] = 0x00000000;
+	pub->gp.x[5] = 0x069f1f36;
+	pub->gp.x[4] = 0x807d985a;
+	pub->gp.x[3] = 0x0b80b765;
+	pub->gp.x[2] = 0x9868cf55;
+	pub->gp.x[1] = 0xb9c72d57;
+	pub->gp.x[0] = 0x98fe519e;
+	pub->gp.y[6] = 0x00000000;
+	pub->gp.y[5] = 0x0bd9a5b9;
+	pub->gp.y[4] = 0xf586a349;
+	pub->gp.y[3] = 0x1a067742;
+	pub->gp.y[2] = 0x3574810a;
+	pub->gp.y[1] = 0x2cd41279;
+	pub->gp.y[0] = 0x23bc5df9;
+#endif
 #else
 	NNModRandom(alpha, param.m, NUMWORDS);			/**< Random alpha */
  	NNModRandom(msk->beta, param.m, NUMWORDS);		/**< Random beta */
@@ -328,6 +377,7 @@ void point_from_string( Point* h, char* s )
 	SHA1_Digest(&context, (uint8_t *)r);
 		
 #ifdef CPABE_DEBUG	
+#ifdef SIXTEEN_BIT_PROCESSOR
 	int i ;
 	printf("(not used in debug!) attr: %s -> SHA-1 hash: ", s);
 	for (i = NUMWORDS-1; i >= 0; i--) {
@@ -421,7 +471,7 @@ void point_from_string( Point* h, char* s )
 			} 
 		}
 	}
-
+#endif
 #else	
 	// compute y for given (hash) x value  
 //	NNMod(tmp, r, NUMWORDS, param.p, NUMWORDS);	/**< x = r mod p */
@@ -500,6 +550,7 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 	
 	// compute
 #ifdef CPABE_DEBUG
+#ifdef SIXTEEN_BIT_PROCESSOR
 	r[12] = 0x0000;
 	r[11] = 0x0000;
 	r[10] = 0x0000;
@@ -513,11 +564,13 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 	r[2] = 0x7149;
 	r[1] = 0x9e53;
 	r[0] = 0x45ae;
+#endif
 #else
 	NNModRandom(r, param.m, NUMWORDS);
 #endif
 	ECC_mul(&g_r, &pub.gp, r);						/**< g_r = gp * r */
 #ifdef CPABE_DEBUG
+#ifdef SIXTEEN_BIT_PROCESSOR
 	printf("g_r_x: ");
 	for (i = NUMWORDS-1; i >= 0; i--) {
 		printf("%x ", g_r.x[i]);
@@ -529,16 +582,19 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 	}
 	printf("\n");
 #endif
+#endif
 	
 	ECC_add(&(prv->d), &msk.g_alpha, &g_r);			/**< d = g_alpha + g_r; here is P * P -> Add them !!! */
 	NNModInv(beta_inv, msk.beta, param.m, NUMWORDS);	/**< beta_inv = 1/beta */
 
 #ifdef CPABE_DEBUG	
+#ifdef SIXTEEN_BIT_PROCESSOR
 	printf("beta_inv: ");
 	for (i = NUMWORDS-1; i >= 0; i--) {
 		printf("%x ", beta_inv[i]);
 	}
 	printf("\n");
+#endif
 #endif
 	
 	ECC_assign(&tmp, &(prv->d));
@@ -554,6 +610,7 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 		
 		point_from_string(&h_rp, c->attr);
 #ifdef CPABE_DEBUG
+#ifdef SIXTEEN_BIT_PROCESSOR
 printf("c_attrib: %s\n", c->attr);
 
 	if (strcmp(c->attr, "attr1") == 0) {
@@ -603,6 +660,7 @@ printf("c_attrib: %s\n", c->attr);
 			} 
 		}
 	}
+#endif
 #else
  		NNModRandom(rp, param.m, NUMWORDS);
 #endif
@@ -614,6 +672,7 @@ printf("c_attrib: %s\n", c->attr);
 		ECC_mul(&(c->dp), &pub.g, rp);				/**< dp = g * rp */
 
 #ifdef CPABE_DEBUG		
+#ifdef SIXTEEN_BIT_PROCESSOR
 		printf("CPABE_c_d_x: ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
 			printf("%x ", c->d.x[i]);
@@ -634,6 +693,7 @@ printf("c_attrib: %s\n", c->attr);
 			printf("%x ", c->dp.y[i]);
 		}
 		printf("\n");
+#endif
 #endif		
 		// clear h_rb, rp 
 		
@@ -756,6 +816,7 @@ rand_poly( int deg, NN_DIGIT zero_val[NUMWORDS] )
 	
 	for( i = 1; i < q->deg + 1; i++ ) {
 #ifdef CPABE_DEBUG
+#ifdef SIXTEEN_BIT_PROCESSOR
 		(q->coef + (i * NUMWORDS))[12] = 0x0000;
 		(q->coef + (i * NUMWORDS))[11] = 0x0000;
 		(q->coef + (i * NUMWORDS))[10] = 0x0000;
@@ -769,6 +830,7 @@ rand_poly( int deg, NN_DIGIT zero_val[NUMWORDS] )
 		(q->coef + (i * NUMWORDS))[2] = 0xd058;
 		(q->coef + (i * NUMWORDS))[1] = 0x7e57;
 		(q->coef + (i * NUMWORDS))[0] = 0x18e9;
+#endif
 #else
  		NNModRandom(q->coef + (i * NUMWORDS), param.m, NUMWORDS);			// Array addressing correct?
 #endif
@@ -808,6 +870,7 @@ eval_poly( NN_DIGIT r[NUMWORDS], cpabe_polynomial_t* q, NN_DIGIT x[NUMWORDS] )
 #ifdef CPABE_DEBUG		
 		printf("eval_poly: j=%d, deg=%d\n", j, q->deg);
 		
+#ifdef SIXTEEN_BIT_PROCESSOR
 		printf("s: ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
 			printf("%x ", s[i]);
@@ -828,6 +891,7 @@ eval_poly( NN_DIGIT r[NUMWORDS], cpabe_polynomial_t* q, NN_DIGIT x[NUMWORDS] )
 			printf("%x ", x[i]);
 		}
 		printf("\n");
+#endif
 #endif		
 
 	}
@@ -853,6 +917,7 @@ fill_policy(cpabe_policy_t *p, cpabe_pub_t pub, NN_DIGIT e[NUMWORDS]) {
 		ECC_mul(&(p->cp), &h,     &(p->q->coef[0]));
 
 #ifdef CPABE_DEBUG		
+#ifdef SIXTEEN_BIT_PROCESSOR
 		
 		printf("CPABE_h_x: ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
@@ -884,6 +949,7 @@ fill_policy(cpabe_policy_t *p, cpabe_pub_t pub, NN_DIGIT e[NUMWORDS]) {
 			printf("%x ", p->cp.y[i]);
 		}
 		printf("\n");
+#endif
 #endif		
 	} else {
 		i = 1;
@@ -960,6 +1026,7 @@ void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN2_NUMBER * m, char *policy) 
 	
 	// compute 
 #ifdef CPABE_DEBUG
+#ifdef SIXTEEN_BIT_PROCESSOR
 	m->r[12] = 0x0000;
 	m->r[11] = 0x1bf4;
 	m->r[10] = 0x66fb;
@@ -1000,6 +1067,7 @@ void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN2_NUMBER * m, char *policy) 
 	s[2] = 0x618f;
 	s[1] = 0x41da;
 	s[0] = 0x22b6;
+#endif
 #else
  	NN2ModRandom(m, param.p, NUMWORDS);
  	NNModRandom(s, param.m, NUMWORDS);
@@ -1176,6 +1244,7 @@ lagrange_coef( NN_DIGIT r[NUMWORDS], list_t s, int i )
 		NNAssignZero(r, NUMWORDS);
 		NNAssign(r, r_tmp, NNDigits(param.m, NUMWORDS));
 #ifdef CPABE_DEBUG		
+#ifdef SIXTEEN_BIT_PROCESSOR
 		printf("lag_t1[%d]: ", k);
 		for (a = NUMWORDS-1; a >= 0; a--) {
 			printf("%x ", t[a]);
@@ -1186,6 +1255,7 @@ lagrange_coef( NN_DIGIT r[NUMWORDS], list_t s, int i )
 			printf("%x ",r[a]);
 		}
 		printf("\n");
+#endif
 #endif		
 
 		NNAssignDigit(tmp1, j, NUMWORDS);		
@@ -1200,6 +1270,7 @@ lagrange_coef( NN_DIGIT r[NUMWORDS], list_t s, int i )
 		NNAssign(r, r_tmp, NNDigits(param.m, NUMWORDS));
 
 #ifdef CPABE_DEBUG		
+#ifdef SIXTEEN_BIT_PROCESSOR
 		printf("lag_t2[%d]: ", k);
 		for (a = NUMWORDS-1; a >= 0; a--) {
 			printf("%x ", t[a]);
@@ -1210,15 +1281,18 @@ lagrange_coef( NN_DIGIT r[NUMWORDS], list_t s, int i )
 			printf("%x ",r[a]);
 		}
 		printf("\n");
+#endif
 #endif		
 	}
 
 #ifdef CPABE_DEBUG		
+#ifdef SIXTEEN_BIT_PROCESSOR
 		printf("lag_r: ");
 		for (a = NUMWORDS-1; a >= 0; a--) {
 			printf("%x ", r[a]);
 		}
 		printf("\n");
+#endif
 #endif		
 	
 	//element_clear(t);
@@ -1409,6 +1483,7 @@ dec_leaf_flatten( NN2_NUMBER * r, NN_DIGIT * exp,
 #ifdef CPABE_DEBUG	
 		printf("p->attr=%s\n", p->attr);
 	
+#ifdef SIXTEEN_BIT_PROCESSOR
 		printf("leaf_tp_t_r: ");
 		for (a = NUMWORDS-1; a >= 0; a--) {
 			printf("%x ", t.r[a]);
@@ -1429,6 +1504,7 @@ dec_leaf_flatten( NN2_NUMBER * r, NN_DIGIT * exp,
 			printf("%x ", s.i[a]);
 		}
 		printf("\n");
+#endif
 #endif		
 
 	NN2ModInv(&t, &t, param.p, NUMWORDS);
@@ -1436,6 +1512,7 @@ dec_leaf_flatten( NN2_NUMBER * r, NN_DIGIT * exp,
 	NN2ModExp(&s, &s, exp, param.p, NUMWORDS); /* num_exps++; */
 
 #ifdef CPABE_DEBUG		
+#ifdef SIXTEEN_BIT_PROCESSOR
 		printf("leaf_t_r: ");
 		for (a = NUMWORDS-1; a >= 0; a--) {
 			printf("%x ", t.r[a]);
@@ -1456,11 +1533,13 @@ dec_leaf_flatten( NN2_NUMBER * r, NN_DIGIT * exp,
 			printf("%x ", s.i[a]);
 		}
 		printf("\n");
+#endif
 #endif		
 	
 	NN2ModMult(r, r, &s, param.p, NUMWORDS); /* num_muls++; */
 
 #ifdef CPABE_DEBUG		
+#ifdef SIXTEEN_BIT_PROCESSOR
 		printf("leaf_r_r: ");
 		for (a = NUMWORDS-1; a >= 0; a--) {
 			printf("%x ",r->r[a]);
@@ -1471,6 +1550,7 @@ dec_leaf_flatten( NN2_NUMBER * r, NN_DIGIT * exp,
 			printf("%x ",r->i[a]);
 		}
 		printf("\n");
+#endif
 #endif		
 	
 	//element_clear(s);		
@@ -1504,6 +1584,7 @@ dec_internal_flatten( NN2_NUMBER * r, NN_DIGIT * exp,
 						 (p->children, ((satl_int_t *) list_index(p->satl, i))->k - 1), prv, pub);
 
 #ifdef CPABE_DEBUG		
+#ifdef SIXTEEN_BIT_PROCESSOR
 		printf("int_r_r[%d]: ", i);
 		for (a = NUMWORDS-1; a >= 0; a--) {
 			printf("%x ",r->r[a]);
@@ -1514,6 +1595,7 @@ dec_internal_flatten( NN2_NUMBER * r, NN_DIGIT * exp,
 			printf("%x ",r->i[a]);
 		}
 		printf("\n");
+#endif
 #endif		
 	}
 	
@@ -1605,6 +1687,7 @@ int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN2_NUMBER * m)
 //		dec_merge(t, cph->p, prv, pub); // not ported!
 
 #ifdef CPABE_DEBUG
+#ifdef SIXTEEN_BIT_PROCESSOR
 		printf("dec_flat_t_r: ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
 			printf("%x ",t.r[i]);
@@ -1616,6 +1699,7 @@ int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN2_NUMBER * m)
 		}
 		printf("\n");
 #endif
+#endif
 	
 	NN2ModMult(m, &(cph.cs), &t, param.p, NUMWORDS); /* num_muls++; */
 	
@@ -1624,6 +1708,7 @@ int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN2_NUMBER * m)
 	NN2ModMult(m, m, &t, param.p, NUMWORDS); /* num_muls++; */ 
 
 #ifdef CPABE_DEBUG
+#ifdef SIXTEEN_BIT_PROCESSOR
 		printf("dec_t_r: ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
 			printf("%x ",t.r[i]);
@@ -1634,6 +1719,7 @@ int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN2_NUMBER * m)
 			printf("%x ",t.i[i]);
 		}
 		printf("\n");
+#endif
 #endif
 
 	return 1;

@@ -174,7 +174,7 @@ void get_TP_param(TPParams *tppara)
 	  
 	  // group order m
 	  memset(tppara->m, 0, NUMWORDS*NN_DIGIT_LEN);
-	  tppara->m[4] = 0x80000040;
+	  tppara->m[3] = 0x80000040;
 	  tppara->m[0] = 0x00000001;
 	  
 	  // c= ((p^(k-1))+1)/m

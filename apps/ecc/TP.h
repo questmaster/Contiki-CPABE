@@ -38,11 +38,11 @@
 #include <TPCurveParam.h>
 
   //initialize the Tate Pairing between the private key of the curve P and the key given Q
-//  extern void TP_init(Point P, Point Q);
+  extern void TP_init(Point P, Point Q);
   //Miller's algorithm
-//  extern bool TP_Miller(NN2_NUMBER *ef, Point P);
+  extern bool TP_Miller(NN2_NUMBER *ef, Point P);
   //final exponentiation in Miller's algorithm
-//  extern void TP_final_expon(NN_DIGIT *r,NN2_NUMBER *ef);
+  extern void TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef);
   //Tate Pairing Computation
 //  extern void TP_computeTP(NN_DIGIT *res, Point P);
 

@@ -1,5 +1,7 @@
 # Config flag for nn.c
 CFLAGS += -DTARGET_GUMSTIX
+#CFLAGS += -DCONTIKI_TARGET_SKY
+
 
 ## choose curve parameter
 #Cparam = SECP128R1
@@ -58,18 +60,15 @@ include ../Makefile.ecc
 ## Start build process ## Don't change anything except you know what you do! ###
 ################################################################################
 
-CC=gcc
+##CC=gcc
 TARGET=testCPABE
 OTHERDIR=../
 
-SOURCE = testCPABE.c
+SOURCE = $(TARGET).c
 SOURCE += $(ecc_src)
 SOURCE += list.c watchdog.c
 
 ## End sources definition
-#INCLUDE = -I./ $(AN_INCLUDE_DIR)  
-#INCLUDE += -I.$(OTHERDIR)
-#INCLUDE += -I.../../../core
 CFLAGS += -I./  
 CFLAGS += -I$(OTHERDIR)
 ## end more includes

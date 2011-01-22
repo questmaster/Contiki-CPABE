@@ -30,7 +30,7 @@
  * Date: 02/04/2005
  */
 
-#include <TP.h>
+#include "TP.h"
 #include <string.h>
 
 //#define PROJECTIVE
@@ -38,7 +38,7 @@
 ///#define FIXED_P
 
 #ifndef TPSSC
-#error *** Use one of the Pairing curves! NOT the Secp ones. *** 
+#error *** Use one of the Pairing or CP-ABE curves! NOT the Secp ones. *** 
 #endif
 
 static TPParams tpparam;
@@ -59,7 +59,7 @@ static PointSlope *pPointSlope;
 static NN_DIGIT inv2[NUMWORDS]; // used for lucas division
 
 
-#ifdef IMOTE2
+#if defined (CONTIKI_TARGET_IMOTE2)
   void print_val(NN_DIGIT *num) {
     int i;
     for (i=NUMWORDS-2; i>=0; i--) trace(DBG_USR1,"%08x",*(num+i));
@@ -188,7 +188,7 @@ static void add_line_projective(NN2_NUMBER *u, Point *P0, NN_DIGIT *Z0, Point *P
   }
 
   //Miller's algorithm based on projective coordinate system
-static bool TP_Miller(NN2_NUMBER *ef, Point P){
+bool TP_Miller(NN2_NUMBER *ef, Point P){
     NN2_NUMBER temp1;
     Point V;
     int t;
@@ -378,7 +378,7 @@ static int check_m_0(NN_DIGIT *a, int start){
     return ((original_i - 1 - i) * NN_DIGIT_BITS + original_rest + NN_DIGIT_BITS - rest);
   }
 
-static bool TP_Miller(NN2_NUMBER *ef, Point P){
+bool TP_Miller(NN2_NUMBER *ef, Point P){
     NN2_NUMBER temp1;
     Point V;
     int t, m;
@@ -499,7 +499,7 @@ static void precompute(Point P){
   }
 
   // Miller's algorithm
-static bool TP_Miller(NN2_NUMBER *ef) { 
+bool TP_Miller(NN2_NUMBER *ef) { 
     NN2_NUMBER temp1;
     PointSlope *current;
 
@@ -586,7 +586,7 @@ static void aff_add(NN2_NUMBER *u, Point * P0, Point * P1, Point * P2)
   }
 
   // Miller's algorithm
-static bool TP_Miller(NN2_NUMBER *ef, Point P) { 
+bool TP_Miller(NN2_NUMBER *ef, Point P) { 
     NN2_NUMBER temp1;
     Point V;
     int t;
@@ -618,7 +618,7 @@ static bool TP_Miller(NN2_NUMBER *ef, Point P) {
 #endif
   
   // initialize the Pairing with the point to be used along with the private key
-static void TP_init(Point P, Point Q) {
+void TP_init(Point P, Point Q) {
     NN_DIGIT Qy[NUMWORDS], two[NUMWORDS];
     
     //ECC_tpinit();
@@ -645,7 +645,7 @@ static void TP_init(Point P, Point Q) {
   
   // final exponentiation in Miller's algorithm
   // using the (u+iv)^(k-1) trick and Lucas exponentiation optimization
-static void TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef) {
+void TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef) {
     NN_DIGIT t1[NUMWORDS], t2[NUMWORDS], t3[NUMWORDS], two[NUMWORDS];
 	NN2_NUMBER in;
     
@@ -653,7 +653,7 @@ static void TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef) {
     NNModSqr(t2, ef->i, tpparam.p, NUMWORDS); // y^2
     NNModAdd(t3, t1, t2, tpparam.p, NUMWORDS); // x^2+y^2
     NNModSub(t1, t1, t2, tpparam.p, NUMWORDS); // x^2-y^2
-#ifdef IMOTE2
+#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_GUMSTIX)
     NNModDiv(t1, t1, t3, tpparam.p, NUMWORDS); //(x^2-y^2)/(x^2+y^2)
 #else
     NNModDivOpt(t1, t1, t3, tpparam.p, NUMWORDS);
@@ -662,7 +662,11 @@ static void TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef) {
 	NNAssignDigit(two, 2, NUMWORDS);
 	NNModMult(t2, ef->r, ef->i, tpparam.p, NUMWORDS);
 	NNModMult(t2, t2, two, tpparam.p, NUMWORDS); // 2*x*y
+#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_GUMSTIX)
+	NNModDiv(t2, t2, t3, tpparam.p, NUMWORDS); 
+#else
 	NNModDivOpt(t2, t2, t3, tpparam.p, NUMWORDS);
+#endif
 	
 	NNAssign(in.r, t1, NUMWORDS);
 	NNAssign(in.i, t2, NUMWORDS);
