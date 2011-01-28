@@ -67,7 +67,8 @@ PROCESS_THREAD(tester_process, ev, data)
 	/* wait till the timer expires and then reset it immediately */
 	PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&tester_timer));
 //	etimer_reset(&tester_timer);
-	
+
+	do {
 #ifdef CPABE_SETUP
 	printf("CPABE_setup(0)\n");
 	time_s = clock_time();
@@ -80,7 +81,7 @@ PROCESS_THREAD(tester_process, ev, data)
 
 	/* CP-ABE Keys */
 
-	printf("CPABE_msk_beta: ");
+/*	printf("CPABE_msk_beta: ");
 	for (i = NUMWORDS-1; i >= 0; i--) {
 		printf("%x ", msk.beta[i]);
 	}
@@ -114,10 +115,9 @@ PROCESS_THREAD(tester_process, ev, data)
 	for (i = NUMWORDS-1; i >= 0; i--) {
 		printf("%x ", pub.h.y[i]);
 	}
-	printf("\n");
+	printf("\n");*/
 #endif
 	
-	do {
 		// Pairing
 		leds_off(LEDS_GREEN);
 		leds_on(LEDS_RED);

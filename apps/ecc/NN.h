@@ -75,16 +75,36 @@ typedef int8_t bool;
 #define KEY_BIT_LEN 160
 #define HYBRID_MUL_WIDTH5  //column width=5 for hybrid multiplication
 #else
+#if defined (CPABE168K2)
+#define KEY_BIT_LEN 168
+#define HYBRID_MUL_WIDTH
+#else
 #if defined (SECP192K1) || defined (SECP192R1) || defined (SS192K2) || defined (SS192K2S) || defined (CPABE192K2)
 #define KEY_BIT_LEN 192
 #define HYBRID_MUL_WIDTH4
 #else
-#if defined (SS512K2) || defined (SS512K2S)
+#if defined (CPABE224K2)
+#define KEY_BIT_LEN 224
+#define HYBRID_MUL_WIDTH
+#else
+#if defined (CPABE256K2)
+#define KEY_BIT_LEN 256
+#define HYBRID_MUL_WIDTH
+#else
+#if defined (CPABE384K2)
+#define KEY_BIT_LEN 384
+#define HYBRID_MUL_WIDTH
+#else
+#if defined (SS512K2) || defined (SS512K2S) || defined (CPABE512K2)
 //#define BARRETT_REDUCTION
 #define KEY_BIT_LEN 512
 #define HYBRID_MUL_WIDTH5
 #endif // end of 512
+#endif // end of 384
+#endif // end of 256
+#endif // end of 224
 #endif  //end of 192
+#endif  //end of 168
 #endif  //end of 160
 #endif  //end of 128
 
@@ -105,7 +125,7 @@ typedef int8_t bool;
 #endif
 
 //imote2
-#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_GUMSTIX)
+#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_LINUX32)
 #define THIRTYTWO_BIT_PROCESSOR
 #define INLINE_ASM
 #endif

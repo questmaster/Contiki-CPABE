@@ -1,5 +1,5 @@
 # Config flag for nn.c
-CFLAGS += -DTARGET_GUMSTIX
+CFLAGS += -DTARGET_LINUX32
 #CFLAGS += -DCONTIKI_TARGET_SKY
 
 
@@ -15,7 +15,12 @@ CFLAGS += -DTARGET_GUMSTIX
 #Cparam = SS192K2S
 #Cparam = SS512K2
 #Cparam = SS512K2S
+#Cparam = CPABE168K2
 Cparam = CPABE192K2
+#Cparam = CPABE224K2
+#Cparam = CPABE256K2
+#Cparam = CPABE384K2
+#Cparam = CPABE512K2
 
 # use test vector for secp160r1 to show the correctness of TinyECC (NOT TP or CPABE!)
 #Cparam = TEST_VECTOR
@@ -74,10 +79,10 @@ CFLAGS += -I$(OTHERDIR)
 ## end more includes
 
 VPATH=$(OTHERDIR)
-OBJ=$(join $(addsuffix ../obj/, $(dir $(SOURCE))), $(notdir $(SOURCE:.c=.o))) 
+OBJ=$(join $(addsuffix obj/, $(dir $(SOURCE))), $(notdir $(SOURCE:.c=.o))) 
 
-## Fix dependency destination to be ../.dep relative to the src dir
-DEPENDS=$(join $(addsuffix ../.dep/, $(dir $(SOURCE))), $(notdir $(SOURCE:.c=.d)))
+## Fix dependency destination to be .dep relative to the src dir
+DEPENDS=$(join $(addsuffix .dep/, $(dir $(SOURCE))), $(notdir $(SOURCE:.c=.d)))
 
 ## Default rule executed
 all: $(TARGET)
@@ -107,32 +112,32 @@ $(TARGET): $(OBJ)
 ## Rules for object files from cpp files
 ## Object file for each file is put in obj directory
 ## one level up from the actual source directory.
-../obj/%.o : %.c
+obj/%.o : %.c
 		@mkdir -p $(dir $@)
 		@echo "============="
 		@echo "Compiling $<"
 		@$(CC) $(CFLAGS) -c $< -o $@
 
 # Rule for "other directory"  You will need one per "other" dir
-$(OTHERDIR)/../obj/%.o : %.c
+$(OTHERDIR)/obj/%.o : %.c
 		@mkdir -p $(dir $@)
 		@echo "============="
 		@echo "Compiling $<"
 		@$(CC) $(CFLAGS) -c $< -o $@
 
 ## Make dependancy rules
-../.dep/%.d: %.c
+.dep/%.d: %.c
 		@mkdir -p $(dir $@)
 		@echo "============="
 		@echo Building dependencies file for $*.o
-		@$(SHELL) -ec '$(CC) -M $(CFLAGS) $(INCLUDE) $< | sed "s^$*.o^../obj/$*.o^" > $@'
+		@$(SHELL) -ec '$(CC) -M $(CFLAGS) $(INCLUDE) $< | sed "s^$*.o^obj/$*.o^" > $@'
 
 ## Dependency rule for "other" directory
-$(OTHERDIR)/../.dep/%.d: %.c
+$(OTHERDIR)/.dep/%.d: %.c
 		@mkdir -p $(dir $@)
 		@echo "============="
 		@echo Building dependencies file for $*.o
-		@$(SHELL) -ec '$(CC) -M $(CFLAGS) $(INCLUDE) $< | sed "s^$*.o^$(OTHERDIR)/../obj/$*.o^" > $@'
+		@$(SHELL) -ec '$(CC) -M $(CFLAGS) $(INCLUDE) $< | sed "s^$*.o^$(OTHERDIR)/obj/$*.o^" > $@'
 
 ## Include the dependency files
 -include $(DEPENDS)

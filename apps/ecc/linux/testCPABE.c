@@ -45,6 +45,8 @@ int main(void)
 	printf("CP-ABE tester process started\n");
 	printf("entering loop.\n");
 	
+	do {
+		
 #ifdef CPABE_SETUP
 	printf("CPABE_setup(0)\n");
 	time_s = clock();
@@ -95,8 +97,6 @@ int main(void)
 #endif
 #endif
 	
-	do {
-
 #ifdef CPABE_KEYGEN
 		printf("CPABE_keygen(%d)\n", round_index);
 		time_s = clock();

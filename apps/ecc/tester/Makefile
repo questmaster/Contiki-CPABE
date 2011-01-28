@@ -15,7 +15,12 @@ APPS = ecc
 #Cparam = SS192K2S
 #Cparam = SS512K2
 #Cparam = SS512K2S
+#Cparam = CPABE168K2
 Cparam = CPABE192K2
+#Cparam = CPABE224K2
+#Cparam = CPABE256K2
+#Cparam = CPABE384K2
+#Cparam = CPABE512K2
 
 # use test vector for secp160r1 to show the correctness of TinyECC (NOT TP or CPABE!)
 #Cparam = TEST_VECTOR

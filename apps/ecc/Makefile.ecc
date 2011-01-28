@@ -92,9 +92,35 @@ endif
 
 # CPABE pairing curves
 
+ifeq ($(Cparam), CPABE168K2)
+ecc_src += cpabe168k2.c TPCurveParam.c
+CFLAGS+=-DCPABE168K2 -DTPSSC
+endif
+
 ifeq ($(Cparam), CPABE192K2)
 ecc_src += cpabe192k2.c TPCurveParam.c
 CFLAGS+=-DCPABE192K2 -DTPSSC
 endif
+
+ifeq ($(Cparam), CPABE224K2)
+ecc_src += cpabe224k2.c TPCurveParam.c
+CFLAGS+=-DCPABE224K2 -DTPSSC
+endif
+
+ifeq ($(Cparam), CPABE256K2)
+ecc_src += cpabe256k2.c TPCurveParam.c
+CFLAGS+=-DCPABE256K2 -DTPSSC
+endif
+
+ifeq ($(Cparam), CPABE384K2)
+ecc_src += cpabe384k2.c TPCurveParam.c
+CFLAGS+=-DCPABE192K2 -DTPSSC
+endif
+
+ifeq ($(Cparam), CPABE512K2)
+ecc_src += cpabe512k2.c TPCurveParam.c
+CFLAGS+=-DCPABE512K2 -DTPSSC
+endif
+
 
 endif
