@@ -108,12 +108,12 @@ int main(void)
 
 /*		printf("CPABE_prv_d_x: ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
-			printf("%x ", prv.d.x[i]);
+			printf("%x %x ", (uint16_t)(prv.d.x[i] >> 16), (uint16_t) prv.d.x[i]);
 		}
 		printf("\n");
 		printf("CPABE_prv_d_y: ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
-			printf("%x ", prv.d.y[i]);
+			printf("%x %x ", (uint16_t)(prv.d.y[i] >> 16), (uint16_t) prv.d.y[i]);
 		}
 		printf("\n");*/
 #endif
