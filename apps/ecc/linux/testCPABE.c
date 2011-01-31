@@ -43,19 +43,19 @@ int main(void)
 	attributes[3] = 0;
 		
 	printf("CP-ABE tester process started\n");
-	printf("entering loop.\n");
+	printf("entering loop. CLOCK_SECOND=%d\n", CLOCK_SECOND);
 	
 	do {
 		
 #ifdef CPABE_SETUP
-	printf("CPABE_setup(0)\n");
+	printf("CPABE_setup(%d)\n", round_index);
 	time_s = clock();
 	
 	cpabe_setup(&pub, &msk);
 
 	time_f = clock();
 	dt0 = time_f - time_s;
-	printf("CPABE_setup(0): %lu ms\n", (uint32_t)(dt0*1000/CLOCK_SECOND));
+	printf("CPABE_setup(%d): %lu ms\n", round_index, (uint32_t)(dt0*1000/CLOCK_SECOND));
 
 	/* CP-ABE Keys */
 #ifdef CPABE_DEBUG
