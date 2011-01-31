@@ -206,6 +206,7 @@ bool TP_Miller(NN2_NUMBER *ef, Point P){
     t = (NNBits(tpparam.m,NUMWORDS))-2; // t=bits-2
     
     while (t>-1) {
+	  watchdog_periodic();
       dbl_line_projective(&temp1, &V, Z, &V, Z);
       NN2ModSqr(ef, ef, tpparam.p, NUMWORDS);  //f=f^2
       NN2ModMult(ef, ef, &temp1, tpparam.p, NUMWORDS); // f=f*g
@@ -600,6 +601,7 @@ bool TP_Miller(NN2_NUMBER *ef, Point P) {
     t = (NNBits(tpparam.m,NUMWORDS))-2; // t=bits-2
     
     while (t>-1) {
+		watchdog_periodic();
       aff_dbl(&temp1, &V, &V); //V=2V
       NN2ModSqr(ef, ef, tpparam.p, NUMWORDS);
       NN2ModMult(ef, ef, &temp1, tpparam.p, NUMWORDS);

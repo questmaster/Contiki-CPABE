@@ -148,6 +148,7 @@ void *memb_alloc(struct memb *m){
 }
 char  memb_free(struct memb *m, void *ptr){
 	free(ptr);
+	return 0;
 }
 
 

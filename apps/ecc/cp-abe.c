@@ -373,7 +373,7 @@ void point_from_string( Point* h, char* s )
 	NNAssignZero(r, NUMWORDS);
 	
 	SHA1_Reset(&context);
-	SHA1_Update(&context, s, strlen(s));
+	SHA1_Update(&context, (uint8_t *) s, strlen(s));
 	SHA1_Digest(&context, (uint8_t *)r);
 		
 #ifdef CPABE_DEBUG	

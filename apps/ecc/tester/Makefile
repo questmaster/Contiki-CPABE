@@ -16,9 +16,9 @@ APPS = ecc
 #Cparam = SS512K2
 #Cparam = SS512K2S
 #Cparam = CPABE168K2
-Cparam = CPABE192K2
+##Cparam = CPABE192K2
 #Cparam = CPABE224K2
-#Cparam = CPABE256K2
+Cparam = CPABE256K2
 #Cparam = CPABE384K2
 #Cparam = CPABE512K2
 

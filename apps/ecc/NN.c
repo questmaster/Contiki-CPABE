@@ -144,7 +144,7 @@ NN_DOUBLE_DIGIT NN_DigitMult(NN_DIGIT b, NN_DIGIT c)
   
 #endif
 
-#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_GUMSTIX) // Not yet supported by Contiki
+#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_LINUX32) // Not yet supported by Contiki
 #define NN_DigitMult(b, c) (NN_DOUBLE_DIGIT)(b) * (c)
 #endif
 
@@ -268,6 +268,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
    */
   NN_DIGIT NN_Add (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT digits)
   {
+	  watchdog_periodic();
     //inline assembly for micaz
 #ifdef INLINE_ASM
 #ifdef CONTIKI_TARGET_MICAZ
@@ -317,7 +318,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     return carry;
 #endif
 
-#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_GUMSTIX) // Not yet supported by Contiki
+#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_LINUX32) // Not yet supported by Contiki
     NN_DIGIT carry, ai;
     NN_UINT i;
 
@@ -412,7 +413,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     return borrow;
 #endif
 
-#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_GUMSTIX) // Not yet supported by Contiki
+#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_LINUX32) // Not yet supported by Contiki
     NN_DIGIT ai, borrow;
     NN_UINT i;
 
@@ -1673,7 +1674,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     */
 #endif //CONTIKI_TARGET_SKY
 
-#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_GUMSTIX) // Not yet supported by Contiki
+#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_LINUX32) // Not yet supported by Contiki
     //r0~r2
     //r3 b
     //r4 i
@@ -2620,7 +2621,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     */
 #endif  //end of CONTIKI_TARGET_SKY
 
-#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_GUMSTIX) // Not yet supported by Contiki
+#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_LINUX32) // Not yet supported by Contiki
 
     //r0~r2
     //r3 b
@@ -2805,6 +2806,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     int i;
     int ddDigits, shift;
   
+	  watchdog_periodic();
     ddDigits = NN_Digits (d, dDigits);
     if (ddDigits == 0)
       return;
@@ -2851,6 +2853,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
    */
   void NN_Mod (NN_DIGIT *a, NN_DIGIT *b, NN_UINT bDigits, NN_DIGIT *c, NN_UINT cDigits)
   {  
+	  watchdog_periodic();
 #ifdef BARRETT_REDUCTION
     NNModBarrett(a, b, bDigits, c, cDigits);
 #else
@@ -2865,6 +2868,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
    */
   void NN_ModMult (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_DIGIT *d, NN_UINT digits)
   {
+	watchdog_periodic();
 #ifdef BARRETT_REDUCTION
 
     NN_DIGIT q2[2*MAX_NN_DIGITS+8], x[2*MAX_NN_DIGITS+8], r2[2*MAX_NN_DIGITS+8], m[MAX_NN_DIGITS+4];
@@ -2878,18 +2882,20 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     NN_Mult(x, b, c, digits);
     memcpy(m, d, digits*NN_DIGIT_LEN);
     memset(m+digits, 0, (MAX_NN_DIGITS+4-digits)*NN_DIGIT_LEN);
+	watchdog_periodic();
 
     //q_2=q_1*mu
     NN_Mult(q2, x+pBarrett->km-1, pBarrett->mu, pBarrett->mu_len);
+	watchdog_periodic();
     //q_3*m
     NN_Mult(r2, q2+pBarrett->km+1, m, pBarrett->mu_len);
     memset(r2+pBarrett->km+1, 0, (2*MAX_NN_DIGITS+8-pBarrett->km-1)*NN_DIGIT_LEN);
     memset(x+pBarrett->km+1, 0, (2*MAX_NN_DIGITS+8-pBarrett->km-1)*NN_DIGIT_LEN);
+	watchdog_periodic();
 
     if (NN_Cmp(x, r2, pBarrett->km+1) < 0)
       x[pBarrett->km+1] = 1;
     NN_Sub(x, x, r2, pBarrett->km+2);
-
     while(NN_Cmp(x, m, digits) >= 0)
       NN_Sub(x, x, m, digits);
 
@@ -3116,6 +3122,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
   {
     int i;
   
+	  watchdog_periodic();
     for (i = digits - 1; i >= 0; i--) { 
       if (a[i] > b[i])
         return (1);
@@ -3220,7 +3227,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     return (carry);
 #endif
 
-#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_GUMSTIX) // Not yet supported by Contiki
+#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_LINUX32) // Not yet supported by Contiki
     NN_DIGIT carry;
     unsigned int i;
     NN_DOUBLE_DIGIT t;
@@ -3322,7 +3329,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     return (borrow);
 #endif
 
-#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_GUMSTIX) // Not yet supported by Contiki
+#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_LINUX32) // Not yet supported by Contiki
     NN_DIGIT borrow;
     unsigned int i;
     NN_DOUBLE_DIGIT t;
@@ -3584,6 +3591,7 @@ void NNEncode(unsigned char * a, NN_UINT digits, NN_DIGIT * b, NN_UINT len)
   {
     NN_DIGIT tmp[MAX_NN_DIGITS];
     NN_DIGIT carry;
+	watchdog_periodic();
     
     carry = NN_Add(tmp, b, c, digits);
     if (carry)
@@ -3602,6 +3610,7 @@ void NNEncode(unsigned char * a, NN_UINT digits, NN_DIGIT * b, NN_UINT len)
   {
     NN_DIGIT tmp[MAX_NN_DIGITS];
     NN_DIGIT borrow;
+	watchdog_periodic();
     
     borrow = NN_Sub(tmp, b, c, digits);
     if (borrow) 
@@ -3645,6 +3654,7 @@ void NNEncode(unsigned char * a, NN_UINT digits, NN_DIGIT * b, NN_UINT len)
   //Computes a = b * c mod d, d is generalized mersenne prime, d = 2^KEYBITS - omega
   void NNModMultOpt(NN_DIGIT * a, NN_DIGIT * b, NN_DIGIT * c, NN_DIGIT * d, NN_DIGIT * omega, NN_UINT digits)
   {
+	watchdog_periodic();
 #ifdef CURVE_OPT
     NN_DIGIT t1[2*MAX_NN_DIGITS];
     NN_DIGIT t2[2*MAX_NN_DIGITS];
@@ -3684,6 +3694,7 @@ void NNEncode(unsigned char * a, NN_UINT digits, NN_DIGIT * b, NN_UINT len)
   //Computes a = b^2 mod d, The Standard Squaring Algorithm in "High-Speed RSA Implementation"
   void NNModSqr(NN_DIGIT * a, NN_DIGIT * b, NN_DIGIT * d, NN_UINT digits)
   {
+	watchdog_periodic();
 #ifdef BARRETT_REDUCTION
 
     NN_DIGIT q2[2*MAX_NN_DIGITS+8], x[2*MAX_NN_DIGITS+8], r2[2*MAX_NN_DIGITS+8], m[MAX_NN_DIGITS+4];
@@ -3707,7 +3718,7 @@ void NNEncode(unsigned char * a, NN_UINT digits, NN_DIGIT * b, NN_UINT len)
     if (NN_Cmp(x, r2, pBarrett->km+1) < 0)
       x[pBarrett->km+1] = 1;
     NN_Sub(x, x, r2, pBarrett->km+2);
-    while(NN_Cmp(x, m, digits) >= 0)
+	while(NN_Cmp(x, m, digits) >= 0)
       NN_Sub(x, x, m, digits);
     memcpy(a, x, digits*NN_DIGIT_LEN);
 
@@ -3721,6 +3732,7 @@ void NNEncode(unsigned char * a, NN_UINT digits, NN_DIGIT * b, NN_UINT len)
    
   void NNModSqrOpt(NN_DIGIT * a, NN_DIGIT * b, NN_DIGIT * d, NN_DIGIT * omega, NN_UINT digits)
   {
+	watchdog_periodic();
 #ifdef CURVE_OPT
     NN_DIGIT t1[2*MAX_NN_DIGITS];
     NN_DIGIT t2[2*MAX_NN_DIGITS];

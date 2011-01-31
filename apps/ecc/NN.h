@@ -77,7 +77,7 @@ typedef int8_t bool;
 #else
 #if defined (CPABE168K2)
 #define KEY_BIT_LEN 168
-#define HYBRID_MUL_WIDTH
+#define HYBRID_MUL_WIDTH4
 #else
 #if defined (SECP192K1) || defined (SECP192R1) || defined (SS192K2) || defined (SS192K2S) || defined (CPABE192K2)
 #define KEY_BIT_LEN 192
@@ -85,20 +85,20 @@ typedef int8_t bool;
 #else
 #if defined (CPABE224K2)
 #define KEY_BIT_LEN 224
-#define HYBRID_MUL_WIDTH
+#define HYBRID_MUL_WIDTH4
 #else
 #if defined (CPABE256K2)
 #define KEY_BIT_LEN 256
-#define HYBRID_MUL_WIDTH
+#define HYBRID_MUL_WIDTH4
 #else
 #if defined (CPABE384K2)
 #define KEY_BIT_LEN 384
-#define HYBRID_MUL_WIDTH
+#define HYBRID_MUL_WIDTH4
 #else
 #if defined (SS512K2) || defined (SS512K2S) || defined (CPABE512K2)
 //#define BARRETT_REDUCTION
 #define KEY_BIT_LEN 512
-#define HYBRID_MUL_WIDTH5
+#define HYBRID_MUL_WIDTH5 // FIXME: is this correct? shouldn't it be 4???
 #endif // end of 512
 #endif // end of 384
 #endif // end of 256
@@ -127,10 +127,10 @@ typedef int8_t bool;
 //imote2
 #if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_LINUX32)
 #define THIRTYTWO_BIT_PROCESSOR
+#ifndef NO_ASM 
 #define INLINE_ASM
 #endif
-
-
+#endif
 
 
 #ifdef EIGHT_BIT_PROCESSOR
