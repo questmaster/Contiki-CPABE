@@ -48,7 +48,7 @@ void get_TP_param(TPParams *tppara)
 	  
 	  // a = 1 
 	  memset(tppara->E.a, 0, NUMWORDS*NN_DIGIT_LEN);
-	  tppara->E.a[0] =  0x0001;
+	  tppara->E.a[0] =  0x01;
 	  // b = 0
 	  memset(tppara->E.b, 0, NUMWORDS*NN_DIGIT_LEN);
 
@@ -287,7 +287,7 @@ void get_TP_param(TPParams *tppara)
 	  
 	  // a = 1 
 	  memset(tppara->E.a, 0, NUMWORDS*NN_DIGIT_LEN);
-	  tppara->E.a[0] =  0x0001;
+	  tppara->E.a[0] =  0x00000001;
 	  // b = 0
 	  memset(tppara->E.b, 0, NUMWORDS*NN_DIGIT_LEN);
 

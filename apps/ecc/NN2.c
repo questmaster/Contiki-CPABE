@@ -153,7 +153,7 @@ static void NN2_Lucas (NN2_NUMBER * a,NN2_NUMBER * b, NN_DIGIT * k,NN_DIGIT * d,
 	NNModSub(tmp, tmp, two,d,digits);
 	NNModDivOpt(alpha, alpha, tmp,d,digits);
 	
-	NNAssign(a->i, alpha, NUMWORDS);
+	NNAssign(a->i, alpha, digits); // was: NUMWORDS
 
 }
 

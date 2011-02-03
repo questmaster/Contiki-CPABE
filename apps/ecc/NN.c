@@ -4022,7 +4022,7 @@ void NNModRandom (NN_DIGIT * b, NN_DIGIT * c, NN_UINT digits) {
 		
 		for (ri=0; ri < order_digit_len; ri++){
 #ifdef THIRTYTWO_BIT_PROCESSOR
-			b[ri] = ((uint32_t)rand() << 16)^((uint32_t)rand());
+			b[ri] = (((NN_DIGIT)rand()) << 16)|((NN_DIGIT)rand());
 #else
 			b[ri] = (NN_DIGIT)rand();
 #endif

@@ -32,6 +32,7 @@
 
 #include "TP.h"
 #include <string.h>
+#include <watchdog.h>
 
 //#define PROJECTIVE
 ///#define PROJECTIVE_M
@@ -655,7 +656,7 @@ void TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef) {
     NNModSqr(t2, ef->i, tpparam.p, NUMWORDS); // y^2
     NNModAdd(t3, t1, t2, tpparam.p, NUMWORDS); // x^2+y^2
     NNModSub(t1, t1, t2, tpparam.p, NUMWORDS); // x^2-y^2
-#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_GUMSTIX)
+#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_LINUX32)
     NNModDiv(t1, t1, t3, tpparam.p, NUMWORDS); //(x^2-y^2)/(x^2+y^2)
 #else
     NNModDivOpt(t1, t1, t3, tpparam.p, NUMWORDS);
@@ -664,7 +665,7 @@ void TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef) {
 	NNAssignDigit(two, 2, NUMWORDS);
 	NNModMult(t2, ef->r, ef->i, tpparam.p, NUMWORDS);
 	NNModMult(t2, t2, two, tpparam.p, NUMWORDS); // 2*x*y
-#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_GUMSTIX)
+#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_LINUX32)
 	NNModDiv(t2, t2, t3, tpparam.p, NUMWORDS); 
 #else
 	NNModDivOpt(t2, t2, t3, tpparam.p, NUMWORDS);

@@ -76,7 +76,7 @@ typedef int8_t bool;
 #define HYBRID_MUL_WIDTH5  //column width=5 for hybrid multiplication
 #else
 #if defined (CPABE168K2)
-#define KEY_BIT_LEN 168
+#define KEY_BIT_LEN 192		// 168 is not possible in 16 and 32bit environments!
 #define HYBRID_MUL_WIDTH4
 #else
 #if defined (SECP192K1) || defined (SECP192R1) || defined (SS192K2) || defined (SS192K2S) || defined (CPABE192K2)
@@ -121,7 +121,9 @@ typedef int8_t bool;
 //telosb
 #ifdef CONTIKI_TARGET_SKY
 #define SIXTEEN_BIT_PROCESSOR
+#ifndef NO_ASM 
 #define INLINE_ASM
+#endif
 #endif
 
 //imote2

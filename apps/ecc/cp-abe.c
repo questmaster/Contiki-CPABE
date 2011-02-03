@@ -314,6 +314,7 @@ void cpabe_setup(cpabe_pub_t *pub, cpabe_msk_t *msk) {
 	pub->gp.y[0] = 0x5df9;
 #endif
 #ifdef THIRTYTWO_BIT_PROCESSOR
+#ifdef CPABE192K2
 	alpha[6] = 0x00000000;
 	alpha[5] = 0x00000000;
 	alpha[4] = 0x00000000;
@@ -359,7 +360,61 @@ void cpabe_setup(cpabe_pub_t *pub, cpabe_msk_t *msk) {
 	pub->gp.y[2] = 0x3574810a;
 	pub->gp.y[1] = 0x2cd41279;
 	pub->gp.y[0] = 0x23bc5df9;
-#endif
+#endif //CPABE192K2
+#ifdef CPABE224K2
+	alpha[7] = 0x00000000;
+	alpha[6] = 0x00000000;
+	alpha[5] = 0x00000000;
+	alpha[4] = 0x6fe428df;
+	alpha[3] = 0x5f2537e4;
+	alpha[2] = 0x0f59e4ab;
+	alpha[1] = 0x806dc9da;
+	alpha[0] = 0x81a13777;
+	
+	msk->beta[7] = 0x00000000;
+	msk->beta[6] = 0x00000000;
+	msk->beta[5] = 0x00000000;
+	msk->beta[4] = 0x2f67a787;
+	msk->beta[3] = 0x89d3fb88;
+	msk->beta[2] = 0xc2c18909;
+	msk->beta[1] = 0x82caeaec;
+	msk->beta[0] = 0x6f9f0461;
+	
+	pub->g.x[7] = 0x00000000;
+	pub->g.x[6] = 0x00bd61f2;
+	pub->g.x[5] = 0x5b9149d3;
+	pub->g.x[4] = 0xf22a8097;
+	pub->g.x[3] = 0xb5d46461;
+	pub->g.x[2] = 0xfc570129;
+	pub->g.x[1] = 0x6d22b5ea;
+	pub->g.x[0] = 0x25e62dac;
+	pub->g.y[7] = 0x00000000;
+	pub->g.y[6] = 0x448655a9;
+	pub->g.y[5] = 0x5b7c01a4;
+	pub->g.y[4] = 0xa7a07b9f;
+	pub->g.y[3] = 0xc22ded0b;
+	pub->g.y[2] = 0xf57c5397;
+	pub->g.y[1] = 0xe8fb9c2e;
+	pub->g.y[0] = 0x248d9fed;
+	
+	pub->gp.x[7] = 0x00000000;
+	pub->gp.x[6] = 0x9684ebd3;
+	pub->gp.x[5] = 0x769c6af3;
+	pub->gp.x[4] = 0xa64ef4eb;
+	pub->gp.x[3] = 0xcf1309dd;
+	pub->gp.x[2] = 0xc834bf63;
+	pub->gp.x[1] = 0x6d6752c0;
+	pub->gp.x[0] = 0x8bff4444;
+	pub->gp.y[7] = 0x00000000;
+	pub->gp.y[6] = 0x42359250;
+	pub->gp.y[5] = 0x4bdd2660;
+	pub->gp.y[4] = 0x10f8be43;
+	pub->gp.y[3] = 0x3c3c53f3;
+	pub->gp.y[2] = 0x75a3ef56;
+	pub->gp.y[1] = 0xbcb3116f;
+	pub->gp.y[0] = 0x7ce34281;	
+#endif // CPABE224K2
+#endif // THIRTYTWO_BIT_PROCESSOR
 #else
 	NNModRandom(alpha, param.m, NUMWORDS);			/**< Random alpha */
  	NNModRandom(msk->beta, param.m, NUMWORDS);		/**< Random beta */

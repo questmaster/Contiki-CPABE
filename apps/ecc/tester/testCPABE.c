@@ -44,6 +44,8 @@ PROCESS_THREAD(tester_process, ev, data)
 	PROCESS_BEGIN();
 	int8_t i = 0;
     uint32_t time_s, time_f, dt0;
+
+	watchdog_stop();
 	
 //	for (i = 0; i < NUMWORDS-1; i++) {
 //		m[i] = i;
@@ -70,14 +72,14 @@ PROCESS_THREAD(tester_process, ev, data)
 
 	do {
 #ifdef CPABE_SETUP
-	printf("CPABE_setup(0)\n");
+	printf("CPABE_setup(%d)\n", round_index);
 	time_s = clock_time();
 	
 	cpabe_setup(&pub, &msk);
 
 	time_f = clock_time();
 	dt0 = time_f - time_s;
-	printf("CPABE_setup(0): %lu ms\n", (uint32_t)(dt0*1000/CLOCK_SECOND));
+	printf("CPABE_setup(%d): %lu ms\n", round_index, (uint32_t)(dt0*1000/CLOCK_SECOND));
 
 	/* CP-ABE Keys */
 
