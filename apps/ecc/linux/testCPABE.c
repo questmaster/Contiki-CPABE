@@ -30,10 +30,25 @@ static char * policy;
 static NN2_NUMBER m;
 static NN2_NUMBER m2;
 
+void val_print(char* name, NN_DIGIT *val) {
+	int i;
+
+	printf("%s", name);
+	for (i = NUMWORDS-1; i >= 0; i--) {
+#ifndef THIRTYTWO_BIT_PROCESSOR
+		printf("%x ",val[i]);
+#else
+		printf("%x %x ", (uint16_t)(val[i] >> 16), (uint16_t) val[i]);
+#endif
+	}
+	printf("\n");
+
+}
+
+
 /* scopes process */
 int main(void)
 {
-	int8_t i = 0;
     uint32_t time_s, time_f, dt0;
 	
 	policy = "attr1 attr3 2of2"; 
@@ -59,41 +74,12 @@ int main(void)
 
 	/* CP-ABE Keys */
 #ifdef CPABE_DEBUG
-	printf("CPABE_msk_beta: ");
-	for (i = NUMWORDS-1; i >= 0; i--) {
-		printf("%x %x ", (uint16_t)(msk.beta[i] >> 16), (uint16_t) msk.beta[i]);
-	}
-	printf("\n");
-	printf("CPABE_msk_g-alpha_x: ");
-	for (i = NUMWORDS-1; i >= 0; i--) {
-		printf("%x %x ", (uint16_t)(msk.g_alpha.x[i] >> 16), (uint16_t) msk.g_alpha.x[i]);
-	}
-	printf("\n");
-	printf("CPABE_msk_g-alpha_y: ");
-	for (i = NUMWORDS-1; i >= 0; i--) {
-		printf("%x %x ", (uint16_t)(msk.g_alpha.y[i] >> 16), (uint16_t) msk.g_alpha.y[i]);
-	}
-	printf("\n");
-	printf("CPABE_pub_g-hat-alpha_r: ");
-	for (i = NUMWORDS-1; i >= 0; i--) {
-		printf("%x %x ", (uint16_t)(pub.g_hat_alpha.r[i] >> 16), (uint16_t) pub.g_hat_alpha.r[i]);
-	}
-	printf("\n");
-	printf("CPABE_pub_g-hat-alpha_i: ");
-	for (i = NUMWORDS-1; i >= 0; i--) {
-		printf("%x %x ", (uint16_t)(pub.g_hat_alpha.i[i] >> 16), (uint16_t) pub.g_hat_alpha.i[i]);
-	}
-	printf("\n");
-	printf("CPABE_pub_h_x: ");
-	for (i = NUMWORDS-1; i >= 0; i--) {
-		printf("%x %x ", (uint16_t)(pub.h.x[i] >> 16), (uint16_t) pub.h.x[i]);
-	}
-	printf("\n");
-	printf("CPABE_pub_h_y: ");
-	for (i = NUMWORDS-1; i >= 0; i--) {
-		printf("%x %x ", (uint16_t)(pub.h.y[i] >> 16), (uint16_t) pub.h.y[i]);
-	}
-	printf("\n");
+	val_print("CPABE_msk_g-alpha_x: ", msk.g_alpha.x);
+	val_print("CPABE_msk_g-alpha_y: ", msk.g_alpha.y);
+	val_print("CPABE_pub_h_x: ", pub.h.x);
+	val_print("CPABE_pub_h_y: ", pub.h.y);
+	val_print("CPABE_pub_g-hat-alpha_r: ", pub.g_hat_alpha.r);
+	val_print("CPABE_pub_g-hat-alpha_i: ", pub.g_hat_alpha.i);
 #endif
 #endif
 	
@@ -106,16 +92,10 @@ int main(void)
 		dt0 = time_f - time_s;
 		printf("CPABE_keygen(%d): %lu ms\n", round_index, (uint32_t)(dt0*1000/CLOCK_SECOND));
 
-/*		printf("CPABE_prv_d_x: ");
-		for (i = NUMWORDS-1; i >= 0; i--) {
-			printf("%x %x ", (uint16_t)(prv.d.x[i] >> 16), (uint16_t) prv.d.x[i]);
-		}
-		printf("\n");
-		printf("CPABE_prv_d_y: ");
-		for (i = NUMWORDS-1; i >= 0; i--) {
-			printf("%x %x ", (uint16_t)(prv.d.y[i] >> 16), (uint16_t) prv.d.y[i]);
-		}
-		printf("\n");*/
+#ifdef CPABE_DEBUG
+		val_print("CPABE_prv_d_x: ", prv.d.x);
+		val_print("CPABE_prv_d_y: ", prv.d.y);
+#endif
 #endif
 #ifdef CPABE_ENCRYPTION		
 		printf("CPABE_enc(%d) \n", round_index);
@@ -128,36 +108,14 @@ int main(void)
 		dt0 = time_f - time_s;
 		printf("CPABE_enc(%d): %lu ms\n", round_index, (uint32_t)(dt0*1000/CLOCK_SECOND));
 		
-		printf("m.r  (plain): ");
-		for (i = NUMWORDS-1; i >= 0; i--) {
-			printf("%x %x ", (uint16_t)(m.r[i] >> 16), (uint16_t) m.r[i]);
-		}
-		printf("\n");
-		printf("m.i  (plain): ");
-		for (i = NUMWORDS-1; i >= 0; i--) {
-			printf("%x %x ", (uint16_t)(m.i[i] >> 16), (uint16_t) m.i[i]);
-		}
-		printf("\n");
-/*		printf("CPABE_cph_cs_r: ");
-		for (i = NUMWORDS-1; i >= 0; i--) {
-			printf("%x ", cph.cs.r[i]);
-		}
-		printf("\n");
-		printf("CPABE_cph_cs_i: ");
-		for (i = NUMWORDS-1; i >= 0; i--) {
-			printf("%x ", cph.cs.i[i]);
-		}
-		printf("\n");
-		printf("CPABE_cph_c_x: ");
-		for (i = NUMWORDS-1; i >= 0; i--) {
-			printf("%x ", cph.c.x[i]);
-		}
-		printf("\n");
-		printf("CPABE_cph_c_y: ");
-		for (i = NUMWORDS-1; i >= 0; i--) {
-			printf("%x ", cph.c.y[i]);
-		}
-		printf("\n");*/
+		val_print("m.r  (plain): ", m.r);
+		val_print("m.i  (plain): ", m.i);
+#ifdef CPABE_DEBUG
+		val_print("CPABE_cph_cs_r: ", cph.cs.r);
+		val_print("CPABE_cph_cs_i: ", cph.cs.i);
+		val_print("CPABE_cph_c_x: ", cph.c.x);
+		val_print("CPABE_cph_c_y: ", cph.c.y);
+#endif
 #endif
 #ifdef CPABE_DECRYPTION
 		printf("CPABE_dec(%d) \n", round_index);
@@ -169,16 +127,8 @@ int main(void)
 		dt0 = time_f - time_s;
 		printf("CPABE_dec(%d): %lu ms\n", round_index, (uint32_t)(dt0*1000/CLOCK_SECOND));
 
-		printf("m2.r (plain): ");
-		for (i = NUMWORDS-1; i >= 0; i--) {
-			printf("%x %x ", (uint16_t)(m2.r[i] >> 16), (uint16_t) m2.r[i]);
-		}
-		printf("\n");
-		printf("m2.i (plain): ");
-		for (i = NUMWORDS-1; i >= 0; i--) {
-			printf("%x %x ", (uint16_t)(m2.i[i] >> 16), (uint16_t) m2.i[i]);
-		}
-		printf("\n");
+		val_print("m2.r (plain): ", m2.r);
+		val_print("m2.i (plain): ", m2.i);
 #endif
 						
 		// free dynamic memory

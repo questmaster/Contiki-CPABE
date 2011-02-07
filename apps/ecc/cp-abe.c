@@ -165,7 +165,7 @@ static uint8_t sscanf_repl(char* tok, /*char * format,*/ uint8_t* k, uint8_t* n)
 void debug_print(char* name, NN_DIGIT *val) {
 	int i;
 	
-	printf(name);
+	printf("%s", name);
 	for (i = NUMWORDS-1; i >= 0; i--) {
 #ifndef THIRTYTWO_BIT_PROCESSOR
 		printf("%x ",val[i]);
@@ -365,54 +365,54 @@ void cpabe_setup(cpabe_pub_t *pub, cpabe_msk_t *msk) {
 	alpha[7] = 0x00000000;
 	alpha[6] = 0x00000000;
 	alpha[5] = 0x00000000;
-	alpha[4] = 0x6fe428df;
-	alpha[3] = 0x5f2537e4;
-	alpha[2] = 0x0f59e4ab;
-	alpha[1] = 0x806dc9da;
-	alpha[0] = 0x81a13777;
+	alpha[4] = 0x3fe7a349;
+	alpha[3] = 0x85169856;
+	alpha[2] = 0x9993e83a;
+	alpha[1] = 0x65eb9c58;
+	alpha[0] = 0x9d31d576;
 	
 	msk->beta[7] = 0x00000000;
 	msk->beta[6] = 0x00000000;
 	msk->beta[5] = 0x00000000;
-	msk->beta[4] = 0x2f67a787;
-	msk->beta[3] = 0x89d3fb88;
-	msk->beta[2] = 0xc2c18909;
-	msk->beta[1] = 0x82caeaec;
-	msk->beta[0] = 0x6f9f0461;
+	msk->beta[4] = 0x3db7b6a6;
+	msk->beta[3] = 0x8944b379;
+	msk->beta[2] = 0x42e824b6;
+	msk->beta[1] = 0xcf826d67;
+	msk->beta[0] = 0x55c413f3;
 	
 	pub->g.x[7] = 0x00000000;
-	pub->g.x[6] = 0x00bd61f2;
-	pub->g.x[5] = 0x5b9149d3;
-	pub->g.x[4] = 0xf22a8097;
-	pub->g.x[3] = 0xb5d46461;
-	pub->g.x[2] = 0xfc570129;
-	pub->g.x[1] = 0x6d22b5ea;
-	pub->g.x[0] = 0x25e62dac;
+	pub->g.x[6] = 0x8ccd22a3;
+	pub->g.x[5] = 0x8e87767b;
+	pub->g.x[4] = 0x08005087;
+	pub->g.x[3] = 0x52b76843;
+	pub->g.x[2] = 0x6812015a;
+	pub->g.x[1] = 0x8b7ea825;
+	pub->g.x[0] = 0x906a0531;
 	pub->g.y[7] = 0x00000000;
-	pub->g.y[6] = 0x448655a9;
-	pub->g.y[5] = 0x5b7c01a4;
-	pub->g.y[4] = 0xa7a07b9f;
-	pub->g.y[3] = 0xc22ded0b;
-	pub->g.y[2] = 0xf57c5397;
-	pub->g.y[1] = 0xe8fb9c2e;
-	pub->g.y[0] = 0x248d9fed;
+	pub->g.y[6] = 0x1792b60a;
+	pub->g.y[5] = 0x5477f0cf;
+	pub->g.y[4] = 0xb7ca45d7;
+	pub->g.y[3] = 0xbd745605;
+	pub->g.y[2] = 0x2cb163b5;
+	pub->g.y[1] = 0xdad9de14;
+	pub->g.y[0] = 0xd2dcf4d6;
 	
 	pub->gp.x[7] = 0x00000000;
-	pub->gp.x[6] = 0x9684ebd3;
-	pub->gp.x[5] = 0x769c6af3;
-	pub->gp.x[4] = 0xa64ef4eb;
-	pub->gp.x[3] = 0xcf1309dd;
-	pub->gp.x[2] = 0xc834bf63;
-	pub->gp.x[1] = 0x6d6752c0;
-	pub->gp.x[0] = 0x8bff4444;
+	pub->gp.x[6] = 0x63532bcd;
+	pub->gp.x[5] = 0x0a7a0aba;
+	pub->gp.x[4] = 0xbeefac9c;
+	pub->gp.x[3] = 0x04904ac4;
+	pub->gp.x[2] = 0xbda9b0b2;
+	pub->gp.x[1] = 0x870d3419;
+	pub->gp.x[0] = 0x4143be9d;
 	pub->gp.y[7] = 0x00000000;
-	pub->gp.y[6] = 0x42359250;
-	pub->gp.y[5] = 0x4bdd2660;
-	pub->gp.y[4] = 0x10f8be43;
-	pub->gp.y[3] = 0x3c3c53f3;
-	pub->gp.y[2] = 0x75a3ef56;
-	pub->gp.y[1] = 0xbcb3116f;
-	pub->gp.y[0] = 0x7ce34281;	
+	pub->gp.y[6] = 0x71116e39;
+	pub->gp.y[5] = 0x81b73d43;
+	pub->gp.y[4] = 0xdb19a1e6;
+	pub->gp.y[3] = 0x736e7b3c;
+	pub->gp.y[2] = 0xd4ecc9df;
+	pub->gp.y[1] = 0x0a6225f0;
+	pub->gp.y[0] = 0xfaeeefaf;
 #endif // CPABE224K2
 #endif // THIRTYTWO_BIT_PROCESSOR
 #else
@@ -450,7 +450,6 @@ void point_from_string( Point* h, char* s )
 	SHA1_Digest(&context, (uint8_t *)r);
 		
 #ifdef CPABE_DEBUG	
-	int i ;
 	printf("(not used in debug!) attr: %s -> SHA-1 hash: ", s);
 	debug_print("", r);
 	
@@ -543,6 +542,7 @@ void point_from_string( Point* h, char* s )
 	}
 #endif
 #ifdef THIRTYTWO_BIT_PROCESSOR
+#ifdef CPABE192K2
 	if (strcmp(s, "attr1") == 0) {
 		h->x[6] = 0x00000000; // v- this is just for the first attribute!
 		h->x[5] = 0x13c4df84;
@@ -593,6 +593,10 @@ void point_from_string( Point* h, char* s )
 			} 
 		}
 	}
+#endif
+#ifdef CPABE224K2
+	// TODO: missing
+#endif
 #endif
 #else	
 	// compute y for given (hash) x value  
@@ -658,12 +662,10 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 	cpabe_prv_comp_t *c;
 	Point h_rp;
 	NN_DIGIT rp[NUMWORDS];
-#ifdef CPABE_DEBUG		
-	int i;
-#endif
 	
-	if (prv == NULL || &pub == NULL || &msk == NULL) {
+	if (prv == NULL || &pub == NULL || &msk == NULL || attributes == NULL) {
 //			printf("cpabe_setup - ERROR: pub or msk NULL! pub: %p, msk: %p", pub, msk);
+		return;
 	}
 	
 	// init
@@ -688,6 +690,7 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 	r[0] = 0x45ae;
 #endif
 #ifdef THIRTYTWO_BIT_PROCESSOR
+#ifdef CPABE192K2
 	r[6] = 0x00000000;
 	r[5] = 0x00000000;
 	r[4] = 0x00000000;
@@ -695,6 +698,10 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 	r[2] = 0x4b3b8881;
 	r[1] = 0x076c7149;
 	r[0] = 0x9e5345ae;
+#endif
+#ifdef CPABE224K2
+	// TODO: missing
+#endif
 #endif
 #else
 	NNModRandom(r, param.m, NUMWORDS);
@@ -777,6 +784,7 @@ printf("c_attrib: %s\n", c->attr);
 	}
 #endif
 #ifdef THIRTYTWO_BIT_PROCESSOR
+#ifdef CPABE192K2
 		if (strcmp(c->attr, "attr1") == 0) {
 			rp[6] = 0x00000000;// v- this is just for the first attribute!
 			rp[5] = 0x00000000;
@@ -806,6 +814,10 @@ printf("c_attrib: %s\n", c->attr);
 				} 
 			}
 		}
+#endif
+#ifdef CPABE224K2
+		// TODO: missing
+#endif
 #endif
 #else
  		NNModRandom(rp, param.m, NUMWORDS);
@@ -960,6 +972,7 @@ rand_poly( int deg, NN_DIGIT zero_val[NUMWORDS] )
 		(q->coef + (i * NUMWORDS))[0] = 0x18e9;
 #endif
 #ifdef THIRTYTWO_BIT_PROCESSOR
+#ifdef CPABE192K2
 		(q->coef + (i * NUMWORDS))[6] = 0x00000000;
 		(q->coef + (i * NUMWORDS))[5] = 0x00000000;
 		(q->coef + (i * NUMWORDS))[4] = 0x00000000;
@@ -967,6 +980,10 @@ rand_poly( int deg, NN_DIGIT zero_val[NUMWORDS] )
 		(q->coef + (i * NUMWORDS))[2] = 0xfb6b785b;
 		(q->coef + (i * NUMWORDS))[1] = 0xba75d058;
 		(q->coef + (i * NUMWORDS))[0] = 0x7e5718e9;
+#endif
+#ifdef CPABE224K2
+		// TODO: missing
+#endif
 #endif
 #else
  		NNModRandom(q->coef + (i * NUMWORDS), param.m, NUMWORDS);			// Array addressing correct?
@@ -983,9 +1000,6 @@ eval_poly( NN_DIGIT r[NUMWORDS], cpabe_polynomial_t* q, NN_DIGIT x[NUMWORDS] )
 	NN_DIGIT tmp[2*NUMWORDS]; // for mult op
 	NN_DIGIT s[NUMWORDS]; // Zr
 	NN_DIGIT t[NUMWORDS]; // Zr
-#ifdef CPABE_DEBUG		
-	int i;
-#endif
 		
 	NNAssignZero(r, NUMWORDS);
 	NNAssignOne(t, NUMWORDS);
@@ -1162,6 +1176,7 @@ void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN2_NUMBER * m, char *policy) 
 	s[0] = 0x22b6;
 #endif
 #ifdef THIRTYTWO_BIT_PROCESSOR
+#ifdef CPABE192K2
 	m->r[6] = 0x00000000;
 	m->r[5] = 0x1bf466fb;
 	m->r[4] = 0xaf33f400;
@@ -1184,6 +1199,10 @@ void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN2_NUMBER * m, char *policy) 
 	s[2] = 0xdceb7cf4;
 	s[1] = 0x03f3618f;
 	s[0] = 0x41da22b6;
+#endif
+#ifdef CPABE224K2
+	// TODO: missing
+#endif
 #endif
 #else
  	NN2ModRandom(m, param.p, NUMWORDS);
@@ -1611,9 +1630,6 @@ dec_internal_flatten( NN2_NUMBER * r, NN_DIGIT * exp,
 	NN_DIGIT t[NUMWORDS];		// Zr
 	NN_DIGIT expnew[NUMWORDS];	// Zr
 	NN_DIGIT tmp[2*NUMWORDS];
-#ifdef CPABE_DEBUG		
-	int a;
-#endif
 	
 	for( i = 0; i < list_length(p->satl); i++ )
 	{
@@ -1699,9 +1715,6 @@ dec_m 1b f4 66 fb af 33 f4 0 3a 92 20 2d bf 61 56 bb 87 92 de 92 e9 1a b3 a7 7 3
  */
 int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN2_NUMBER * m) {
 	NN2_NUMBER t;	// GT
-#ifdef CPABE_DEBUG		
-	int i;
-#endif
 	
 	check_sat(list_head(cph.p), &prv);							// check properties saturation
 	if( !((struct cpabe_policy_s *) list_head(cph.p))->satisfiable )

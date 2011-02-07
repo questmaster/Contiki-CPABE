@@ -1,6 +1,4 @@
 /** 
-
-/**
  * Module for curve cpabe
  *
  * Author: Daniel Jacobi
@@ -10,6 +8,8 @@
 #include "ECC.h"
 #include "NN.h"
 #include <string.h>
+
+#ifdef CPABE512K2
 
 void get_TP_param(TPParams *tppara)
   {
@@ -651,3 +651,5 @@ void get_TP_param(TPParams *tppara)
 	  
  #endif
   }
+
+#endif

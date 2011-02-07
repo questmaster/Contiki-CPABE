@@ -113,48 +113,51 @@ void NN2ModInv(NN2_NUMBER * a,NN2_NUMBER * b,NN_DIGIT * c,NN_UINT digits) {
 // Returns the e{k-1}(b) Lucas function
 static void NN2_Lucas (NN2_NUMBER * a,NN2_NUMBER * b, NN_DIGIT * k,NN_DIGIT * d,NN_UINT digits) {
 	int i;
-	NN_DIGIT two[NUMWORDS], k2[NUMWORDS];
+	NN_DIGIT two[NUMWORDS];//, k2[NUMWORDS];
 	NN_DIGIT tmp[NUMWORDS], alpha[NUMWORDS];
 	
 	memset(two, 0, NUMWORDS*NN_DIGIT_LEN);
-	two[0]= 0x1;
-	NNSub(k2,k,two,digits);
+//	two[0]= 0x1;
+//	NNSub(k2,k,two,digits);
 	two[0]= 0x2;
 	
-	memset(alpha, 0, NUMWORDS*NN_DIGIT_LEN);
-	alpha[0]=0x2;
-	NNAssign(a->r,b->r,digits); //beta=b
+	memset(a->r, 0, NUMWORDS*NN_DIGIT_LEN);
+	a->r[0]=0x2;
+	NNAssign(alpha,b->r,digits); //beta=b
 	
-	i = (NNBits(k2,NUMWORDS))-1;
-	
+	i = (NNBits(k/*2*/,NUMWORDS))-1;
+
 	while (i>-1) {
-		if (NNTestBit(k2,i)) {
-			NNModMult(alpha,alpha,a->r,d,digits); 
-			NNModSub(alpha,alpha,b->r,d,digits); //a=a*beta-P
-			NNModSqr(a->r, a->r, d, digits);
-			NNModSub(a->r,a->r,two,d,digits); //beta=beta^2-2
+		if (NNTestBit(k/*2*/,i)) {
+			NNModMult(a->r,a->r,alpha,d,digits);
+			NNModSub(a->r,a->r,b->r,d,digits); //a=a*beta-P
+			NNModSqr(alpha, alpha, d, digits);
+			NNModSub(alpha,alpha,two,d,digits); //beta=beta^2-2
 		}
 		
 		else {
-			NNModMult(a->r,alpha,a->r,d,digits);
-			NNModSub(a->r,a->r,b->r,d,digits); //beta=a*beta-P
-			NNModSqr(alpha, alpha, d, digits);
-			NNModSub(alpha,alpha,two,d,digits); //a=a^2-2
+			NNModMult(alpha,a->r,alpha,d,digits);
+			NNModSub(alpha,alpha,b->r,d,digits); //beta=a*beta-P
+			NNModSqr(a->r, a->r, d, digits);
+			NNModSub(a->r,a->r,two,d,digits); //a=a^2-2
 		}
 		i--;
 	}
+
 	
 	NNModMult(tmp, a->r, b->r,d,digits);
-	NNModMult(alpha, alpha, two,d,digits);
-	NNModSub(alpha, alpha, tmp,d,digits);
+	NNModMult(a->i, alpha, two,d,digits);
+	NNModSub(a->i, a->i, tmp,d,digits);
 	
 	NNModSqr(tmp, b->r,d,digits);
 	NNModSub(tmp, tmp, two,d,digits);
 	NNModSub(tmp, tmp, two,d,digits);
-	NNModDivOpt(alpha, alpha, tmp,d,digits);
+#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_LINUX32)
+	NNModDiv(a->i, a->i, tmp,d,digits);
+#else
+	NNModDivOpt(a->i, a->i, tmp,d,digits);
+#endif
 	
-	NNAssign(a->i, alpha, digits); // was: NUMWORDS
-
 }
 
 // Return the lucas exponentatiation for the Tate Pairing lucas(2*b,k)/2
@@ -172,8 +175,8 @@ bool NN2LucExp(NN2_NUMBER * a,NN2_NUMBER * b, NN_DIGIT * k,NN_DIGIT * inv2,NN_DI
 		NNSub(temp1.r, temp1.r, d, digits);
 	
 	NN2_Lucas(&temp2,&temp1,k,d,digits); // lucas(2b,k)
-	NNModMult(a->r,temp2.r,inv2,d,digits); // lucas(2b,k)*2^(-1)
-	NNModMult(a->i, temp2.i, b->i,d,digits);
+	NNModMult(a->r, temp2.r, inv2,d,digits); // lucas(2b,k).r*2^(-1)
+	NNModMult(a->i, temp2.i, b->i,d,digits); // lucas(2b,k).i*b.i
 	
 	return TRUE;
 }

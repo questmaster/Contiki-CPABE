@@ -652,7 +652,32 @@ void TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef) {
     NN_DIGIT t1[NUMWORDS], t2[NUMWORDS], t3[NUMWORDS], two[NUMWORDS];
 	NN2_NUMBER in;
     
-    NNModSqr(t1, ef->r, tpparam.p, NUMWORDS); // x^2
+
+	// TODO: DEBUG!
+		int i;
+
+		printf("tate-ef.r ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+	#ifndef THIRTYTWO_BIT_PROCESSOR
+			printf("%x ",ef->r[i]);
+	#else
+			printf("%x %x ", (uint16_t)(ef->r[i] >> 16), (uint16_t) ef->r[i]);
+	#endif
+		}
+		printf("\n");
+		printf("tate-ef.i ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+	#ifndef THIRTYTWO_BIT_PROCESSOR
+			printf("%x ",ef->i[i]);
+	#else
+			printf("%x %x ", (uint16_t)(ef->i[i] >> 16), (uint16_t) ef->i[i]);
+	#endif
+		}
+		printf("\n");
+
+	// TODO: DEBUG
+
+	NNModSqr(t1, ef->r, tpparam.p, NUMWORDS); // x^2
     NNModSqr(t2, ef->i, tpparam.p, NUMWORDS); // y^2
     NNModAdd(t3, t1, t2, tpparam.p, NUMWORDS); // x^2+y^2
     NNModSub(t1, t1, t2, tpparam.p, NUMWORDS); // x^2-y^2
@@ -670,10 +695,51 @@ void TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef) {
 #else
 	NNModDivOpt(t2, t2, t3, tpparam.p, NUMWORDS);
 #endif
+	NNModNeg(t2, t2, tpparam.p, NUMWORDS);
 	
 	NNAssign(in.r, t1, NUMWORDS);
 	NNAssign(in.i, t2, NUMWORDS);
 	
+// TODO: DEBUG!
+
+	printf("tate-in.r ");
+	for (i = NUMWORDS-1; i >= 0; i--) {
+#ifndef THIRTYTWO_BIT_PROCESSOR
+		printf("%x ",in.r[i]);
+#else
+		printf("%x %x ", (uint16_t)(in.r[i] >> 16), (uint16_t) in.r[i]);
+#endif
+	}
+	printf("\n");
+	printf("tate-in.i ");
+	for (i = NUMWORDS-1; i >= 0; i--) {
+#ifndef THIRTYTWO_BIT_PROCESSOR
+		printf("%x ",in.i[i]);
+#else
+		printf("%x %x ", (uint16_t)(in.i[i] >> 16), (uint16_t) in.i[i]);
+#endif
+	}
+	printf("\n");
+/*
+	in.r[7] = 0x00000000;
+	in.r[6] = 0x71aaacf6;
+	in.r[5] = 0x715726c5;
+	in.r[4] = 0x3ef4dc02;
+	in.r[3] = 0x62c7b725;
+	in.r[2] = 0x3e4014c7;
+	in.r[1] = 0x8cd3bc8a;
+	in.r[0] = 0x97effc7b;
+	in.i[7] = 0x00000000;
+	in.i[6] = 0x18595983;
+	in.i[5] = 0x3a0892e2;
+	in.i[4] = 0x9e95b3df;
+	in.i[3] = 0x62f1517d;
+	in.i[2] = 0xa4519319;
+	in.i[1] = 0x9a872b8b;
+	in.i[0] = 0xd3a5984b;
+*/
+	// TODO: DEBUG END
+
     NN2LucExp(r,&in,tpparam.c,inv2,tpparam.p,NUMWORDS); // Lucas exponentiation 
   }
 

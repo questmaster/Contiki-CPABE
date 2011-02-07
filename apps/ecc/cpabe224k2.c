@@ -1,5 +1,3 @@
-/** 
-
 /**
  * Module for curve cpabe
  *
@@ -10,6 +8,8 @@
 #include "ECC.h"
 #include "NN.h"
 #include <string.h>
+
+#ifdef CPABE224K2
 
 void get_TP_param(TPParams *tppara)
   {
@@ -336,3 +336,6 @@ void get_TP_param(TPParams *tppara)
 	  
  #endif
   }
+
+#endif
+

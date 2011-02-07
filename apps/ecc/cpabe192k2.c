@@ -57,6 +57,7 @@ sign0 1
 Done.
  */
 
+#ifdef CPABE192K2
 
 void get_TP_param(TPParams *tppara)
   {
@@ -185,3 +186,4 @@ void get_TP_param(TPParams *tppara)
 #endif
   }
 
+#endif
