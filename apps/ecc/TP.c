@@ -674,7 +674,24 @@ void TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef) {
 	#endif
 		}
 		printf("\n");
-
+/*
+		ef->r[7] = 0x00000000;
+		ef->r[6] = 0x24bc0fbc;
+		ef->r[5] = 0x7cac3301;
+		ef->r[4] = 0x8bcda4ee;
+		ef->r[3] = 0xf87ba4a2;
+		ef->r[2] = 0x65ca3930;
+		ef->r[1] = 0x0b250f97;
+		ef->r[0] = 0xae223ba5;
+		ef->i[7] = 0x00000000;
+		ef->i[6] = 0x05502f1a;
+		ef->i[5] = 0xcdab354a;
+		ef->i[4] = 0xc8d694dd;
+		ef->i[3] = 0x19b05271;
+		ef->i[2] = 0xbcdceb98;
+		ef->i[1] = 0x8f5c4d32;
+		ef->i[0] = 0x9a1d3fdc;
+*/
 	// TODO: DEBUG
 
 	NNModSqr(t1, ef->r, tpparam.p, NUMWORDS); // x^2
@@ -695,7 +712,7 @@ void TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef) {
 #else
 	NNModDivOpt(t2, t2, t3, tpparam.p, NUMWORDS);
 #endif
-	NNModNeg(t2, t2, tpparam.p, NUMWORDS);
+//	NNModNeg(t2, t2, tpparam.p, NUMWORDS);
 	
 	NNAssign(in.r, t1, NUMWORDS);
 	NNAssign(in.i, t2, NUMWORDS);
