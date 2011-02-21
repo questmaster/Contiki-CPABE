@@ -653,6 +653,7 @@ void TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef) {
 	NN2_NUMBER in;
     
 
+#ifdef CPABE_DEBUG
 	// TODO: DEBUG!
 		int i;
 
@@ -693,7 +694,8 @@ void TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef) {
 		ef->i[0] = 0x9a1d3fdc;
 */
 	// TODO: DEBUG
-
+#endif
+	
 	NNModSqr(t1, ef->r, tpparam.p, NUMWORDS); // x^2
     NNModSqr(t2, ef->i, tpparam.p, NUMWORDS); // y^2
     NNModAdd(t3, t1, t2, tpparam.p, NUMWORDS); // x^2+y^2
@@ -717,7 +719,8 @@ void TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef) {
 	NNAssign(in.r, t1, NUMWORDS);
 	NNAssign(in.i, t2, NUMWORDS);
 	
-// TODO: DEBUG!
+#ifdef CPABE_DEBUG
+	// TODO: DEBUG!
 
 	printf("tate-in.r ");
 	for (i = NUMWORDS-1; i >= 0; i--) {
@@ -756,7 +759,8 @@ void TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef) {
 	in.i[0] = 0xd3a5984b;
 */
 	// TODO: DEBUG END
-
+#endif
+	
     NN2LucExp(r,&in,tpparam.c,inv2,tpparam.p,NUMWORDS); // Lucas exponentiation 
   }
 
