@@ -707,14 +707,14 @@ void TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef) {
 #endif
 
 	NNAssignDigit(two, 2, NUMWORDS);
-	NNModMult(t2, ef->r, ef->i, tpparam.p, NUMWORDS);
+	NNModMult(t2, ef->r, ef->i, tpparam.p, NUMWORDS); // x*y
 	NNModMult(t2, t2, two, tpparam.p, NUMWORDS); // 2*x*y
 #if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_LINUX32)
-	NNModDiv(t2, t2, t3, tpparam.p, NUMWORDS); 
+	NNModDiv(t2, t2, t3, tpparam.p, NUMWORDS); // (2*x*y)/(x^2+y^2)
 #else
 	NNModDivOpt(t2, t2, t3, tpparam.p, NUMWORDS);
 #endif
-//	NNModNeg(t2, t2, tpparam.p, NUMWORDS);
+	NNModNeg(t2, t2, tpparam.p, NUMWORDS); // -((2*x*y)/(x^2+y^2))
 	
 	NNAssign(in.r, t1, NUMWORDS);
 	NNAssign(in.i, t2, NUMWORDS);
