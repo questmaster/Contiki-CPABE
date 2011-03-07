@@ -30,7 +30,7 @@
 #include <ECC.h>
 #include <string.h>
 #include <watchdog.h>
-#include <rand.h>
+//#include <rand.h>
 #ifdef TPSSC // used by ECC_compY
 #include "TPCurveParam.h"
 #endif

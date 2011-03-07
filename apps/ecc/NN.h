@@ -119,7 +119,7 @@ typedef int8_t bool;
 #endif
 
 //telosb
-#ifdef CONTIKI_TARGET_SKY
+#if defined (CONTIKI_TARGET_SKY) || defined (CONTIKI_TARGET_Z1)
 #define SIXTEEN_BIT_PROCESSOR
 #ifndef NO_ASM 
 #define INLINE_ASM

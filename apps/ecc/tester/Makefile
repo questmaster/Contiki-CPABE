@@ -16,9 +16,9 @@ APPS = ecc
 #Cparam = SS512K2
 #Cparam = SS512K2S
 #Cparam = CPABE168K2
-##Cparam = CPABE192K2
+Cparam = CPABE192K2
 #Cparam = CPABE224K2
-Cparam = CPABE256K2
+#Cparam = CPABE256K2
 #Cparam = CPABE384K2
 #Cparam = CPABE512K2
 
@@ -57,7 +57,7 @@ CFLAGS+=-DSHAMIR_TRICK			# shamir trick, windows size is defined in ECDSA.c
 #CFLAGS+=-DFIXED_P				# precompute intermediate nodes, slopes for a fixed P
 #CFLAGS+=-DPROJECTIVE_M			# ???
 
-## activate 4/8MHz configuration (compatible to TinyOS freq's)
+## activate 4/8MHz configuration for tMote Sky/Telosb (compatible to TinyOS freq's)
 #CFLAGS += -DMSP430_4MHZ_ENABLE
 #CFLAGS += -DMSP430_8MHZ_ENABLE
 

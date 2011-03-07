@@ -124,8 +124,8 @@ static unsigned int  NN_DigitBits (NN_DIGIT a);
 #define NN_DigitMult(b, c) (NN_DOUBLE_DIGIT)(b) * (c)
 #endif
 
-#ifdef CONTIKI_TARGET_SKY
-     
+#if defined (CONTIKI_TARGET_SKY) || defined (CONTIKI_TARGET_Z1)
+
 NN_DOUBLE_DIGIT NN_DigitMult(NN_DIGIT b, NN_DIGIT c)
   {
     NN_DIGIT result_h;
@@ -300,7 +300,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     return carry;
     
 #endif
-#ifdef CONTIKI_TARGET_SKY
+#if defined (CONTIKI_TARGET_SKY) || defined (CONTIKI_TARGET_Z1)
     NN_DIGIT carry;
     NN_UINT i;
 
@@ -394,7 +394,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     return borrow;
 
 #endif
-#ifdef CONTIKI_TARGET_SKY
+#if defined (CONTIKI_TARGET_SKY) || defined (CONTIKI_TARGET_Z1)
     NN_DIGIT borrow;
     NN_UINT i;
 
@@ -457,7 +457,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
      Lengths: a[2*digits], b[digits], c[digits].
      Assumes digits < MAX_NN_DIGITS.
    */
-  void NN_Mult (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT digits) 
+__attribute__ ((noinline)) void NN_Mult (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT digits)
   {
 	  watchdog_periodic();
 	  //#ifdef INLINE_ASM
@@ -1496,7 +1496,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
 #endif
 #endif //CONTIKI_TARGET_MICAZ
 
-#ifdef CONTIKI_TARGET_SKY
+#if defined (CONTIKI_TARGET_SKY) || defined (CONTIKI_TARGET_Z1)
 
     //r9~r11 accumulator
     //r12 i
@@ -1761,7 +1761,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
   }
 
 
-  void NN_Sqr(NN_DIGIT *a, NN_DIGIT *b, NN_UINT digits)
+__attribute__ ((noinline)) void NN_Sqr(NN_DIGIT *a, NN_DIGIT *b, NN_UINT digits)
   {
 	  watchdog_periodic();
     //#ifdef INLINE_ASM
@@ -2496,7 +2496,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
 
 #endif  //end of CONTIKI_TARGET_MICAZ
 
-#ifdef CONTIKI_TARGET_SKY  //should implement in assembly
+#if defined (CONTIKI_TARGET_SKY) || defined (CONTIKI_TARGET_Z1) //should implement in assembly
     //width=1
     //accumulator, r9~r11
     //i, r12
@@ -3205,7 +3205,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     }
     return (carry);
 #endif
-#ifdef CONTIKI_TARGET_SKY
+#if defined (CONTIKI_TARGET_SKY) || defined (CONTIKI_TARGET_Z1)
     NN_DIGIT carry;
     unsigned int i;
     if (c == 0)
@@ -3304,7 +3304,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     }
     return (borrow);
 #endif
-#ifdef CONTIKI_TARGET_SKY
+#if defined (CONTIKI_TARGET_SKY) || defined (CONTIKI_TARGET_Z1)
     NN_DIGIT borrow;
     unsigned int i;
 
@@ -3935,6 +3935,7 @@ void NNEncode(unsigned char * a, NN_UINT digits, NN_DIGIT * b, NN_UINT len)
   //Returns 1 iff a = 0.
   int NNZero(NN_DIGIT * a, NN_UINT digits)
   {
+
     return NN_Zero (a, digits);
   }
 
