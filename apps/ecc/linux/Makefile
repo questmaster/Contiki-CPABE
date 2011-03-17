@@ -11,16 +11,13 @@ CFLAGS += -DTARGET_LINUX32
 #Cparam = SECP160R2
 #Cparam = SECP192K1
 #Cparam = SECP192R1
+
+## possible for TP/CPABE
 #Cparam = SS192K2
 #Cparam = SS192K2S
 #Cparam = SS512K2
 #Cparam = SS512K2S
-#Cparam = CPABE168K2
-#Cparam = CPABE192K2
-Cparam = CPABE224K2
-#Cparam = CPABE256K2
-#Cparam = CPABE384K2
-#Cparam = CPABE512K2
+Cparam = CPABE192K2
 
 # use test vector for secp160r1 to show the correctness of TinyECC (NOT TP or CPABE!)
 #Cparam = TEST_VECTOR
@@ -40,12 +37,18 @@ CFLAGS+=-DCPABE_KEYGEN
 CFLAGS+=-DCPABE_ENCRYPTION
 CFLAGS+=-DCPABE_DECRYPTION
 
+# CPABE policy/property sets
+CFLAGS+=-DCPABE_SMALL_SET
+#CFLAGS+=-DCPABE_MEDIUM_SET
+#CFLAGS+=-DCPABE_LARGE_SET
+
 
 ## choose different optimization techniques
 ## NN
 CFLAGS+=-DBARRETT_REDUCTION		# barrett reduction
-#CFLAGS+=-DHYBRID_MULT			# hybrid multipliation
-#CFLAGS+=-DHYBRID_SQR			# hybrid square
+CFLAGS+=-DHYBRID_MULT			# hybrid multipliation
+CFLAGS+=-DHYBRID_SQR			# hybrid square
+CFLAGS+=-DNO_ASM
 #CFLAGS+=-DCURVE_OPT			# optimization for secg curve 
 								# (Not possible for TP -> non-functioning omega optimization)
 ## ECC
@@ -65,7 +68,7 @@ include ../Makefile.ecc
 ## Start build process ## Don't change anything except you know what you do! ###
 ################################################################################
 
-##CC=gcc
+CC=arm-linux-gcc
 TARGET=testCPABE
 OTHERDIR=../
 
