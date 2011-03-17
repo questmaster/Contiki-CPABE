@@ -88,6 +88,7 @@ int main(void)
 		
 #ifdef CPABE_SETUP
 	printf("CPABE_setup(%d)\n", round_index);
+	mem_count = 0; memb_comp_count = 0; memb_policy_count = 0; memb_poly_count = 0;
 	time_s = clock();
 	
 	cpabe_setup(&pub, &msk);
@@ -95,6 +96,7 @@ int main(void)
 	time_f = clock();
 	dt0 = time_f - time_s;
 	printf("CPABE_setup(%d): %lu ms\n", round_index, (uint32_t)(dt0*1000/CLOCK_SECOND));
+	printf("CPABE_setup(%d): dynmem %lu memb_comp %lu memb_policy %lu memb_poly %lu\n", round_index, mem_count, memb_comp_count, memb_policy_count, memb_poly_count);
 
 	/* CP-ABE Keys */
 #ifdef CPABE_DEBUG
@@ -109,12 +111,15 @@ int main(void)
 	
 #ifdef CPABE_KEYGEN
 		printf("CPABE_keygen(%d)\n", round_index);
+		mem_count = 0; memb_comp_count = 0; memb_policy_count = 0; memb_poly_count = 0;
 		time_s = clock();
+
 		cpabe_keygen(&prv, pub, msk, attributes);
 
 		time_f = clock();
 		dt0 = time_f - time_s;
 		printf("CPABE_keygen(%d): %lu ms\n", round_index, (uint32_t)(dt0*1000/CLOCK_SECOND));
+		printf("CPABE_keygen(%d): dynmem %lu memb_comp %lu memb_policy %lu memb_poly %lu\n", round_index, mem_count, memb_comp_count, memb_policy_count, memb_poly_count);
 
 #ifdef CPABE_DEBUG
 		val_print("CPABE_prv_d_x: ", prv.d.x);
@@ -124,6 +129,7 @@ int main(void)
 #ifdef CPABE_ENCRYPTION		
 		printf("CPABE_enc(%d) \n", round_index);
 		printf("enc policy: %s\n", policy);
+		mem_count = 0; memb_comp_count = 0; memb_policy_count = 0; memb_poly_count = 0;
 		time_s = clock();
 		
 		cpabe_enc(&cph, pub, &m, policy); 
@@ -131,6 +137,7 @@ int main(void)
 		time_f = clock();
 		dt0 = time_f - time_s;
 		printf("CPABE_enc(%d): %lu ms\n", round_index, (uint32_t)(dt0*1000/CLOCK_SECOND));
+		printf("CPABE_enc(%d): dynmem %lu memb_comp %lu memb_policy %lu memb_poly %lu\n", round_index, mem_count, memb_comp_count, memb_policy_count, memb_poly_count);
 		
 		val_print("m.r  (plain): ", m.r);
 		val_print("m.i  (plain): ", m.i);
@@ -143,6 +150,7 @@ int main(void)
 #endif
 #ifdef CPABE_DECRYPTION
 		printf("CPABE_dec(%d) \n", round_index);
+		mem_count = 0; memb_comp_count = 0; memb_policy_count = 0; memb_poly_count = 0;
 		time_s = clock();
 		
 		cpabe_dec(pub, prv, cph, &m2); 
@@ -150,6 +158,7 @@ int main(void)
 		time_f = clock();
 		dt0 = time_f - time_s;
 		printf("CPABE_dec(%d): %lu ms\n", round_index, (uint32_t)(dt0*1000/CLOCK_SECOND));
+		printf("CPABE_dec(%d): dynmem %lu memb_comp %lu memb_policy %lu memb_poly %lu\n", round_index, mem_count, memb_comp_count, memb_policy_count, memb_poly_count);
 
 		val_print("m2.r (plain): ", m2.r);
 		val_print("m2.i (plain): ", m2.i);
