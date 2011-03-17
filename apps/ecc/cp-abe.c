@@ -19,6 +19,11 @@
 static TPParams param;
 static cpabe_policy_t* cur_comp_pol;
 
+unsigned long mem_count = 0;
+unsigned long memb_comp_count = 0;
+unsigned long memb_policy_count = 0;
+unsigned long memb_poly_count = 0;
+
 
 MEMB(prv_comps_m, cpabe_prv_comp_t, 5);						/**< This limits the number of attributes in the private key */
 MEMB(enc_policy_m, cpabe_policy_t, 5);						/**< This limits the number of attributes in encrypted data */
@@ -83,7 +88,7 @@ static char **strsplit(char *s) {
 		tmp1 = strchr(tmp, ' ');						/**< get pos of next ' ' char */
 		if (tmp1 != NULL) {
 			*tmp1 = '\0';								/**< replace ' ' by '\0', tmp points to rest of string */
-			tmp = ++tmp1;
+			tmp = tmp1 + 1;
 		}
 		
 		tokens[i] = tmp;
@@ -448,9 +453,9 @@ void point_from_string( Point* h, char* s )
 	SHA1_Reset(&context);
 	SHA1_Update(&context, (uint8_t *) s, strlen(s));
 	SHA1_Digest(&context, (uint8_t *)r);
-		
+
 #ifdef CPABE_DEBUG	
-	printf("(not used in debug!) attr: %s -> SHA-1 hash: ", s);
+	printf("(not used in debug!) attr: \"%s\" -> SHA-1 hash: ", s);
 	debug_print("", r);
 	
 #ifdef SIXTEEN_BIT_PROCESSOR
@@ -725,9 +730,9 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 	// for all attributes generate params
 	while( *attributes )
 	{
-		c = (cpabe_prv_comp_t *) memb_alloc(&prv_comps_m);
+		c = (cpabe_prv_comp_t *) memb_alloc(&prv_comps_m); /**/ memb_comp_count++; /**/
 
-		c->attr = (char *) malloc(strlen(*(attributes)) + 1);
+		c->attr = (char *) malloc(strlen(*(attributes)) + 1); /**/ mem_count += strlen(*(attributes)) + 1; /**/
 		memcpy(c->attr, *(attributes++), strlen(*(attributes))+1);
 		
 		point_from_string(&h_rp, c->attr);
@@ -850,10 +855,10 @@ base_node( int k, char* s )
 {
 	cpabe_policy_t* p;
 	
-	p = (cpabe_policy_t*) memb_alloc(&enc_policy_m);
+	p = (cpabe_policy_t*) memb_alloc(&enc_policy_m); /**/ memb_policy_count++; /**/
 	p->k = k;
 	if (s != NULL) {
-		p->attr = (char *) malloc (strlen(s)+1);
+		p->attr = (char *) malloc (strlen(s)+1); /**/ mem_count += strlen(s)+1; /**/
 		memcpy(p->attr, s, strlen(s)+1);							// replaced strdup()
 	} else {
 		p->attr = 0;
@@ -898,22 +903,30 @@ parse_policy_postfix( cpabe_cph_t *cph, char* s )
 			
 			if( k < 1 )
 			{
-//				printf("error parsing \"%s\": trivially satisfied operator \"%s\"\n", s, tok);
+#ifdef CPABE_DEBUG
+				printf("error parsing \"%s\": trivially satisfied operator \"%s\"\n", s, tok);
+#endif
 				return 1;
 			}
 			else if( k > n )
 			{
-//				printf("error parsing \"%s\": unsatisfiable operator \"%s\"\n", s, tok);
+#ifdef CPABE_DEBUG
+				printf("error parsing \"%s\": unsatisfiable operator \"%s\"\n", s, tok);
+#endif
 				return 1;
 			}
 			else if( n == 1 )
 			{
-//				printf("error parsing \"%s\": identity operator \"%s\"\n", s, tok);
+#ifdef CPABE_DEBUG
+				printf("error parsing \"%s\": identity operator \"%s\"\n", s, tok);
+#endif
 				return 1;
 			}
 			else if( n > list_length(cph->p) )
 			{
-//				printf("error parsing \"%s\": stack underflow at \"%s\" (n=%d > list_length=%d)\n", s, tok, n, list_length(cph->p));
+#ifdef CPABE_DEBUG
+				printf("error parsing \"%s\": stack underflow at \"%s\" (n=%d > list_length=%d)\n", s, tok, n, list_length(cph->p));
+#endif
 				return 1;
 			}
 			
@@ -929,12 +942,16 @@ parse_policy_postfix( cpabe_cph_t *cph, char* s )
 	
 	if( list_length(cph->p) > 1 )
 	{
-//		printf("error parsing \"%s\": extra tokens left on stack\n", s);
+#ifdef CPABE_DEBUG
+		printf("error parsing \"%s\": extra tokens left on stack\n", s);
+#endif
 		return 1;
 	}
 	else if( list_length(cph->p) < 1 )
 	{
-//		printf("error parsing \"%s\": empty policy\n", s);
+#ifdef CPABE_DEBUG
+		printf("error parsing \"%s\": empty policy\n", s);
+#endif
 		return 1;
 	}
 		
@@ -948,9 +965,9 @@ rand_poly( int deg, NN_DIGIT zero_val[NUMWORDS] )
 	int i;
 	cpabe_polynomial_t* q;
 	
-	q = (cpabe_polynomial_t*) memb_alloc(&enc_polynomial_m);
+	q = (cpabe_polynomial_t*) memb_alloc(&enc_polynomial_m); /**/ memb_poly_count++; /**/
 	q->deg = deg;
-	q->coef = (NN_DIGIT *) malloc(sizeof(NN_DIGIT) * NUMWORDS * (deg + 1));	// gets freed at end of fill_policy
+	q->coef = (NN_DIGIT *) malloc(sizeof(NN_DIGIT) * NUMWORDS * (deg + 1));	/**/ mem_count += sizeof(NN_DIGIT) * NUMWORDS * (deg+1); /**/  // gets freed at end of fill_policy
 	
 	NNAssign(q->coef, zero_val, NUMWORDS);
 	
@@ -1006,6 +1023,7 @@ eval_poly( NN_DIGIT r[NUMWORDS], cpabe_polynomial_t* q, NN_DIGIT x[NUMWORDS] )
 	
 	for( j = 0; j < q->deg + 1; j++ )
 	{
+		watchdog_periodic();
 		// r += q->coef[i] * t 
 		NNMult(tmp, q->coef + (j * NUMWORDS), t, NUMWORDS);		// more efficent than NNModMult, because of m!	
 //		NNMod(tmp, tmp, 2*NUMWORDS, param.m, NNDigits(param.m, NUMWORDS));
@@ -1039,7 +1057,7 @@ fill_policy(cpabe_policy_t *p, cpabe_pub_t pub, NN_DIGIT e[NUMWORDS]) {
 	Point h;			  // G2
 		
 #ifdef CPABE_DEBUG		
-		printf("p_attrib: %s\n", p->attr);
+	printf("p_attrib: %s\n", p->attr);
 #endif
 	p->q = rand_poly(p->k - 1, e);
 	
@@ -1050,7 +1068,6 @@ fill_policy(cpabe_policy_t *p, cpabe_pub_t pub, NN_DIGIT e[NUMWORDS]) {
 		ECC_mul(&(p->cp), &h,     &(p->q->coef[0]));
 
 #ifdef CPABE_DEBUG		
-		
 		debug_print("CPABE_h_x: ", h.x);
 		debug_print("CPABE_h_y: ", h.y);
 		debug_print("CPABE_p_c_x: ", p->c.x);
@@ -1066,6 +1083,7 @@ fill_policy(cpabe_policy_t *p, cpabe_pub_t pub, NN_DIGIT e[NUMWORDS]) {
 				eval_poly(t, p->q, r);
 				fill_policy(cp, pub, t);				/**< ...but supply element i */
 				
+				watchdog_periodic();
 				i++;
 			}
 	}
@@ -1317,7 +1335,7 @@ pick_sat_min_leaves( cpabe_policy_t* p, cpabe_prv_t* prv )
 			if( ((cpabe_policy_t*) list_index(p->children, i))->satisfiable )
 				pick_sat_min_leaves(list_index(p->children, i), prv);
 		
-		c = malloc(sizeof(int) * list_length(p->children));	
+		c = malloc(sizeof(int) * list_length(p->children));	/**/ mem_count += sizeof(int) * list_length(p->children); /**/
 		for( i = 0; i < list_length(p->children); i++ )
 			c[i] = i;
 		
@@ -1336,7 +1354,7 @@ pick_sat_min_leaves( cpabe_policy_t* p, cpabe_prv_t* prv )
 				p->min_leaves += ((cpabe_policy_t*) list_index(p->children, c[i]))->min_leaves;
 				k = c[i] + 1;
 //				g_array_append_val(p->satl, k);
-				alloc_k = (satl_int_t *) malloc(sizeof(satl_int_t));
+				alloc_k = (satl_int_t *) malloc(sizeof(satl_int_t)); /**/ mem_count += sizeof(satl_int_t); /**/
 				alloc_k->k = k;
 				list_add(p->satl, alloc_k);
 

@@ -14,6 +14,13 @@
 #include "ECC.h"
 #include <list.h>
 
+/* TESTING PURPOSE ONLY */
+extern unsigned long mem_count;
+extern unsigned long memb_comp_count;
+extern unsigned long memb_policy_count;
+extern unsigned long memb_poly_count;
+
+
 /*
  * A public key.
  */

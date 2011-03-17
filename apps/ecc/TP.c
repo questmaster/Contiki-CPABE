@@ -398,6 +398,7 @@ bool TP_Miller(NN2_NUMBER *ef, Point P){
     t = (NNBits(tpparam.m,NUMWORDS))-2; // t=bits-2
     
     while (t>-1) {
+		watchdog_periodic();
       //find the largest m consecutive 0 bits
       m = check_m_0(tpparam.m, t);
       dbl_line_projective_m(ef, &temp1, &V, Z, &V, Z, m);
@@ -513,6 +514,7 @@ bool TP_Miller(NN2_NUMBER *ef) {
     
     current = pPointSlope;
     while(current != NULL){
+		watchdog_periodic();
       NNModAdd(temp1.r, current->P.x, Qx, tpparam.p, NUMWORDS); //x+Qx
       NNModMult(temp1.r, current->slope, temp1.r, tpparam.p, NUMWORDS); //slope(x+Qx)
       NNModSub(temp1.r, current->P.y, temp1.r, tpparam.p, NUMWORDS); //y-slope(x+Qx)	
@@ -651,51 +653,7 @@ void TP_init(Point P, Point Q) {
 void TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef) {
     NN_DIGIT t1[NUMWORDS], t2[NUMWORDS], t3[NUMWORDS], two[NUMWORDS];
 	NN2_NUMBER in;
-    
-
-#ifdef CPABE_DEBUG
-	// TODO: DEBUG!
-		int i;
-
-		printf("tate-ef.r ");
-		for (i = NUMWORDS-1; i >= 0; i--) {
-	#ifndef THIRTYTWO_BIT_PROCESSOR
-			printf("%x ",ef->r[i]);
-	#else
-			printf("%x %x ", (uint16_t)(ef->r[i] >> 16), (uint16_t) ef->r[i]);
-	#endif
-		}
-		printf("\n");
-		printf("tate-ef.i ");
-		for (i = NUMWORDS-1; i >= 0; i--) {
-	#ifndef THIRTYTWO_BIT_PROCESSOR
-			printf("%x ",ef->i[i]);
-	#else
-			printf("%x %x ", (uint16_t)(ef->i[i] >> 16), (uint16_t) ef->i[i]);
-	#endif
-		}
-		printf("\n");
-/*
-		ef->r[7] = 0x00000000;
-		ef->r[6] = 0x24bc0fbc;
-		ef->r[5] = 0x7cac3301;
-		ef->r[4] = 0x8bcda4ee;
-		ef->r[3] = 0xf87ba4a2;
-		ef->r[2] = 0x65ca3930;
-		ef->r[1] = 0x0b250f97;
-		ef->r[0] = 0xae223ba5;
-		ef->i[7] = 0x00000000;
-		ef->i[6] = 0x05502f1a;
-		ef->i[5] = 0xcdab354a;
-		ef->i[4] = 0xc8d694dd;
-		ef->i[3] = 0x19b05271;
-		ef->i[2] = 0xbcdceb98;
-		ef->i[1] = 0x8f5c4d32;
-		ef->i[0] = 0x9a1d3fdc;
-*/
-	// TODO: DEBUG
-#endif
-	
+    	
 	NNModSqr(t1, ef->r, tpparam.p, NUMWORDS); // x^2
     NNModSqr(t2, ef->i, tpparam.p, NUMWORDS); // y^2
     NNModAdd(t3, t1, t2, tpparam.p, NUMWORDS); // x^2+y^2
@@ -705,6 +663,7 @@ void TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef) {
 #else
     NNModDivOpt(t1, t1, t3, tpparam.p, NUMWORDS);
 #endif
+	watchdog_periodic();
 
 	NNAssignDigit(two, 2, NUMWORDS);
 	NNModMult(t2, ef->r, ef->i, tpparam.p, NUMWORDS); // x*y
@@ -718,48 +677,8 @@ void TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef) {
 	
 	NNAssign(in.r, t1, NUMWORDS);
 	NNAssign(in.i, t2, NUMWORDS);
+	watchdog_periodic();
 	
-#ifdef CPABE_DEBUG
-	// TODO: DEBUG!
-
-	printf("tate-in.r ");
-	for (i = NUMWORDS-1; i >= 0; i--) {
-#ifndef THIRTYTWO_BIT_PROCESSOR
-		printf("%x ",in.r[i]);
-#else
-		printf("%x %x ", (uint16_t)(in.r[i] >> 16), (uint16_t) in.r[i]);
-#endif
-	}
-	printf("\n");
-	printf("tate-in.i ");
-	for (i = NUMWORDS-1; i >= 0; i--) {
-#ifndef THIRTYTWO_BIT_PROCESSOR
-		printf("%x ",in.i[i]);
-#else
-		printf("%x %x ", (uint16_t)(in.i[i] >> 16), (uint16_t) in.i[i]);
-#endif
-	}
-	printf("\n");
-/*
-	in.r[7] = 0x00000000;
-	in.r[6] = 0x71aaacf6;
-	in.r[5] = 0x715726c5;
-	in.r[4] = 0x3ef4dc02;
-	in.r[3] = 0x62c7b725;
-	in.r[2] = 0x3e4014c7;
-	in.r[1] = 0x8cd3bc8a;
-	in.r[0] = 0x97effc7b;
-	in.i[7] = 0x00000000;
-	in.i[6] = 0x18595983;
-	in.i[5] = 0x3a0892e2;
-	in.i[4] = 0x9e95b3df;
-	in.i[3] = 0x62f1517d;
-	in.i[2] = 0xa4519319;
-	in.i[1] = 0x9a872b8b;
-	in.i[0] = 0xd3a5984b;
-*/
-	// TODO: DEBUG END
-#endif
 	
     NN2LucExp(r,&in,tpparam.c,inv2,tpparam.p,NUMWORDS); // Lucas exponentiation 
   }
