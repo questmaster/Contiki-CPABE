@@ -34,7 +34,7 @@
 #define A_IS_ONE
 #include <ECC.h>
 #include <NN.h>
-
+#include <string.h>
 
 void get_TP_param(TPParams *tppara)
   {

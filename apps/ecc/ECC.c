@@ -1123,7 +1123,7 @@ void ECC_Random_Hash(Point * P, NN_DIGIT * h) {
 	NN_DIGIT tmp[NUMWORDS]; 
 	
 //	NNMod(x, h, NUMWORDS, param.r, NUMWORDS);
-	NNDiv(NULL, tmp, h, 2*NUMWORDS, param.r, NNDigits(param.r, NUMWORDS));
+	NNDiv(NULL, tmp, h, NUMWORDS, param.r, NNDigits(param.r, NUMWORDS));
 	NNAssignZero(x, NUMWORDS);
 	NNAssign(x, tmp, NNDigits(param.r, NUMWORDS));
 

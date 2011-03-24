@@ -27,7 +27,7 @@ unsigned long memb_poly_count = 0;
 
 MEMB(prv_comps_m, cpabe_prv_comp_t, 5);						/**< This limits the number of attributes in the private key */
 MEMB(enc_policy_m, cpabe_policy_t, 5);						/**< This limits the number of attributes in encrypted data */
-MEMB(enc_polynomial_m, cpabe_polynomial_t, 10);				/**< This limits the number of attributes in encrypted data */
+MEMB(enc_polynomial_m, cpabe_polynomial_t, 5);				/**< This limits the number of attributes in encrypted data */
 
 /* -- Utility functions ----------------------------------------------------- */
 
@@ -170,7 +170,7 @@ static uint8_t sscanf_repl(char* tok, /*char * format,*/ uint8_t* k, uint8_t* n)
 void debug_print(char* name, NN_DIGIT *val) {
 	int i;
 	
-	printf("%s", name);
+	printf("%s: ", name);
 	for (i = NUMWORDS-1; i >= 0; i--) {
 #ifndef THIRTYTWO_BIT_PROCESSOR
 		printf("%x ",val[i]);
@@ -366,59 +366,6 @@ void cpabe_setup(cpabe_pub_t *pub, cpabe_msk_t *msk) {
 	pub->gp.y[1] = 0x2cd41279;
 	pub->gp.y[0] = 0x23bc5df9;
 #endif //CPABE192K2
-#ifdef CPABE224K2
-	alpha[7] = 0x00000000;
-	alpha[6] = 0x00000000;
-	alpha[5] = 0x00000000;
-	alpha[4] = 0x3fe7a349;
-	alpha[3] = 0x85169856;
-	alpha[2] = 0x9993e83a;
-	alpha[1] = 0x65eb9c58;
-	alpha[0] = 0x9d31d576;
-	
-	msk->beta[7] = 0x00000000;
-	msk->beta[6] = 0x00000000;
-	msk->beta[5] = 0x00000000;
-	msk->beta[4] = 0x3db7b6a6;
-	msk->beta[3] = 0x8944b379;
-	msk->beta[2] = 0x42e824b6;
-	msk->beta[1] = 0xcf826d67;
-	msk->beta[0] = 0x55c413f3;
-	
-	pub->g.x[7] = 0x00000000;
-	pub->g.x[6] = 0x8ccd22a3;
-	pub->g.x[5] = 0x8e87767b;
-	pub->g.x[4] = 0x08005087;
-	pub->g.x[3] = 0x52b76843;
-	pub->g.x[2] = 0x6812015a;
-	pub->g.x[1] = 0x8b7ea825;
-	pub->g.x[0] = 0x906a0531;
-	pub->g.y[7] = 0x00000000;
-	pub->g.y[6] = 0x1792b60a;
-	pub->g.y[5] = 0x5477f0cf;
-	pub->g.y[4] = 0xb7ca45d7;
-	pub->g.y[3] = 0xbd745605;
-	pub->g.y[2] = 0x2cb163b5;
-	pub->g.y[1] = 0xdad9de14;
-	pub->g.y[0] = 0xd2dcf4d6;
-	
-	pub->gp.x[7] = 0x00000000;
-	pub->gp.x[6] = 0x63532bcd;
-	pub->gp.x[5] = 0x0a7a0aba;
-	pub->gp.x[4] = 0xbeefac9c;
-	pub->gp.x[3] = 0x04904ac4;
-	pub->gp.x[2] = 0xbda9b0b2;
-	pub->gp.x[1] = 0x870d3419;
-	pub->gp.x[0] = 0x4143be9d;
-	pub->gp.y[7] = 0x00000000;
-	pub->gp.y[6] = 0x71116e39;
-	pub->gp.y[5] = 0x81b73d43;
-	pub->gp.y[4] = 0xdb19a1e6;
-	pub->gp.y[3] = 0x736e7b3c;
-	pub->gp.y[2] = 0xd4ecc9df;
-	pub->gp.y[1] = 0x0a6225f0;
-	pub->gp.y[0] = 0xfaeeefaf;
-#endif // CPABE224K2
 #endif // THIRTYTWO_BIT_PROCESSOR
 #else
 	NNModRandom(alpha, param.m, NUMWORDS);			/**< Random alpha */
@@ -599,9 +546,6 @@ void point_from_string( Point* h, char* s )
 		}
 	}
 #endif
-#ifdef CPABE224K2
-	// TODO: missing
-#endif
 #endif
 #else	
 	// compute y for given (hash) x value  
@@ -704,9 +648,6 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 	r[1] = 0x076c7149;
 	r[0] = 0x9e5345ae;
 #endif
-#ifdef CPABE224K2
-	// TODO: missing
-#endif
 #endif
 #else
 	NNModRandom(r, param.m, NUMWORDS);
@@ -716,7 +657,7 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 	debug_print("g_r_x: ", g_r.x);
 	debug_print("g_r_y: ", g_r.y);
 #endif
-	
+
 	ECC_add(&(prv->d), &msk.g_alpha, &g_r);			/**< d = g_alpha + g_r; here is P * P -> Add them !!! */
 	NNModInv(beta_inv, msk.beta, param.m, NUMWORDS);	/**< beta_inv = 1/beta */
 
@@ -820,9 +761,6 @@ printf("c_attrib: %s\n", c->attr);
 			}
 		}
 #endif
-#ifdef CPABE224K2
-		// TODO: missing
-#endif
 #endif
 #else
  		NNModRandom(rp, param.m, NUMWORDS);
@@ -833,7 +771,7 @@ printf("c_attrib: %s\n", c->attr);
 			
 		ECC_add(&(c->d), &g_r, &h_rp);				/**< d = g_r + h_rp */
 		ECC_mul(&(c->dp), &pub.g, rp);				/**< dp = g * rp */
-
+		
 #ifdef CPABE_DEBUG		
 		debug_print("CPABE_c_d_x: ", c->d.x);
 		debug_print("CPABE_c_d_y: ", c->d.y);
@@ -997,9 +935,6 @@ rand_poly( int deg, NN_DIGIT zero_val[NUMWORDS] )
 		(q->coef + (i * NUMWORDS))[2] = 0xfb6b785b;
 		(q->coef + (i * NUMWORDS))[1] = 0xba75d058;
 		(q->coef + (i * NUMWORDS))[0] = 0x7e5718e9;
-#endif
-#ifdef CPABE224K2
-		// TODO: missing
 #endif
 #endif
 #else
@@ -1217,9 +1152,6 @@ void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN2_NUMBER * m, char *policy) 
 	s[2] = 0xdceb7cf4;
 	s[1] = 0x03f3618f;
 	s[0] = 0x41da22b6;
-#endif
-#ifdef CPABE224K2
-	// TODO: missing
 #endif
 #endif
 #else
@@ -1600,9 +1532,24 @@ dec_leaf_flatten( NN2_NUMBER * r, NN_DIGIT * exp,
 	cpabe_prv_comp_t* c;
 	NN2_NUMBER s; // GT
 	NN2_NUMBER t; // GT
+/*
+debug_print("leaf_r_r: ", r->r);
+debug_print("leaf_r_i: ", r->i);
+debug_print("leaf_exp: ", exp);
 	
+debug_print("leaf_p-c_x: ", p->c.x);
+debug_print("leaf_p-c_y: ", p->c.y);
+debug_print("leaf_p-cp_x: ", p->cp.x);
+debug_print("leaf_p-cp_y: ", p->cp.y);
+*/
 	c = (cpabe_prv_comp_t *) list_index(prv->comps, p->attri);
-		
+/*	
+printf("p->attri: %d - c:%p prv-comp %p\n", p->attri, c, prv->comps);
+debug_print("leaf_c-d_x: ", c->d.x);
+debug_print("leaf_c-d_y: ", c->d.y);
+debug_print("leaf_c-dp_x: ", c->dp.x);
+debug_print("leaf_c-dp_y: ", c->dp.y);
+*/	
 	TP_TatePairing(&s, p->c,  c->d); /* num_pairings++; */
 	TP_TatePairing(&t, p->cp, c->dp); /* num_pairings++; */
 
@@ -1737,7 +1684,9 @@ int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN2_NUMBER * m)
 	check_sat(list_head(cph.p), &prv);							// check properties saturation
 	if( !((struct cpabe_policy_s *) list_head(cph.p))->satisfiable )
 	{
-//		printf("cannot decrypt, attributes in key do not satisfy policy\n");
+#ifdef CPABE_DEBUG
+		printf("cannot decrypt, attributes in key do not satisfy policy\n");
+#endif
 		return 0;
 	}
 //	if( no_opt_sat ) 
@@ -1773,7 +1722,7 @@ int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN2_NUMBER * m)
 
 
 /* *** Serializer and free ************************************************** */
-
+/* XXX: re-enable
 static uint8_t* serialize_bytewise(uint8_t* b, uint8_t* data, uint16_t len) {
 	uint16_t i;
 	
@@ -1796,7 +1745,7 @@ static uint8_t* unserialize_bytewise(uint8_t* b, uint8_t* data, uint16_t len) {
 	return b + len;
 }
 
-/* int */
+/ * int * /
 static uint8_t* serialize_uint16(uint8_t* b, uint16_t data) {
 	uint8_t len = sizeof(uint16_t);
 	
@@ -1809,7 +1758,7 @@ static uint8_t* unserialize_uint16(uint8_t* b, uint16_t* data) {
 	return unserialize_bytewise(b, (uint8_t*) data, len);
 }
 
-/* NN_DIGIT */
+/ * NN_DIGIT * /
 static uint8_t* serialize_nndigit(uint8_t* b, NN_DIGIT* data) {
 	uint16_t len = sizeof(NN_DIGIT) * NUMWORDS;
 	
@@ -1822,7 +1771,7 @@ static uint8_t* unserialize_nndigit(uint8_t* b, NN_DIGIT* data) {
 	return unserialize_bytewise(b, (uint8_t*) data, len);
 }
 
-/* Point */
+/ * Point * /
 static uint8_t* serialize_point(uint8_t* b, Point data) {
 	uint16_t len = sizeof(NN_DIGIT) * NUMWORDS;
 	uint8_t * pos;
@@ -1839,7 +1788,7 @@ static uint8_t* unserialize_point(uint8_t* b, Point* data) {
 	return unserialize_bytewise(pos, (uint8_t*) data->y, len);
 }
 
-/* NN2_NUMBER */
+/ * NN2_NUMBER * /
 static uint8_t* serialize_nn2number(uint8_t* b, NN2_NUMBER data) {
 	uint16_t len = sizeof(NN_DIGIT) * NUMWORDS;
 	uint8_t * pos;
@@ -1856,7 +1805,7 @@ static uint8_t* unserialize_nn2number(uint8_t* b, NN2_NUMBER* data) {
 	return unserialize_bytewise(pos, (uint8_t*) data->i, len);
 }
 
-/* String */
+/ * String * /
 static uint8_t* serialize_string(uint8_t* b, char* data) {
 	uint8_t len = sizeof(data);
 	
@@ -2051,7 +2000,7 @@ void cpabe_cph_unserialize( cpabe_cph_t* cph, uint8_t* b, int f )
 	if( f )
 		free(b);
 }
-
+XXX: reenable */
 /*
  void
  cpabe_pub_free( cpabe_pub_t* pub )
