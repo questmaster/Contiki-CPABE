@@ -62,7 +62,7 @@ PROCESS_THREAD(tester_process, ev, data)
 #elif defined (CPABE_MEDIUM_SET)
 	/* medium */
 	policy = "attr1 attr3 attr9 attr4 2of4"; // For MSP430 only one sub level possible! 
-											 // -> most probably the stack is full and the node resets...
+											 // -> most probably the stack is full and the node resets... 
 	attributes[0] = "attr1";
 	attributes[1] = "attr2";
 	attributes[2] = "attr3";
@@ -70,7 +70,7 @@ PROCESS_THREAD(tester_process, ev, data)
 	attributes[4] = "attr5";
 	attributes[5] = 0;
 #elif defined (CPABE_LARGE_SET)
-	/* large */
+	/* large */ // Not enough RAM on MSP430 for this to test.
 	policy = "attr4_expint08_xxxxx1xx attr4_expint08_xxxxxx1x attr4_expint08_1xxxxxxx attr4_expint08_x1xxxxxx attr4_expint08_xx1xxxxx attr4_expint08_xxx1xxxx attr4_expint08_xxxx1xxx 2of7"; 
 	attributes[0] = "attr1";
 	attributes[1] = "attr2";
