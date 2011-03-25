@@ -24,7 +24,6 @@ unsigned long memb_comp_count = 0;
 unsigned long memb_policy_count = 0;
 unsigned long memb_poly_count = 0;
 
-
 MEMB(prv_comps_m, cpabe_prv_comp_t, 5);						/**< This limits the number of attributes in the private key */
 MEMB(enc_policy_m, cpabe_policy_t, 5);						/**< This limits the number of attributes in encrypted data */
 MEMB(enc_polynomial_m, cpabe_polynomial_t, 5);				/**< This limits the number of attributes in encrypted data */
@@ -1266,7 +1265,7 @@ pick_sat_min_leaves( cpabe_policy_t* p, cpabe_prv_t* prv )
 		for( i = 0; i < list_length(p->children); i++ )
 			if( ((cpabe_policy_t*) list_index(p->children, i))->satisfiable )
 				pick_sat_min_leaves(list_index(p->children, i), prv);
-		
+
 		c = malloc(sizeof(int) * list_length(p->children));	/**/ mem_count += sizeof(int) * list_length(p->children); /**/
 		for( i = 0; i < list_length(p->children); i++ )
 			c[i] = i;
@@ -2063,6 +2062,14 @@ void cpabe_policy_free( cpabe_policy_t* p )
 		free(p->attr);
 		//		element_clear(p->c);
 		//		element_clear(p->cp);
+	
+		while (list_length(p->satl) > 0) {
+			satl_int_t* sat = list_pop(p->satl);
+		
+			if (sat != NULL) {
+				free(sat);
+			}
+		}
 	}
 	
 	while(list_length(p->children) > 0 ) {
