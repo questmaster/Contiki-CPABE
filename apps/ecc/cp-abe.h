@@ -19,18 +19,19 @@ extern unsigned long mem_count;
 extern unsigned long memb_comp_count;
 extern unsigned long memb_policy_count;
 extern unsigned long memb_poly_count;
+extern unsigned long mem_free_count;
+extern unsigned long memb_comp_free_count;
+extern unsigned long memb_policy_free_count;
+extern unsigned long memb_poly_free_count;
 
 
 /*
  * A public key.
  */
 typedef struct cpabe_pub_s {
-//	char* pairing_desc;
-//	pairing_t p;
 	Point g;           /* G_1 */
 	Point h;           /* G_1 */
 	Point gp;          /* G_2 */
-//	NN_DIGIT g_hat_alpha[NUMWORDS]; /* G_T */
 	NN2_NUMBER g_hat_alpha; /* G_T */
 } cpabe_pub_t;
 

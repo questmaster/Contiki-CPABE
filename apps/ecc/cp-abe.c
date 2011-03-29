@@ -23,6 +23,10 @@ unsigned long mem_count = 0;
 unsigned long memb_comp_count = 0;
 unsigned long memb_policy_count = 0;
 unsigned long memb_poly_count = 0;
+unsigned long mem_free_count = 0;
+unsigned long memb_comp_free_count = 0;
+unsigned long memb_policy_free_count = 0;
+unsigned long memb_poly_free_count = 0;
 
 MEMB(prv_comps_m, cpabe_prv_comp_t, 5);						/**< This limits the number of attributes in the private key */
 MEMB(enc_policy_m, cpabe_policy_t, 5);						/**< This limits the number of attributes in encrypted data */
@@ -1023,8 +1027,9 @@ fill_policy(cpabe_policy_t *p, cpabe_pub_t pub, NN_DIGIT e[NUMWORDS]) {
 	}
 	
 	// everything is done and I can free q
-	free(p->q->coef);
-	memb_free(&enc_polynomial_m, p->q);
+	/**/ mem_free_count += sizeof(NN_DIGIT) * NUMWORDS * (p->q->deg + 1); /**/
+	free(p->q->coef); 
+	memb_free(&enc_polynomial_m, p->q); /**/ memb_poly_free_count++; /**/
 }
 
 /**
@@ -1295,6 +1300,7 @@ pick_sat_min_leaves( cpabe_policy_t* p, cpabe_prv_t* prv )
 			}
 //		assert(l == p->k);
 		
+		/**/ mem_free_count += sizeof(int) * list_length(p->children); /**/
 		free(c);
 	}
 }
@@ -2047,8 +2053,9 @@ void cpabe_prv_free( cpabe_prv_t* prv )
 		c = list_pop(prv->comps);
 		
 		if (c != NULL) {
+			/**/ mem_free_count += sizeof(c->attr); /**/
 			free(c->attr);
-			memb_free(&prv_comps_m, c);
+			memb_free(&prv_comps_m, c); /**/ memb_comp_free_count++; /**/
 		}
 	}
 	
@@ -2059,6 +2066,7 @@ void cpabe_policy_free( cpabe_policy_t* p )
 {
 	if( p->attr )
 	{
+		/**/ mem_free_count += sizeof(p->attr); /**/
 		free(p->attr);
 		//		element_clear(p->c);
 		//		element_clear(p->cp);
@@ -2067,6 +2075,7 @@ void cpabe_policy_free( cpabe_policy_t* p )
 			satl_int_t* sat = list_pop(p->satl);
 		
 			if (sat != NULL) {
+				/**/ mem_free_count += sizeof(satl_int_t); /**/
 				free(sat);
 			}
 		}
@@ -2077,7 +2086,7 @@ void cpabe_policy_free( cpabe_policy_t* p )
 		cpabe_policy_free(pol);
 	}
 	
-	memb_free(&enc_policy_m, p);
+	memb_free(&enc_policy_m, p); /**/ memb_policy_free_count++; /**/
 }
 
 void cpabe_cph_free( cpabe_cph_t* cph )
