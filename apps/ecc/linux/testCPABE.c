@@ -82,6 +82,14 @@ int main(void)
 	
 	
 	printf("CP-ABE tester process started\n");
+	printf("pub: %d\n", sizeof(cpabe_pub_t));
+	printf("msk: %d\n", sizeof(cpabe_msk_t));
+	printf("prv: %d\n", sizeof(cpabe_prv_t));
+	printf("cph: %d\n", sizeof(cpabe_cph_t));
+	printf("comp: %d\n", sizeof(cpabe_prv_comp_t));
+	printf("policy: %d\n", sizeof(cpabe_policy_t));
+	printf("poly: %d\n", sizeof(cpabe_polynomial_t));
+	printf("numwords: %d\n", NUMWORDS);	
 	printf("entering loop. CLOCK_SECOND=%d\n", CLOCK_SECOND);
 	
 	do {
@@ -111,6 +119,7 @@ int main(void)
 	
 #ifdef CPABE_KEYGEN
 		printf("CPABE_keygen(%d)\n", round_index);
+		mem_free_count = 0; memb_comp_free_count = 0; memb_policy_free_count = 0; memb_poly_free_count = 0;
 		mem_count = 0; memb_comp_count = 0; memb_policy_count = 0; memb_poly_count = 0;
 		time_s = clock();
 
@@ -167,6 +176,7 @@ int main(void)
 		// free dynamic memory
 		cpabe_prv_free(&prv);
 		cpabe_cph_free(&cph);
+		printf("CPABE_free(%d): dynmem %lu memb_comp %lu memb_policy %lu memb_poly %lu\n", round_index, mem_free_count, memb_comp_free_count, memb_policy_free_count, memb_poly_free_count);
 		
 		round_index++;
 	} while(round_index < MAX_ROUNDS);

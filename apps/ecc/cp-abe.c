@@ -806,6 +806,8 @@ base_node( int k, char* s )
 	}
 	MYLIST(p->children);
 	list_init(p->children);
+	MYLIST(p->satl);
+	list_init(p->satl);
 	p->q = 0;
 	
 	return p;
@@ -1278,8 +1280,8 @@ pick_sat_min_leaves( cpabe_policy_t* p, cpabe_prv_t* prv )
 		cur_comp_pol = p;
 		qsort(c, list_length(p->children), sizeof(int), cmp_int);
 		
-		MYLIST(p->satl);
-		list_init(p->satl);
+//		MYLIST(p->satl);	// this was moved to ease freeing memory
+//		list_init(p->satl);
 		p->min_leaves = 0;
 		l = 0;
 		

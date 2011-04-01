@@ -38,7 +38,7 @@ $vectors{'__vector_30'} = "USART1, Rx Complete";
 $vectors{'__vector_31'} = "USART1, Data Register Empty";
 $vectors{'__vector_32'} = "USART1, Tx Complete";
 
-$bin = "testECDSA.sky";
+$bin = "testCPABE.sky";
 
 open(INPUT, "msp430-readelf -s -W $bin | grep -v 00000000 |") 
     || die "Unable to run avr-objdump -t $bin";

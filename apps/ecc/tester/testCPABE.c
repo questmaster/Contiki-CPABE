@@ -83,7 +83,15 @@ PROCESS_THREAD(tester_process, ev, data)
 #endif	
 	
 	printf("CP-ABE tester process started\n");
-	printf("Energy store size: %d bytes\n", sizeof(energy_cpu));
+	printf("Envar size: %d\n", sizeof(energy_cpu));
+	printf("pub: %d\n", sizeof(cpabe_pub_t));
+	printf("msk: %d\n", sizeof(cpabe_msk_t));
+	printf("prv: %d\n", sizeof(cpabe_prv_t));
+	printf("cph: %d\n", sizeof(cpabe_cph_t));
+	printf("comp: %d\n", sizeof(cpabe_prv_comp_t));
+	printf("policy: %d\n", sizeof(cpabe_policy_t));
+	printf("poly: %d\n", sizeof(cpabe_polynomial_t));
+	printf("numwords: %d\n", NUMWORDS);	
 	
 	/* create and start an event timer */
 	static struct etimer tester_timer;
@@ -102,15 +110,15 @@ PROCESS_THREAD(tester_process, ev, data)
 	mem_free_count = 0; memb_comp_free_count = 0; memb_policy_free_count = 0; memb_poly_free_count = 0;
 	mem_count = 0; memb_comp_count = 0; memb_policy_count = 0; memb_poly_count = 0;
 	energy_lpm = energest_type_time(ENERGEST_TYPE_LPM);
-	energy_cpu = energest_type_time(ENERGEST_TYPE_CPU); printf("cpu: %lu\n", energy_cpu);
+	energy_cpu = energest_type_time(ENERGEST_TYPE_CPU); printf("cpu: %lu\n", energest_type_time(ENERGEST_TYPE_CPU));
 	time_s = clock_time();
 	
 	cpabe_setup(&pub, &msk);
 
 	energy_lpm = energest_type_time(ENERGEST_TYPE_LPM) - energy_lpm;
-	energy_cpu = energest_type_time(ENERGEST_TYPE_CPU) - energy_cpu; printf("cpu: %lu\n", energy_cpu);
+	energy_cpu = energest_type_time(ENERGEST_TYPE_CPU) - energy_cpu;
 	time_f = clock_time();
-	dt0 = time_f - time_s;
+	dt0 = time_f - time_s; printf("cpu: %lu\n", energest_type_time(ENERGEST_TYPE_CPU));
 	printf("CPABE_setup(%d): %lu ms\n", round_index, (uint32_t)(dt0*1000/CLOCK_SECOND));
 	printf("CPABE_setup(%d): dynmem %lu memb_comp %lu memb_policy %lu memb_poly %lu\n", round_index, mem_count, memb_comp_count, memb_policy_count, memb_poly_count);
 	printf("CPABE_setup(%d): ENERGEST cpu: %lu lpm: %lu\n", round_index, energy_cpu, energy_lpm);
@@ -164,15 +172,15 @@ PROCESS_THREAD(tester_process, ev, data)
 		printf("CPABE_keygen(%d)\n", round_index);
 		mem_count = 0; memb_comp_count = 0; memb_policy_count = 0; memb_poly_count = 0;
 		energy_lpm = energest_type_time(ENERGEST_TYPE_LPM);
-		energy_cpu = energest_type_time(ENERGEST_TYPE_CPU); printf("cpu: %lu\n", energy_cpu);
+		energy_cpu = energest_type_time(ENERGEST_TYPE_CPU); printf("cpu: %lu\n", energest_type_time(ENERGEST_TYPE_CPU));
 		time_s = clock_time();
 
 		cpabe_keygen(&prv, pub, msk, attributes);
 
 		energy_lpm = energest_type_time(ENERGEST_TYPE_LPM) - energy_lpm;
-		energy_cpu = energest_type_time(ENERGEST_TYPE_CPU) - energy_cpu; printf("cpu: %lu\n", energy_cpu);
+		energy_cpu = energest_type_time(ENERGEST_TYPE_CPU) - energy_cpu;
 		time_f = clock_time();
-		dt0 = time_f - time_s;
+		dt0 = time_f - time_s; printf("cpu: %lu\n", energest_type_time(ENERGEST_TYPE_CPU));
 		printf("CPABE_keygen(%d): %lu ms\n", round_index, (uint32_t)(dt0*1000/CLOCK_SECOND));
 		printf("CPABE_keygen(%d): dynmem %lu memb_comp %lu memb_policy %lu memb_poly %lu\n", round_index, mem_count, memb_comp_count, memb_policy_count, memb_poly_count);
 		printf("CPABE_keygen(%d): ENERGEST cpu: %lu lpm: %lu\n", round_index, energy_cpu, energy_lpm);
@@ -193,15 +201,15 @@ PROCESS_THREAD(tester_process, ev, data)
 		printf("enc policy: %s\n", policy);
 		mem_count = 0; memb_comp_count = 0; memb_policy_count = 0; memb_poly_count = 0;
 		energy_lpm = energest_type_time(ENERGEST_TYPE_LPM);
-		energy_cpu = energest_type_time(ENERGEST_TYPE_CPU); printf("cpu: %lu\n", energy_cpu);
+		energy_cpu = energest_type_time(ENERGEST_TYPE_CPU); printf("cpu: %lu\n", energest_type_time(ENERGEST_TYPE_CPU));
 		time_s = clock_time();
 		
 		cpabe_enc(&cph, pub, &m, policy); 
 		
 		energy_lpm = energest_type_time(ENERGEST_TYPE_LPM) - energy_lpm;
-		energy_cpu = energest_type_time(ENERGEST_TYPE_CPU) - energy_cpu; printf("cpu: %lu\n", energy_cpu);
+		energy_cpu = energest_type_time(ENERGEST_TYPE_CPU) - energy_cpu;
 		time_f = clock_time();
-		dt0 = time_f - time_s;
+		dt0 = time_f - time_s; printf("cpu: %lu\n", energest_type_time(ENERGEST_TYPE_CPU));
 		printf("CPABE_enc(%d): %lu ms\n", round_index, (uint32_t)(dt0*1000/CLOCK_SECOND));
 		printf("CPABE_enc(%d): dynmem %lu memb_comp %lu memb_policy %lu memb_poly %lu\n", round_index, mem_count, memb_comp_count, memb_policy_count, memb_poly_count);
 		printf("CPABE_enc(%d): ENERGEST cpu: %lu lpm: %lu\n", round_index, energy_cpu, energy_lpm);
@@ -241,15 +249,15 @@ PROCESS_THREAD(tester_process, ev, data)
 		printf("CPABE_dec(%d) \n", round_index);
 		mem_count = 0; memb_comp_count = 0; memb_policy_count = 0; memb_poly_count = 0;
 		energy_lpm = energest_type_time(ENERGEST_TYPE_LPM);
-		energy_cpu = energest_type_time(ENERGEST_TYPE_CPU); printf("cpu: %lu\n", energy_cpu);
+		energy_cpu = energest_type_time(ENERGEST_TYPE_CPU); printf("cpu: %lu\n", energest_type_time(ENERGEST_TYPE_CPU));
 		time_s = clock_time();
 		
 		cpabe_dec(pub, prv, cph, &m2); 
 		
 		energy_lpm = energest_type_time(ENERGEST_TYPE_LPM) - energy_lpm;
-		energy_cpu = energest_type_time(ENERGEST_TYPE_CPU) - energy_cpu; printf("cpu: %lu\n", energy_cpu);
+		energy_cpu = energest_type_time(ENERGEST_TYPE_CPU) - energy_cpu;
 		time_f = clock_time();
-		dt0 = time_f - time_s;
+		dt0 = time_f - time_s; printf("cpu: %lu\n", energest_type_time(ENERGEST_TYPE_CPU));
 		printf("CPABE_dec(%d): %lu ms\n", round_index, (uint32_t)(dt0*1000/CLOCK_SECOND));
 		printf("CPABE_dec(%d): dynmem %lu memb_comp %lu memb_policy %lu memb_poly %lu\n", round_index, mem_count, memb_comp_count, memb_policy_count, memb_poly_count);
 		printf("CPABE_dec(%d): ENERGEST cpu: %lu lpm: %lu\n", round_index, energy_cpu, energy_lpm);
@@ -272,7 +280,7 @@ PROCESS_THREAD(tester_process, ev, data)
 		// free dynamic memory
 		cpabe_prv_free(&prv);
 		cpabe_cph_free(&cph);
-
+		
 		printf("CPABE_free(%d): dynmem %lu memb_comp %lu memb_policy %lu memb_poly %lu\n", round_index, mem_free_count, memb_comp_free_count, memb_policy_free_count, memb_poly_free_count);
 
 		round_index++;
