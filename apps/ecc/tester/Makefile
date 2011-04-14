@@ -3,7 +3,10 @@ all: $(CONTIKI_PROJECT)
 
 APPS = ecc
 
+
 ## choose curve parameter
+
+## only ECC !
 #Cparam = SECP128R1
 #Cparam = SECP128R2
 #Cparam = SECP160K1
@@ -11,16 +14,13 @@ APPS = ecc
 #Cparam = SECP160R2
 #Cparam = SECP192K1
 #Cparam = SECP192R1
+
+## ECC / TP
 #Cparam = SS192K2
 #Cparam = SS192K2S
-#Cparam = SS512K2
+##Cparam = SS512K2
 #Cparam = SS512K2S
-#Cparam = CPABE168K2
 Cparam = CPABE192K2
-#Cparam = CPABE224K2
-#Cparam = CPABE256K2
-#Cparam = CPABE384K2
-#Cparam = CPABE512K2
 
 # use test vector for secp160r1 to show the correctness of TinyECC (NOT TP or CPABE!)
 #Cparam = TEST_VECTOR
@@ -40,6 +40,9 @@ CFLAGS+=-DCPABE_KEYGEN
 CFLAGS+=-DCPABE_ENCRYPTION
 CFLAGS+=-DCPABE_DECRYPTION
 
+CFLAGS+=-DCPABE_SMALL_SET
+#CFLAGS+=-DCPABE_MEDIUM_SET
+#CFLAGS+=-DCPABE_LARGE_SET
 
 ## choose different optimization techniques
 ## NN
@@ -47,19 +50,23 @@ CFLAGS+=-DBARRETT_REDUCTION		# barrett reduction
 CFLAGS+=-DHYBRID_MULT			# hybrid multipliation
 CFLAGS+=-DHYBRID_SQR			# hybrid square
 #CFLAGS+=-DCURVE_OPT			# optimization for secg curve 
-								# (Not possible for TP -> non-functioning omega optimization)
+					# (Not possible for TP -> non-functioning omega optimization)
+CFLAGS+=-DNO_ASM				# disable assembler speed-up for add, mult, exp,... 
+								# (NOT needed for MicaZ, Tmote/Telosb, Imote2/Stargate)
 ## ECC
 CFLAGS+=-DPROJECTIVE			# projective coordinate
 CFLAGS+=-DSLIDING_WIN			# sliding window method, window size is defined in ECC.h
 ## ECDSA
 CFLAGS+=-DSHAMIR_TRICK			# shamir trick, windows size is defined in ECDSA.c
 ## TP
-#CFLAGS+=-DFIXED_P				# precompute intermediate nodes, slopes for a fixed P
+#CFLAGS+=-DFIXED_P			# precompute intermediate nodes, slopes for a fixed P
 #CFLAGS+=-DPROJECTIVE_M			# ???
 
-## activate 4/8MHz configuration for tMote Sky/Telosb (compatible to TinyOS freq's)
-#CFLAGS += -DMSP430_4MHZ_ENABLE
-#CFLAGS += -DMSP430_8MHZ_ENABLE
+## activate 4/8MHz configuration for Tmote Sky (compatible to TinyOS freq's)
+CFLAGS += -DMSP430_4MHZ_ENABLE		# Only Tmote on Contiki 2.4
+#CFLAGS += -DMSP430_8MHZ_ENABLE		# Only Tmote on Contiki 2.4
+#CFLAGS += -DMSP430_16MHZ_ENABLE	# Only Z1 on Contiki 2.5
+
 
 ifndef CONTIKI
 	CONTIKI = ../..
