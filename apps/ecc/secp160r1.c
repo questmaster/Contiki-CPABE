@@ -200,8 +200,16 @@ void get_param(Params *para)
     para->p[1] = 0x7FFF;
     para->p[0] = 0xFFFF;
         
-    para->omega[0] = 0x0001;
-    para->omega[1] = 0x8000;
+	para->omega[9] = 0x0000;
+	para->omega[8] = 0x0000;
+	para->omega[7] = 0x0000;
+	para->omega[6] = 0x0000;
+	para->omega[5] = 0x0000;
+	para->omega[4] = 0x0000;
+	para->omega[3] = 0x0000;
+	para->omega[2] = 0x0000;
+	para->omega[1] = 0x8000;
+	para->omega[0] = 0x0001;
     
     //cure that will be used
     //a
@@ -279,8 +287,14 @@ void get_param(Params *para)
     para->p[2] = 0xFFFFFFFF;
     para->p[1] = 0xFFFFFFFF;
     para->p[0] = 0x7FFFFFFF;
-    memset(para->omega, 0, NUMWORDS);        
-    para->omega[0] = 0x80000001;
+	  
+//    memset(para->omega, 0, NUMWORDS);        
+	para->omega[5] = 0x00000000;
+	para->omega[4] = 0x00000000;
+	para->omega[3] = 0x00000000;
+	para->omega[2] = 0x00000000;
+	para->omega[1] = 0x00000000;
+	para->omega[0] = 0x80000001;
     
     //cure that will be used
     //a

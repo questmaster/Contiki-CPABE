@@ -4,7 +4,7 @@
 #include "contiki.h"
 
 #include "ECIES.h"
-#include "lib/rand.h"
+#include "random.h"
 
 #ifdef TEST_VECTOR
 #define MSG_LEN 20
@@ -61,7 +61,7 @@ static void init_data(){
     M_len = 20;
 #else
     for (i=0; i<MAX_M_LEN; i++){
-		M[i] = rand();
+		M[i] = random_rand();
     }
     M_len = MSG_LEN;
 #endif

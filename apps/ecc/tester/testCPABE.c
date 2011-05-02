@@ -175,7 +175,7 @@ PROCESS_THREAD(tester_process, ev, data)
 		energy_cpu = energest_type_time(ENERGEST_TYPE_CPU); printf("cpu: %lu\n", energest_type_time(ENERGEST_TYPE_CPU));
 		time_s = clock_time();
 
-		cpabe_keygen(&prv, pub, msk, attributes);
+		cpabe_keygen(&prv, &pub, &msk, attributes);
 
 		energy_lpm = energest_type_time(ENERGEST_TYPE_LPM) - energy_lpm;
 		energy_cpu = energest_type_time(ENERGEST_TYPE_CPU) - energy_cpu;
@@ -204,7 +204,7 @@ PROCESS_THREAD(tester_process, ev, data)
 		energy_cpu = energest_type_time(ENERGEST_TYPE_CPU); printf("cpu: %lu\n", energest_type_time(ENERGEST_TYPE_CPU));
 		time_s = clock_time();
 		
-		cpabe_enc(&cph, pub, &m, policy); 
+		cpabe_enc(&cph, &pub, &m, policy); 
 		
 		energy_lpm = energest_type_time(ENERGEST_TYPE_LPM) - energy_lpm;
 		energy_cpu = energest_type_time(ENERGEST_TYPE_CPU) - energy_cpu;
@@ -252,7 +252,7 @@ PROCESS_THREAD(tester_process, ev, data)
 		energy_cpu = energest_type_time(ENERGEST_TYPE_CPU); printf("cpu: %lu\n", energest_type_time(ENERGEST_TYPE_CPU));
 		time_s = clock_time();
 		
-		cpabe_dec(pub, prv, cph, &m2); 
+		cpabe_dec(&pub, &prv, &cph, &m2); 
 		
 		energy_lpm = energest_type_time(ENERGEST_TYPE_LPM) - energy_lpm;
 		energy_cpu = energest_type_time(ENERGEST_TYPE_CPU) - energy_cpu;

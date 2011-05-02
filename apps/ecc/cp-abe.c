@@ -168,7 +168,7 @@ static uint8_t sscanf_repl(char* tok, /*char * format,*/ uint8_t* k, uint8_t* n)
 	return ret;
 }
 
-#ifdef CPABE_DEBUG
+#ifndef CPABE_DEBUG
 
 void debug_print(char* name, NN_DIGIT *val) {
 	int i;
@@ -380,7 +380,7 @@ void cpabe_setup(cpabe_pub_t *pub, cpabe_msk_t *msk) {
 	ECC_mul(&(msk->g_alpha), &(pub->gp), alpha);	/**< g_alpha = gp * alpha */
 	ECC_mul(&(pub->h), &(pub->g), msk->beta);		/**< h = g * beta */
 
-	TP_TatePairing(&(pub->g_hat_alpha), pub->g, msk->g_alpha);	/**< g_hat_alpha = e(g, gp * alpha) */
+	TP_TatePairing(&(pub->g_hat_alpha), &(pub->g), &(msk->g_alpha));	/**< g_hat_alpha = e(g, gp * alpha) */
 }
 #endif
 
@@ -552,8 +552,7 @@ void point_from_string( Point* h, char* s )
 #endif
 #else	
 	// compute y for given (hash) x value  
-//	NNMod(tmp, r, NUMWORDS, param.p, NUMWORDS);	/**< x = r mod p */
-//	ECC_compY(h, tmp);
+
 	ECC_Random_Hash(h, r);
 	
 #endif
@@ -606,7 +605,7 @@ void point_from_string( Point* h, char* s )
  c.dp.x b 93 81 9a 9b ed 12 72 b4 f0 6f ae d9 e0 85 29 37 5f 64 a8 f5 a3 7f cf 
  c.dp.y 19 19 b1 d7 b1 d8 50 87 c2 73 fa 29 ea 5 ef 30 d5 24 35 59 a5 da 49 d1  
  */
-void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** attributes) {
+void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t *pub, cpabe_msk_t *msk, char** attributes) {
 	Point g_r; // G2
 	NN_DIGIT r[NUMWORDS]; // Zr
 	NN_DIGIT beta_inv[NUMWORDS]; // Zr
@@ -615,7 +614,7 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 	Point h_rp;
 	NN_DIGIT rp[NUMWORDS];
 	
-	if (prv == NULL || &pub == NULL || &msk == NULL || attributes == NULL) {
+	if (prv == NULL || pub == NULL || msk == NULL || attributes == NULL) {
 //			printf("cpabe_setup - ERROR: pub or msk NULL! pub: %p, msk: %p", pub, msk);
 		return;
 	}
@@ -655,14 +654,14 @@ void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** att
 #else
 	NNModRandom(r, param.m, NUMWORDS);
 #endif
-	ECC_mul(&g_r, &pub.gp, r);						/**< g_r = gp * r */
+	ECC_mul(&g_r, &(pub->gp), r);						/**< g_r = gp * r */
 #ifdef CPABE_DEBUG
 	debug_print("g_r_x: ", g_r.x);
 	debug_print("g_r_y: ", g_r.y);
 #endif
 
-	ECC_add(&(prv->d), &msk.g_alpha, &g_r);			/**< d = g_alpha + g_r; here is P * P -> Add them !!! */
-	NNModInv(beta_inv, msk.beta, param.m, NUMWORDS);	/**< beta_inv = 1/beta */
+	ECC_add(&(prv->d), &(msk->g_alpha), &g_r);			/**< d = g_alpha + g_r; here is P * P -> Add them !!! */
+	NNModInv(beta_inv, msk->beta, param.m, NUMWORDS);	/**< beta_inv = 1/beta */
 
 #ifdef CPABE_DEBUG	
 	debug_print("beta_inv: ", beta_inv);
@@ -773,7 +772,7 @@ printf("c_attrib: %s\n", c->attr);
 		ECC_mul(&h_rp, &tmp, rp);					/**< h_rp = h * rp */
 			
 		ECC_add(&(c->d), &g_r, &h_rp);				/**< d = g_r + h_rp */
-		ECC_mul(&(c->dp), &pub.g, rp);				/**< dp = g * rp */
+		ECC_mul(&(c->dp), &(pub->g), rp);				/**< dp = g * rp */
 		
 #ifdef CPABE_DEBUG		
 		debug_print("CPABE_c_d_x: ", c->d.x);
@@ -989,7 +988,7 @@ eval_poly( NN_DIGIT r[NUMWORDS], cpabe_polynomial_t* q, NN_DIGIT x[NUMWORDS] )
 }
 
 void
-fill_policy(cpabe_policy_t *p, cpabe_pub_t pub, NN_DIGIT e[NUMWORDS]) {
+fill_policy(cpabe_policy_t *p, cpabe_pub_t *pub, NN_DIGIT e[NUMWORDS]) {
 	cpabe_policy_t* cp;
 	int i;
 	NN_DIGIT r[NUMWORDS]; // Zr
@@ -1004,7 +1003,7 @@ fill_policy(cpabe_policy_t *p, cpabe_pub_t pub, NN_DIGIT e[NUMWORDS]) {
 	if( list_length(p->children) == 0 )
 	{		
 		point_from_string(&h, p->attr);
-		ECC_mul(&(p->c),  &pub.g, &(p->q->coef[0]));
+		ECC_mul(&(p->c),  &(pub->g), &(p->q->coef[0]));
 		ECC_mul(&(p->cp), &h,     &(p->q->coef[0]));
 
 #ifdef CPABE_DEBUG		
@@ -1084,7 +1083,7 @@ p->c.x 10 a5 dc 80 45 f 18 30 41 8e 63 90 c0 27 e2 a4 8a aa e b5 40 60 27 2b
 p->c.y d b8 76 d0 d8 68 ff d 29 c3 d7 7 68 d7 56 97 ed af a2 e3 a4 c1 c9 3d 
 p->cp.x 2 d6 ac 21 17 76 19 78 8c 56 a7 af 43 fd 18 6d 21 d8 6d 5c f8 de 9 72 
 p->cp.y e 91 f4 e2 57 af 15 92 f1 f4 7c d0 be 56 80 f9 43 70 25 de 4c 94 47 2b  */
-void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN2_NUMBER * m, char *policy) {
+void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t *pub, NN2_NUMBER * m, char *policy) {
  	NN_DIGIT s[NUMWORDS]; // Zr
 	
 	// initialize 
@@ -1164,10 +1163,10 @@ void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN2_NUMBER * m, char *policy) 
  	NN2ModRandom(m, param.p, NUMWORDS);
  	NNModRandom(s, param.m, NUMWORDS);
 #endif
-	NN2ModExp(&(cph->cs),  &(pub.g_hat_alpha), s, param.p, NUMWORDS);	
+	NN2ModExp(&(cph->cs),  &(pub->g_hat_alpha), s, param.p, NUMWORDS);	
 	NN2ModMult(&(cph->cs), &(cph->cs), m, param.p, NUMWORDS);		/**< cs = e(g, g)^(alpha * s) * m */
 	
-	ECC_mul(&(cph->c), &(pub.h), s);						/**< c = h ^ s */
+	ECC_mul(&(cph->c), &(pub->h), s);						/**< c = h ^ s */
 	
 	fill_policy((cpabe_policy_t *) list_head(cph->p), pub, s);
 }
@@ -1557,8 +1556,8 @@ debug_print("leaf_c-d_y: ", c->d.y);
 debug_print("leaf_c-dp_x: ", c->dp.x);
 debug_print("leaf_c-dp_y: ", c->dp.y);
 */	
-	TP_TatePairing(&s, p->c,  c->d); /* num_pairings++; */
-	TP_TatePairing(&t, p->cp, c->dp); /* num_pairings++; */
+	TP_TatePairing(&s, &(p->c),  &(c->d)); /* num_pairings++; */
+	TP_TatePairing(&t, &(p->cp), &(c->dp)); /* num_pairings++; */
 
 #ifdef CPABE_DEBUG	
 		printf("p->attr=%s\n", p->attr);
@@ -1685,11 +1684,11 @@ dec_flat_t 3 e5 24 76 8c 30 a9 40 b1 3 63 f0 cc 6d 16 57 5e c8 a8 6b e1 18 d9 e1
 dec_t 3 c5 82 15 89 55 47 af a8 d7 68 ad 84 13 bc 32 1a 7 d8 8d c9 2 27 d4 1a e7 4b cb b4 69 2 e7 f8 40 7d 3f da a9 49 90 1d 4c 39 80 b4 18 cb 37 
 dec_m 1b f4 66 fb af 33 f4 0 3a 92 20 2d bf 61 56 bb 87 92 de 92 e9 1a b3 a7 7 35 f4 6d 77 eb 1 8f 5a 72 41 47 db cf 9f 9e f9 c5 c0 8c c5 77 f9 fc 
  */
-int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN2_NUMBER * m) {
+int cpabe_dec(cpabe_pub_t *pub, cpabe_prv_t *prv, cpabe_cph_t *cph, NN2_NUMBER * m) {
 	NN2_NUMBER t;	// GT
 	
-	check_sat(list_head(cph.p), &prv);							// check properties saturation
-	if( !((struct cpabe_policy_s *) list_head(cph.p))->satisfiable )
+	check_sat(list_head(cph->p), prv);							// check properties saturation
+	if( !((struct cpabe_policy_s *) list_head(cph->p))->satisfiable )
 	{
 #ifdef CPABE_DEBUG
 		printf("cannot decrypt, attributes in key do not satisfy policy\n");
@@ -1699,12 +1698,12 @@ int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN2_NUMBER * m)
 //	if( no_opt_sat ) 
 //		pick_sat_naive(list_head(cph.p), &prv); 
 //	else 
-		pick_sat_min_leaves(list_head(cph.p), &prv);				
+		pick_sat_min_leaves(list_head(cph->p), prv);				
 	
 //	if( dec_strategy == DEC_NAIVE ) 
 //		dec_naive(t, cph->p, prv, pub); // not ported!
 //	else if( dec_strategy == DEC_FLATTEN ) 
-		dec_flatten(&t, list_head(cph.p), &prv, &pub);
+		dec_flatten(&t, list_head(cph->p), prv, pub);
 //	else 
 //		dec_merge(t, cph->p, prv, pub); // not ported!
 
@@ -1713,9 +1712,9 @@ int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN2_NUMBER * m)
 		debug_print("dec_flat_t_i: ",t.i);
 #endif
 	
-	NN2ModMult(m, &(cph.cs), &t, param.p, NUMWORDS); /* num_muls++; */
+	NN2ModMult(m, &(cph->cs), &t, param.p, NUMWORDS); /* num_muls++; */
 	
-	TP_TatePairing(&t, cph.c, prv.d); /* num_pairings++; */
+	TP_TatePairing(&t, &(cph->c), &(prv->d)); /* num_pairings++; */
 	NN2ModInv(&t, &t, param.p, NUMWORDS);
 	NN2ModMult(m, m, &t, param.p, NUMWORDS); /* num_muls++; */ 
 

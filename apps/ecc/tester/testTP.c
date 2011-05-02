@@ -10,18 +10,23 @@
 
   
 static Point Q;
-static NN_DIGIT res[NUMWORDS];
+static NN2_NUMBER res;
 static NN2_NUMBER f;
 static int round_index;
 static TPParams tp;
 
-static void print_val(NN_DIGIT *num){
+static void print_val(NN2_NUMBER num){
     int i;
     for(i=0; i<NUMWORDS; i++){
-      printf("%x ", num[NUMWORDS-i-1]);
+      printf("%x ", num.r[NUMWORDS-i-1]);
+    }
+    printf(" -- ");
+
+    for(i=0; i<NUMWORDS; i++){
+		printf("%x ", num.i[NUMWORDS-i-1]);
     }
     printf("\n");
-  }
+}
 
   
 static void get_PublicKey() {
@@ -411,7 +416,7 @@ static void runTP(){
 		
  	  time_s = clock_time();
 
-		TP_final_expon(res,&f);
+		TP_final_expon(&res,&f);
 
 	  time_f = clock_time();
 		leds_toggle(LEDS_BLUE);

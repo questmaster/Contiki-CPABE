@@ -127,7 +127,7 @@ typedef int8_t bool;
 #endif
 
 //imote2
-#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_LINUX32)
+#if defined (CONTIKI_TARGET_IMOTE2) || defined (CONTIKI_TARGET_REDBEE_ECONOTAG) || defined (TARGET_LINUX32)
 #define THIRTYTWO_BIT_PROCESSOR
 #ifndef NO_ASM 
 #define INLINE_ASM

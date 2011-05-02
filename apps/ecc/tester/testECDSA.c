@@ -4,7 +4,7 @@
 #include "contiki.h"
 
 #include "ECDSA.h"
-#include "lib/rand.h"
+#include "random.h"
 
 #ifdef TEST_VECTOR
 #define MSG_LEN 3
@@ -49,7 +49,7 @@ static void init_data(){
 #ifndef TEST_VECTOR  
     //randomly generate the message
     for (j=0; j<MSG_LEN; j++){
-		message[j] = (uint8_t) rand();
+		message[j] = (uint8_t) random_rand();
     }
 #else  //only for secp160r1
     message[0] = 0x61;

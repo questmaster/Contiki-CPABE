@@ -47,9 +47,9 @@ typedef struct cpabe_msk_s {
 typedef struct cpabe_prv_comp_s {
 	struct cpabe_prv_comp_s *next;
 	/* these actually get serialized */
-	char* attr;
 	Point d;  /* G_2 */
 	Point dp; /* G_2 */
+	char* attr;
 	
 	/* only used during dec (only by dec_merge) */
 	//	int used;
@@ -126,7 +126,7 @@ extern void cpabe_setup(cpabe_pub_t *pub, cpabe_msk_t *msk);
  argument should be a null terminated array of pointers to strings,
  one for each attribute.
  */
-extern void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, char** attributes);
+extern void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t *pub, cpabe_msk_t *msk, char** attributes);
 
 /*
  Pick a random group element and encrypt it under the specified
@@ -153,7 +153,7 @@ extern void cpabe_keygen(cpabe_prv_t *prv, cpabe_pub_t pub, cpabe_msk_t msk, cha
  Returns null if an error occured, in which case a description can be
  retrieved by calling cpabe_error().
  */
-extern void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN2_NUMBER * m, char *policy);
+extern void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t *pub, NN2_NUMBER * m, char *policy);
 
 /*
  Decrypt the specified ciphertext using the given private key,
@@ -163,7 +163,7 @@ extern void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t pub, NN2_NUMBER * m, char *p
  Returns true if decryption succeeded, false if this key does not
  satisfy the policy of the ciphertext (in which case m is unaltered).
  */
-extern int cpabe_dec(cpabe_pub_t pub, cpabe_prv_t prv, cpabe_cph_t cph, NN2_NUMBER * m);
+extern int cpabe_dec(cpabe_pub_t *pub, cpabe_prv_t *prv, cpabe_cph_t *cph, NN2_NUMBER * m);
 
 
 

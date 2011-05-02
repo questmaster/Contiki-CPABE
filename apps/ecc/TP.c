@@ -189,7 +189,7 @@ static void add_line_projective(NN2_NUMBER *u, Point *P0, NN_DIGIT *Z0, Point *P
   }
 
   //Miller's algorithm based on projective coordinate system
-bool TP_Miller(NN2_NUMBER *ef, Point P){
+bool TP_Miller(NN2_NUMBER *ef, Point *P){
     NN2_NUMBER temp1;
     Point V;
     int t;
@@ -199,8 +199,8 @@ bool TP_Miller(NN2_NUMBER *ef, Point P){
     ef->r[0] = 0x1;
     memset(ef->i, 0, NUMWORDS*NN_DIGIT_LEN);
     //V = P; // V=P
-   NNAssign(V.x, P.x, NUMWORDS);
-    NNAssign(V.y, P.y, NUMWORDS);
+   NNAssign(V.x, P->x, NUMWORDS);
+    NNAssign(V.y, P->y, NUMWORDS);
     memset(Z, 0, NUMWORDS*NN_DIGIT_LEN);
     Z[0] = 0x1;
 
@@ -213,7 +213,7 @@ bool TP_Miller(NN2_NUMBER *ef, Point P){
       NN2ModMult(ef, ef, &temp1, tpparam.p, NUMWORDS); // f=f*g
 
       if ((t>0) && (NNTestBit(tpparam.m,t))) {
-	add_line_projective(&temp1, &V, Z, &V, Z, &(P));
+	add_line_projective(&temp1, &V, Z, &V, Z, P);
 	NN2ModMult(ef, ef, &temp1, tpparam.p, NUMWORDS);//f=f*g
       }
       t--;
@@ -380,7 +380,7 @@ static int check_m_0(NN_DIGIT *a, int start){
     return ((original_i - 1 - i) * NN_DIGIT_BITS + original_rest + NN_DIGIT_BITS - rest);
   }
 
-bool TP_Miller(NN2_NUMBER *ef, Point P){
+bool TP_Miller(NN2_NUMBER *ef, Point *P){
     NN2_NUMBER temp1;
     Point V;
     int t, m;
@@ -390,8 +390,8 @@ bool TP_Miller(NN2_NUMBER *ef, Point P){
     ef->r[0] = 0x1;
     memset(ef->i, 0, NUMWORDS*NN_DIGIT_LEN);
     //V = P; // V=P
-    NNAssign(V.x, P.x, NUMWORDS);
-    NNAssign(V.y, P.y, NUMWORDS);
+    NNAssign(V.x, P->x, NUMWORDS);
+    NNAssign(V.y, P->y, NUMWORDS);
     memset(Z, 0, NUMWORDS*NN_DIGIT_LEN);
     Z[0] = 0x1;
 
@@ -404,7 +404,7 @@ bool TP_Miller(NN2_NUMBER *ef, Point P){
       dbl_line_projective_m(ef, &temp1, &V, Z, &V, Z, m);
       t = t - m;
       if (t>0) {
-	add_line_projective(&temp1, &V, Z, &V, Z, &(P));
+	add_line_projective(&temp1, &V, Z, &V, Z, P);
 	NN2ModMult(ef, ef, &temp1, tpparam.p, NUMWORDS);//f=f*g
       }
       t--;
@@ -470,13 +470,13 @@ static void aff_add(PointSlope *pNode, Point * P0, Point * P1, Point * P2)
     NNAssign(pNode->P.y, Pt1.y, NUMWORDS);
   }
 
-static void precompute(Point P){
+static void precompute(Point *P){
     Point V;
     int t;
     bool first_bit = TRUE;
     PointSlope *current;
 
-    V = P; // V=P
+    V = *P; // V=P
     t = (NNBits(tpparam.m,NUMWORDS))-2; // t=bits-2
 
     while (t>-1) {
@@ -494,7 +494,7 @@ static void precompute(Point P){
 	current->next = (PointSlope *)malloc(sizeof(PointSlope));
 	current = current->next;
 	current->next = NULL;
-	aff_add(current, &V, &V, &(P)); //V=V+P
+	aff_add(current, &V, &V, P); //V=V+P
       }
       t--;
     }
@@ -590,7 +590,7 @@ static void aff_add(NN2_NUMBER *u, Point * P0, Point * P1, Point * P2)
   }
 
   // Miller's algorithm
-bool TP_Miller(NN2_NUMBER *ef, Point P) { 
+bool TP_Miller(NN2_NUMBER *ef, Point *P) { 
     NN2_NUMBER temp1;
     Point V;
     int t;
@@ -599,7 +599,7 @@ bool TP_Miller(NN2_NUMBER *ef, Point P) {
     memset(ef->r, 0, NUMWORDS*NN_DIGIT_LEN); // f = 1
     ef->r[0] = 0x1;
     memset(ef->i, 0, NUMWORDS*NN_DIGIT_LEN);
-    V = P; // V=P
+    V = *P; // V=P
     
     t = (NNBits(tpparam.m,NUMWORDS))-2; // t=bits-2
     
@@ -610,7 +610,7 @@ bool TP_Miller(NN2_NUMBER *ef, Point P) {
       NN2ModMult(ef, ef, &temp1, tpparam.p, NUMWORDS);
       
       if ((t>0) && (NNTestBit(tpparam.m,t))) {
-	aff_add(&temp1, &V, &V, &(P)); //V=V+P
+	aff_add(&temp1, &V, &V, P); //V=V+P
 	NN2ModMult(ef, ef, &temp1, tpparam.p, NUMWORDS);//f=f*g
       }
       t--;
@@ -623,7 +623,7 @@ bool TP_Miller(NN2_NUMBER *ef, Point P) {
 #endif
   
   // initialize the Pairing with the point to be used along with the private key
-void TP_init(Point P, Point Q) {
+void TP_init(Point *P, Point *Q) {
     NN_DIGIT Qy[NUMWORDS], two[NUMWORDS];
     
     //ECC_tpinit();
@@ -632,8 +632,8 @@ void TP_init(Point P, Point Q) {
     NNModBarrettInit(tpparam.p, NUMWORDS, &Bbuf);
 #endif
     //tpparam = ECC_get_tpparam();
-    NNAssign(Qx,Q.x,NUMWORDS); 
-    NNAssign(Qy,Q.y,NUMWORDS);
+    NNAssign(Qx,Q->x,NUMWORDS); 
+    NNAssign(Qy,Q->y,NUMWORDS);
     NNModNeg(mQy,Qy,tpparam.p,NUMWORDS); //-Qy
     memset(inv2, 0, NUMWORDS*NN_DIGIT_LEN);
     memset(two, 0, NUMWORDS*NN_DIGIT_LEN);
@@ -642,7 +642,7 @@ void TP_init(Point P, Point Q) {
 
 #ifdef FIXED_P
     //compute all intermediate nodes and slopes
-    precompute(P);
+    precompute(*P);
 #endif
     
   }
@@ -684,7 +684,7 @@ void TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef) {
   }
 
   // Set the res value to be the Tate Pairing result
-/*static void TP_computeTP(NN2_NUMBER *res, Point P) {
+/*static void TP_computeTP(NN2_NUMBER *res, Point *P) {
     NN2_NUMBER ef;
 	
     TP_Miller(&ef, P);
@@ -692,12 +692,12 @@ void TP_final_expon(NN2_NUMBER *r,NN2_NUMBER *ef) {
 	
   }
 */
-void TP_TatePairing(NN2_NUMBER *res, Point P, Point Q) {
+void TP_TatePairing(NN2_NUMBER *res, Point *P, Point *Q) {
     NN2_NUMBER ef;
 
 	TP_init(P, Q);
-    TP_Miller(&ef, P);
-    TP_final_expon(res,&ef);
+	TP_Miller(&ef, P);
+	TP_final_expon(res,&ef);
 }
 
 TPParams *TP_getTPparams() {

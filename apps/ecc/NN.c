@@ -34,6 +34,7 @@
 #include <NN.h>
 #include <string.h>
 #include <CurveParam.h>
+#include <random.h>
 
 
 #define MAX(a,b) ((a) < (b) ? (b) : (a))
@@ -144,7 +145,7 @@ NN_DOUBLE_DIGIT NN_DigitMult(NN_DIGIT b, NN_DIGIT c)
   
 #endif
 
-#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_LINUX32) // Not yet supported by Contiki
+#if defined (CONTIKI_TARGET_IMOTE2) || defined (CONTIKI_TARGET_REDBEE_ECONOTAG) || defined (TARGET_LINUX32) // Not yet supported by Contiki
 #define NN_DigitMult(b, c) (NN_DOUBLE_DIGIT)(b) * (c)
 #endif
 
@@ -318,7 +319,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     return carry;
 #endif
 
-#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_LINUX32) // Not yet supported by Contiki
+#if defined (CONTIKI_TARGET_IMOTE2) || defined (CONTIKI_TARGET_REDBEE_ECONOTAG) || defined (TARGET_LINUX32) // Not yet supported by Contiki
     NN_DIGIT carry, ai;
     NN_UINT i;
 
@@ -413,7 +414,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
     return borrow;
 #endif
 
-#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_LINUX32) // Not yet supported by Contiki
+#if defined (CONTIKI_TARGET_IMOTE2) || defined (CONTIKI_TARGET_REDBEE_ECONOTAG) || defined (TARGET_LINUX32) // Not yet supported by Contiki
     NN_DIGIT ai, borrow;
     NN_UINT i;
 
@@ -3329,7 +3330,7 @@ __attribute__ ((noinline)) void NN_Sqr(NN_DIGIT *a, NN_DIGIT *b, NN_UINT digits)
     return (borrow);
 #endif
 
-#if defined (CONTIKI_TARGET_IMOTE2) || defined (TARGET_LINUX32) // Not yet supported by Contiki
+#if defined (CONTIKI_TARGET_IMOTE2) || defined (CONTIKI_TARGET_REDBEE_ECONOTAG) || defined (TARGET_LINUX32) // Not yet supported by Contiki
     NN_DIGIT borrow;
     unsigned int i;
     NN_DOUBLE_DIGIT t;
@@ -4023,12 +4024,13 @@ void NNModRandom (NN_DIGIT * b, NN_DIGIT * c, NN_UINT digits) {
 		
 		for (ri=0; ri < order_digit_len; ri++){
 #ifdef THIRTYTWO_BIT_PROCESSOR
-			b[ri] = (((NN_DIGIT)rand()) << 16)|((NN_DIGIT)rand());
+			b[ri] = (((NN_DIGIT)random_rand()) << 16)|((NN_DIGIT)random_rand());
 #else
-			b[ri] = (NN_DIGIT)rand();
+			b[ri] = (NN_DIGIT)random_rand();
 #endif
 		}
 
+		watchdog_periodic();
 		for (ri=order_digit_len; ri<NUMWORDS; ri++){
 			b[ri] = 0;
 		}
@@ -4041,7 +4043,6 @@ void NNModRandom (NN_DIGIT * b, NN_DIGIT * c, NN_UINT digits) {
 		
 		if (NNZero(b, digits) != 1)
 			done = TRUE;
-		watchdog_periodic();
 	}
 }
 

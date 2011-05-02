@@ -29,8 +29,9 @@
  */
 #include <sha1.h>
 #include <ECDSA.h>
-#include <dev/watchdog.h>
-#include <lib/rand.h>
+#include <watchdog.h>
+#include <random.h>
+#include <string.h>
 
 #ifdef SHAMIR_TRICK
 //The size of sliding window, S_W_BITS <= 8
@@ -126,12 +127,12 @@ static void gen_random(NN_DIGIT *a, uint8_t length)
     uint8_t ri;
 	
     for (ri=0; ri<length; ri++)
-      a[ri] = ((uint32_t)rand() << 16)^((uint32_t)rand());
+      a[ri] = ((uint32_t)random_rand() << 16)^((uint32_t)random_rand());
 #else
     uint8_t ri;
 	
     for (ri=0; ri<length; ri++)
-      a[ri] = (NN_DIGIT)rand();
+      a[ri] = (NN_DIGIT)random_rand();
 #endif
 
 #endif  //end of test vector

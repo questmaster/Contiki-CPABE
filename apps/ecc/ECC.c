@@ -743,7 +743,7 @@ void ECC_init()
 
     tmp = NNBits(n, NUMWORDS);
 
-    for (i = tmp-1; i >= 0; i--)
+	for (i = tmp-1; i >= 0; i--)
     {
 		watchdog_periodic();
 		c_dbl_projective(P0, Z0, P0, Z0);
@@ -757,6 +757,7 @@ void ECC_init()
 #endif
       }
     }   
+
 	//convert back to affine coordinate
     if (!Z_is_one(Z0))
     {
@@ -774,7 +775,7 @@ void ECC_init()
   // precompute the array of base point for sliding window method
   void ECC_win_precompute(Point * baseP, Point * pointArray)
   {
-    uint8_t i;
+    int8_t i;
     
     NNAssign(pointArray[0].x, baseP->x, NUMWORDS);
     NNAssign(pointArray[0].y, baseP->y, NUMWORDS);
@@ -1120,13 +1121,20 @@ printf("4\n");
  */
 void ECC_Random_Hash(Point * P, NN_DIGIT * h) {
 	NN_DIGIT x[NUMWORDS]; 
-	NN_DIGIT tmp[NUMWORDS]; 
+//	NN_DIGIT tmp[NUMWORDS]; 
 	
+#ifdef CONTIKI_TARGET_REDBEE_ECONOTAG
+//	NNAssignZero(x, NUMWORDS);
+//	NNMod(x, h, NUMWORDS, param.r, NUMWORDS);
+	NNAssign(x, h, NUMWORDS); // this means more computation time, but its a workaround :(
+
+#else
 //	NNMod(x, h, NUMWORDS, param.r, NUMWORDS);
 	NNDiv(NULL, tmp, h, NUMWORDS, param.r, NNDigits(param.r, NUMWORDS));
 	NNAssignZero(x, NUMWORDS);
 	NNAssign(x, tmp, NNDigits(param.r, NUMWORDS));
-
+#endif
+	
 	ECC_mul(P, &(param.G), x);
 }
 
