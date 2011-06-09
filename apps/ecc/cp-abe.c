@@ -18,6 +18,7 @@
 
 static TPParams param;
 static cpabe_policy_t* cur_comp_pol;
+static uint8_t init_done = 0;
 
 unsigned long mem_count = 0;
 unsigned long memb_comp_count = 0;
@@ -193,9 +194,12 @@ void debug_print(char* name, NN_DIGIT *val) {
  * @brief init memory structures needed for CP-ABE.
  */
 void cpabe_init() {
-	memb_init(&prv_comps_m);
-	memb_init(&enc_policy_m);
-	memb_init(&enc_polynomial_m);
+	if (!init_done) {
+		memb_init(&prv_comps_m);
+		memb_init(&enc_policy_m);
+		memb_init(&enc_polynomial_m);
+		init_done = 1;
+	}
 }
 
 /* ** CP-ABE Setup ********************* */
@@ -1887,8 +1891,9 @@ cpabe_prv_serialize( uint8_t* b, cpabe_prv_t* prv )
 	uint16_t list_len = list_length(prv->comps);
 //	uint8_t* b = (uint8_t*) malloc();
 	uint8_t* pos;
+	uint8_t* old_pos = b;
 	
-	pos = serialize_point(b, prv->d);
+	pos = serialize_point (   b, prv->d);
 	pos = serialize_uint16( pos, list_len);
 	
 	for( i = 0; i < list_len; i++ )
@@ -1898,7 +1903,7 @@ cpabe_prv_serialize( uint8_t* b, cpabe_prv_t* prv )
 		pos = serialize_point( pos, ((cpabe_prv_comp_t*) list_index(prv->comps, i))->dp);
 	}
 	
-	return pos - b; // return size
+	return pos - old_pos; // return size
 }
 
 void cpabe_prv_unserialize( cpabe_prv_t* prv, uint8_t* b, int f )

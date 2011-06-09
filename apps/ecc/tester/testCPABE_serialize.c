@@ -53,6 +53,7 @@ PROCESS_THREAD(tester_process, ev, data)
     uint32_t time_s, time_f, dt0;
 
 	watchdog_stop();
+	memset((uint8_t *) serialized, 0, 400);
 	
 //	for (i = 0; i < NUMWORDS-1; i++) {
 //		m[i] = i;
@@ -174,6 +175,13 @@ PROCESS_THREAD(tester_process, ev, data)
 		uint8_t* ser_m = cpabe_msk_serialize( &msk );
 		printf("m3\n");
 		
+		printf("CPABE_pub: ");
+		for (i = 0; i < (8 * sizeof(NN_DIGIT) * NUMWORDS); i++) {
+			printf("0x%x, ", ser[i]);
+		}
+		printf("\n");
+		
+		
 		cpabe_pub_unserialize( &pub, ser, 1 ); // FIXME: is free still needed
 		printf("m4\n");
 		cpabe_msk_unserialize( &msk, ser_m, 1 );		
@@ -247,7 +255,7 @@ PROCESS_THREAD(tester_process, ev, data)
 		printf("CPABE_keygen(%d): dynmem %lu memb_comp %lu memb_policy %lu memb_poly %lu\n", round_index, mem_count, memb_comp_count, memb_policy_count, memb_poly_count);
 		printf("CPABE_keygen(%d): ENERGEST cpu: %lu lpm: %lu\n", round_index, energy_cpu, energy_lpm);
 
-		/*printf("CPABE_prv_d_x: ");
+		printf("CPABE_prv_d_x: ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
 			printf("%x ", prv.d.x[i]);
 		}
@@ -282,12 +290,19 @@ PROCESS_THREAD(tester_process, ev, data)
 				printf("%x ", ((cpabe_prv_comp_t*) list_index(prv.comps, j))->dp.y[i]);
 			}
 			printf("\n");
-		}*/
+		}
 		
 		
 		// (un-)serialize keys and output them.
 printf("p1\n");
 		cpabe_prv_serialize( serialized, &prv );
+		printf("CPABE_prv: ");
+		for (i = 0; i < 400; i++) {
+			printf("0x%x, ", serialized[i]);
+		}
+		printf("\n");
+		
+		
 printf("p2\n");
 		cpabe_prv_free( &prv );
 printf("p3\n");
@@ -382,8 +397,8 @@ printf("p4\n");
 			printf("%x ", cph.c.y[i]);
 		}
 		printf("\n");
-		uint16_t list_len = list_length(cph.p);
-		int j;
+		/*uint16_t*/ list_len = list_length(cph.p);
+		//int j;
 		for( j = 0; j < list_len; j++ )
 		{
 			printf("CPABE_policy[%d]_k+child#: %d, %d\n", j, ((cpabe_policy_t*) list_index(cph.p, j))->k, list_length(((cpabe_policy_t*) list_index(cph.p, j))->children));
