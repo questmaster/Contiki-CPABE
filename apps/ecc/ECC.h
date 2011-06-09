@@ -75,12 +75,12 @@ struct Curve
   NN_DIGIT b[NUMWORDS];
   
   //whether a is -3
-  bool a_minus3;
+  uint8_t a_minus3;
   
   //whether a is zero
-  bool a_zero;
+  uint8_t a_zero;
   
-  bool a_one;
+  uint8_t a_one;
 };
 typedef struct Curve Curve;
 
@@ -145,7 +145,7 @@ typedef struct TPParams TPParams;
 
 //structure for precomputed points and slope
 struct PointSlope {
-  bool dbl;  //TRUE for double, FALSE for add
+  uint8_t dbl;  //TRUE for double, FALSE for add
   Point P;
   NN_DIGIT slope[NUMWORDS];
   struct PointSlope * next;
@@ -175,13 +175,13 @@ typedef struct PointSlope PointSlope;
 #endif
 	
 	//return the length of octets, octet_len >= 2*NUMWORDS
-	extern int ECC_point2octet(uint8_t *octet, NN_UINT octet_len, Point *P, bool compress);
+	extern int ECC_point2octet(uint8_t *octet, NN_UINT octet_len, Point *P, uint8_t compress);
 	
 	extern int ECC_octet2point(Point *P, uint8_t *octet, int octet_len);
 	
 	extern int ECC_check_point(Point *P);
 	
-	extern bool ECC_point_is_zero(Point *P);
+	extern uint8_t ECC_point_is_zero(Point *P);
 	
 #ifdef BARRETT_REDUCTION
 	extern void ECC_BarrettSetBuf();

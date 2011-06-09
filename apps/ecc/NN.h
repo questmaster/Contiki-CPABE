@@ -35,7 +35,7 @@
 
 
 // boolean datatype
-typedef int8_t bool;
+//typedef uint8_t bool;
 #define TRUE 1
 #define FALSE 0
 
@@ -387,11 +387,11 @@ extern NN_DIGIT NNTestBit(NN_DIGIT * a, int16_t i);
 //Returns significant length of a in digits.
 extern unsigned int NNDigits(NN_DIGIT * a, NN_UINT digits);
 //Returns 1 iff a = b.
-extern bool NNEqual(NN_DIGIT * a, NN_DIGIT * b, NN_UINT digits);
+extern uint8_t NNEqual(NN_DIGIT * a, NN_DIGIT * b, NN_UINT digits);
 //Returns 1 iff a is even.
-extern bool NNEven(NN_DIGIT * a, NN_UINT digits);
+extern uint8_t NNEven(NN_DIGIT * a, NN_UINT digits);
 //Returns the lucas exponentatiation for the Tate Pairing lucas(2*b,k)/2
-extern bool NNLucExp(NN_DIGIT * a,NN_DIGIT * b, NN_DIGIT * k,NN_DIGIT * inv2,NN_DIGIT * p,NN_UINT digits);
+extern uint8_t NNLucExp(NN_DIGIT * a,NN_DIGIT * b, NN_DIGIT * k,NN_DIGIT * inv2,NN_DIGIT * p,NN_UINT digits);
 
 /* TUD Extensions */
 // Generate random, non-zero b, with b = b mod c.

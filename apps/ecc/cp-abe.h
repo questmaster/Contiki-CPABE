@@ -114,6 +114,11 @@ typedef struct cpabe_cph_s {
 } cpabe_cph_t;
 
 /*
+ Initializes memory needed.
+ */
+extern void cpabe_init(void);
+
+/*
  Generate a public key and corresponding master secret key, and
  assign the *pub and *msk pointers to them. The space used may be
  later freed by calling cpabe_pub_free(*pub) and
@@ -172,8 +177,8 @@ extern int cpabe_dec(cpabe_pub_t *pub, cpabe_prv_t *prv, cpabe_cph_t *cph, NN2_N
  */
 extern uint8_t* cpabe_pub_serialize( cpabe_pub_t* pub );
 extern uint8_t* cpabe_msk_serialize( cpabe_msk_t* msk );
-extern uint8_t* cpabe_prv_serialize( cpabe_prv_t* prv );
-extern uint8_t* cpabe_cph_serialize( cpabe_cph_t* cph );
+extern uint8_t  cpabe_prv_serialize( uint8_t* b, cpabe_prv_t* prv );
+extern uint8_t  cpabe_cph_serialize( uint8_t* b, cpabe_cph_t* cph );
 
 /*
  Also exactly what it seems. If free is true, the GByteArray passed

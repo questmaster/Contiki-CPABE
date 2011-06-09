@@ -189,7 +189,7 @@ static void add_line_projective(NN2_NUMBER *u, Point *P0, NN_DIGIT *Z0, Point *P
   }
 
   //Miller's algorithm based on projective coordinate system
-bool TP_Miller(NN2_NUMBER *ef, Point *P){
+uint8_t TP_Miller(NN2_NUMBER *ef, Point *P){
     NN2_NUMBER temp1;
     Point V;
     int t;
@@ -343,7 +343,7 @@ static void add_line_projective(NN2_NUMBER *u, Point *P0, NN_DIGIT *Z0, Point *P
 static int check_m_0(NN_DIGIT *a, int start){
     NN_DIGIT temp;
     int rest, original_rest;
-    bool done = FALSE;
+    uint8_t done = FALSE;
     int i, original_i;
 
     original_i = i = start / NN_DIGIT_BITS;
@@ -380,7 +380,7 @@ static int check_m_0(NN_DIGIT *a, int start){
     return ((original_i - 1 - i) * NN_DIGIT_BITS + original_rest + NN_DIGIT_BITS - rest);
   }
 
-bool TP_Miller(NN2_NUMBER *ef, Point *P){
+uint8_t TP_Miller(NN2_NUMBER *ef, Point *P){
     NN2_NUMBER temp1;
     Point V;
     int t, m;
@@ -473,7 +473,7 @@ static void aff_add(PointSlope *pNode, Point * P0, Point * P1, Point * P2)
 static void precompute(Point *P){
     Point V;
     int t;
-    bool first_bit = TRUE;
+    uint8_t first_bit = TRUE;
     PointSlope *current;
 
     V = *P; // V=P
@@ -502,7 +502,7 @@ static void precompute(Point *P){
   }
 
   // Miller's algorithm
-bool TP_Miller(NN2_NUMBER *ef) { 
+uint8_t TP_Miller(NN2_NUMBER *ef) { 
     NN2_NUMBER temp1;
     PointSlope *current;
 
@@ -590,7 +590,7 @@ static void aff_add(NN2_NUMBER *u, Point * P0, Point * P1, Point * P2)
   }
 
   // Miller's algorithm
-bool TP_Miller(NN2_NUMBER *ef, Point *P) { 
+uint8_t TP_Miller(NN2_NUMBER *ef, Point *P) { 
     NN2_NUMBER temp1;
     Point V;
     int t;

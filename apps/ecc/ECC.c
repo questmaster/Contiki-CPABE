@@ -77,9 +77,9 @@ static NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
   }
 
   // test whether x and y of P0 is all zero
-  static bool p_iszero(Point * P0)
+  static uint8_t p_iszero(Point * P0)
   {
-    bool result = FALSE;
+    uint8_t result = FALSE;
     
     if (NNZero(P0->x, NUMWORDS))
       if (NNZero(P0->y, NUMWORDS))
@@ -88,7 +88,7 @@ static NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
   }
 
   // test whether points P1 and P2 are equal
-  static bool p_equal(Point * P1, Point * P2)
+  static uint8_t p_equal(Point * P1, Point * P2)
   {
     if (NNEqual(P1->x, P2->x, NUMWORDS))
       if (NNEqual(P1->y, P2->y, NUMWORDS))
@@ -97,7 +97,7 @@ static NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
   }
 
   // test whether Z is one
-  static bool Z_is_one(NN_DIGIT *Z)
+  static uint8_t Z_is_one(NN_DIGIT *Z)
   {
     uint8_t i;
     
@@ -601,7 +601,7 @@ void ECC_init()
   }
 #endif
   
-  int ECC_point2octet(uint8_t *octet, NN_UINT octet_len, Point *P, bool compress){
+  int ECC_point2octet(uint8_t *octet, NN_UINT octet_len, Point *P, uint8_t compress){
 
     if (compress){
       if(octet_len < KEYDIGITS*NN_DIGIT_LEN+1){
@@ -682,7 +682,7 @@ void ECC_init()
     return 1;
   }
 
-  bool ECC_point_is_zero(Point *P){
+  uint8_t ECC_point_is_zero(Point *P){
     return p_iszero(P);
   }
   
@@ -992,7 +992,7 @@ static void win_mul(Point * P0, NN_DIGIT * n, Point * pointArray)
   void ECC_gen_private_key(NN_DIGIT *PrivateKey){
 
     NN_UINT order_digit_len, order_bit_len;
-    bool done = FALSE;
+    uint8_t done = FALSE;
     uint8_t ri;
     NN_DIGIT digit_mask;
 
@@ -1045,7 +1045,7 @@ void ECC_assign(Point *P0, Point *P1) {
 }
 
 // Legendre-Symbol L(a/r) == 1? is a quadratic residue?
-/*bool ECC_is_sqr(NN_DIGIT * a, NN_UINT digits) {
+/*uint8_t ECC_is_sqr(NN_DIGIT * a, NN_UINT digits) {
 	NN_DIGIT z[NUMWORDS];
 	NN_DIGIT u[NUMWORDS];
 	int res;
@@ -1121,7 +1121,6 @@ printf("4\n");
  */
 void ECC_Random_Hash(Point * P, NN_DIGIT * h) {
 	NN_DIGIT x[NUMWORDS]; 
-//	NN_DIGIT tmp[NUMWORDS]; 
 	
 #ifdef CONTIKI_TARGET_REDBEE_ECONOTAG
 //	NNAssignZero(x, NUMWORDS);
@@ -1129,6 +1128,8 @@ void ECC_Random_Hash(Point * P, NN_DIGIT * h) {
 	NNAssign(x, h, NUMWORDS); // this means more computation time, but its a workaround :(
 
 #else
+	NN_DIGIT tmp[NUMWORDS]; 
+
 //	NNMod(x, h, NUMWORDS, param.r, NUMWORDS);
 	NNDiv(NULL, tmp, h, NUMWORDS, param.r, NNDigits(param.r, NUMWORDS));
 	NNAssignZero(x, NUMWORDS);

@@ -3973,19 +3973,19 @@ void NNEncode(unsigned char * a, NN_UINT digits, NN_DIGIT * b, NN_UINT len)
   }
 
   //whether a is even or not
-  bool NNEven(NN_DIGIT * a, NN_UINT digits)
+  uint8_t NNEven(NN_DIGIT * a, NN_UINT digits)
   {
     return (((digits) == 0) || ! (a[0] & 1));
   }
 
   //whether a equals to b or not
-  bool NNEqual(NN_DIGIT * a, NN_DIGIT * b, NN_UINT digits)
+  uint8_t NNEqual(NN_DIGIT * a, NN_DIGIT * b, NN_UINT digits)
   {
     return (! NN_Cmp (a, b, digits));
   }
 
   // Return the lucas exponentatiation for the Tate Pairing lucas(2*b,k)/2
-/*  bool NNLucExp(NN_DIGIT * a,NN_DIGIT * b, NN_DIGIT * k,NN_DIGIT * inv2,NN_DIGIT * d,NN_UINT digits) {
+/*  uint8_t NNLucExp(NN_DIGIT * a,NN_DIGIT * b, NN_DIGIT * k,NN_DIGIT * inv2,NN_DIGIT * d,NN_UINT digits) {
 
     NN_DIGIT  temp1[NUMWORDS], temp2[NUMWORDS];
 / *    NN_DIGIT two[NUMWORDS];
@@ -4012,7 +4012,7 @@ void NNEncode(unsigned char * a, NN_UINT digits, NN_DIGIT * b, NN_UINT len)
  */
 void NNModRandom (NN_DIGIT * b, NN_DIGIT * c, NN_UINT digits) {
 	NN_UINT order_digit_len, order_bit_len;
-    bool done = FALSE;
+    uint8_t done = FALSE;
     uint8_t ri;
     NN_DIGIT digit_mask;
 	

@@ -161,7 +161,7 @@ static void NN2_Lucas (NN2_NUMBER * a,NN2_NUMBER * b, NN_DIGIT * k,NN_DIGIT * d,
 }
 
 // Return the lucas exponentatiation for the Tate Pairing lucas(2*b,k)/2
-bool NN2LucExp(NN2_NUMBER * a,NN2_NUMBER * b, NN_DIGIT * k,NN_DIGIT * inv2,NN_DIGIT * d,NN_UINT digits) {
+uint8_t NN2LucExp(NN2_NUMBER * a,NN2_NUMBER * b, NN_DIGIT * k,NN_DIGIT * inv2,NN_DIGIT * d,NN_UINT digits) {
 	
     NN2_NUMBER  temp1, temp2;
 	/*    NN_DIGIT two[NUMWORDS];

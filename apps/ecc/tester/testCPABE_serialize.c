@@ -10,6 +10,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "list.h"
 #include "contiki.h"
 #include "leds.h"
 #include "watchdog.h"
@@ -21,8 +22,9 @@
 #include "TP.h"
 #include "ECC.h"
 #include "cp-abe.h"
+extern void * list_index(list_t list, uint8_t index);
 
-#define MAX_ROUNDS 10
+#define MAX_ROUNDS 1
 
 static cpabe_pub_t pub;
 static cpabe_msk_t msk;
@@ -36,6 +38,9 @@ static NN2_NUMBER m2;
 static unsigned long energy_cpu = 0;
 static unsigned long energy_lpm = 0;
 
+/* un-/serialize */
+static uint8_t serialized[400];
+
 /* declaration of scopes process */
 PROCESS(tester_process, "CP-ABE tester process");
 AUTOSTART_PROCESSES(&tester_process);
@@ -44,7 +49,7 @@ AUTOSTART_PROCESSES(&tester_process);
 PROCESS_THREAD(tester_process, ev, data)
 {
 	PROCESS_BEGIN();
-	int8_t i = 0;
+	int16_t i = 0;
     uint32_t time_s, time_f, dt0;
 
 	watchdog_stop();
@@ -162,11 +167,68 @@ PROCESS_THREAD(tester_process, ev, data)
 	printf("\n");*/
 #endif
 	
+		// (un-)serialize keys and output them.
+		printf("m1\n");
+		uint8_t* ser = cpabe_pub_serialize( &pub );
+		printf("m2\n");
+		uint8_t* ser_m = cpabe_msk_serialize( &msk );
+		printf("m3\n");
+		
+		cpabe_pub_unserialize( &pub, ser, 1 ); // FIXME: is free still needed
+		printf("m4\n");
+		cpabe_msk_unserialize( &msk, ser_m, 1 );		
+		printf("m5\n");
+		
+		free(ser);
+		printf("m6\n");
+		free(ser_m);
+		printf("m7\n");
+		
+		
+		
+/*		printf("CPABE_msk_beta: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", msk.beta[i]);
+		}
+		printf("\n");
+		printf("CPABE_msk_g-alpha_x: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", msk.g_alpha.x[i]);
+		}
+		printf("\n");
+		printf("CPABE_msk_g-alpha_y: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", msk.g_alpha.y[i]);
+		}
+		printf("\n");
+		printf("CPABE_pub_g-hat-alpha_r: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", pub.g_hat_alpha.r[i]);
+		}
+		printf("\n");
+		printf("CPABE_pub_g-hat-alpha_i: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", pub.g_hat_alpha.i[i]);
+		}
+		printf("\n");
+		printf("CPABE_pub_h_x: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", pub.h.x[i]);
+		}
+		printf("\n");
+		printf("CPABE_pub_h_y: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", pub.h.y[i]);
+		}
+		printf("\n");
+*/		
+		
+		
 		// Pairing
 		leds_off(LEDS_GREEN);
 		leds_on(LEDS_RED);
 
-		// TODO: run tests
+		// run tests
 
 #ifdef CPABE_KEYGEN
 		printf("CPABE_keygen(%d)\n", round_index);
@@ -185,7 +247,7 @@ PROCESS_THREAD(tester_process, ev, data)
 		printf("CPABE_keygen(%d): dynmem %lu memb_comp %lu memb_policy %lu memb_poly %lu\n", round_index, mem_count, memb_comp_count, memb_policy_count, memb_poly_count);
 		printf("CPABE_keygen(%d): ENERGEST cpu: %lu lpm: %lu\n", round_index, energy_cpu, energy_lpm);
 
-/*		printf("CPABE_prv_d_x: ");
+		/*printf("CPABE_prv_d_x: ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
 			printf("%x ", prv.d.x[i]);
 		}
@@ -194,9 +256,83 @@ PROCESS_THREAD(tester_process, ev, data)
 		for (i = NUMWORDS-1; i >= 0; i--) {
 			printf("%x ", prv.d.y[i]);
 		}
-		printf("\n");*/
+		printf("\n");
+		uint16_t list_len = list_length(prv.comps);
+		int j;
+		for( j = 0; j < list_len; j++ )
+		{
+			printf("CPABE_comps[%d]_attr: %s\n", j, ((cpabe_prv_comp_t*) list_index(prv.comps, j))->attr);
+			printf("CPABE_comps[%d]_d_x: ", j);
+			for (i = NUMWORDS-1; i >= 0; i--) {
+				printf("%x ", ((cpabe_prv_comp_t*) list_index(prv.comps, j))->d.x[i]);
+			}
+			printf("\n");
+			printf("CPABE_comps[%d]_d_y: ", j);
+			for (i = NUMWORDS-1; i >= 0; i--) {
+				printf("%x ", ((cpabe_prv_comp_t*) list_index(prv.comps, j))->d.y[i]);
+			}
+			printf("\n");
+			printf("CPABE_comps[%d]_dp_x: ", j);
+			for (i = NUMWORDS-1; i >= 0; i--) {
+				printf("%x ", ((cpabe_prv_comp_t*) list_index(prv.comps, j))->dp.x[i]);
+			}
+			printf("\n");
+			printf("CPABE_comps[%d]_dp_y: ", j);
+			for (i = NUMWORDS-1; i >= 0; i--) {
+				printf("%x ", ((cpabe_prv_comp_t*) list_index(prv.comps, j))->dp.y[i]);
+			}
+			printf("\n");
+		}*/
+		
+		
+		// (un-)serialize keys and output them.
+printf("p1\n");
+		cpabe_prv_serialize( serialized, &prv );
+printf("p2\n");
+		cpabe_prv_free( &prv );
+printf("p3\n");
+		cpabe_prv_unserialize( &prv, serialized, 1 ); 
+printf("p4\n");
+		
+		
+		/*printf("CPABE_prv_d_x: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", prv.d.x[i]);
+		}
+		printf("\n");
+		printf("CPABE_prv_d_y: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", prv.d.y[i]);
+		}
+		printf("\n");
+		list_len = list_length(prv.comps);
+		for( j = 0; j < list_len; j++ )
+		{
+			printf("CPABE_comps[%d]_attr: %s\n", j, ((cpabe_prv_comp_t*) list_index(prv.comps, j))->attr);
+			printf("CPABE_comps[%d]_d_x: ", j);
+			for (i = NUMWORDS-1; i >= 0; i--) {
+				printf("%x ", ((cpabe_prv_comp_t*) list_index(prv.comps, j))->d.x[i]);
+			}
+			printf("\n");
+			printf("CPABE_comps[%d]_d_y: ", j);
+			for (i = NUMWORDS-1; i >= 0; i--) {
+				printf("%x ", ((cpabe_prv_comp_t*) list_index(prv.comps, j))->d.y[i]);
+			}
+			printf("\n");
+			printf("CPABE_comps[%d]_dp_x: ", j);
+			for (i = NUMWORDS-1; i >= 0; i--) {
+				printf("%x ", ((cpabe_prv_comp_t*) list_index(prv.comps, j))->dp.x[i]);
+			}
+			printf("\n");
+			printf("CPABE_comps[%d]_dp_y: ", j);
+			for (i = NUMWORDS-1; i >= 0; i--) {
+				printf("%x ", ((cpabe_prv_comp_t*) list_index(prv.comps, j))->dp.y[i]);
+			}
+			printf("\n");
+		}*/
+		
 #endif
-#ifdef CPABE_ENCRYPTION		
+#ifdef CPABE_ENCRYPTION
 		printf("CPABE_enc(%d) \n", round_index);
 		printf("enc policy: %s\n", policy);
 		mem_count = 0; memb_comp_count = 0; memb_policy_count = 0; memb_poly_count = 0;
@@ -224,7 +360,9 @@ PROCESS_THREAD(tester_process, ev, data)
 			printf("%x ", m.i[i]);
 		}
 		printf("\n");
-/*		printf("CPABE_cph_cs_r: ");
+
+		
+		printf("CPABE_cph_cs_r: ");
 		for (i = NUMWORDS-1; i >= 0; i--) {
 			printf("%x ", cph.cs.r[i]);
 		}
@@ -243,7 +381,95 @@ PROCESS_THREAD(tester_process, ev, data)
 		for (i = NUMWORDS-1; i >= 0; i--) {
 			printf("%x ", cph.c.y[i]);
 		}
-		printf("\n");*/
+		printf("\n");
+		uint16_t list_len = list_length(cph.p);
+		int j;
+		for( j = 0; j < list_len; j++ )
+		{
+			printf("CPABE_policy[%d]_k+child#: %d, %d\n", j, ((cpabe_policy_t*) list_index(cph.p, j))->k, list_length(((cpabe_policy_t*) list_index(cph.p, j))->children));
+			printf("CPABE_policy[%d]_attr: %s\n", j, ((cpabe_policy_t*) list_index(cph.p, j))->attr);
+			printf("CPABE_policy[%d]_c_x: ", j);
+			for (i = NUMWORDS-1; i >= 0; i--) {
+				printf("%x ", ((cpabe_policy_t*) list_index(cph.p, j))->c.x[i]);
+			}
+			printf("\n");
+			printf("CPABE_policy[%d]_c_y: ", j);
+			for (i = NUMWORDS-1; i >= 0; i--) {
+				printf("%x ", ((cpabe_policy_t*) list_index(cph.p, j))->c.y[i]);
+			}
+			printf("\n");
+			printf("CPABE_policy[%d]_cp_x: ", j);
+			for (i = NUMWORDS-1; i >= 0; i--) {
+				printf("%x ", ((cpabe_policy_t*) list_index(cph.p, j))->cp.x[i]);
+			}
+			printf("\n");
+			printf("CPABE_policy[%d]_cp_y: ", j);
+			for (i = NUMWORDS-1; i >= 0; i--) {
+				printf("%x ", ((cpabe_policy_t*) list_index(cph.p, j))->cp.y[i]);
+			}
+			printf("\n");
+		}
+		
+		
+		// (un-)serialize keys and output them.
+printf("c1\n");
+		cpabe_cph_serialize( serialized, &cph );
+printf("c2\n");
+		cpabe_cph_free(&cph);
+printf("c3\n");
+		cpabe_cph_unserialize( &cph, serialized, 1 ); 
+printf("c4\n");
+		
+		
+		printf("CPABE_cph_cs_r: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", cph.cs.r[i]);
+		}
+		printf("\n");
+		printf("CPABE_cph_cs_i: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", cph.cs.i[i]);
+		}
+		printf("\n");
+		printf("CPABE_cph_c_x: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", cph.c.x[i]);
+		}
+		printf("\n");
+		printf("CPABE_cph_c_y: ");
+		for (i = NUMWORDS-1; i >= 0; i--) {
+			printf("%x ", cph.c.y[i]);
+		}
+		printf("\n");
+		list_len = list_length(cph.p);
+		for( j = 0; j < list_len; j++ )
+		{
+			printf("CPABE_policy[%d]_k+child#: %d, %d\n", j, ((cpabe_policy_t*) list_index(cph.p, j))->k, list_length(((cpabe_policy_t*) list_index(cph.p, j))->children));
+			printf("CPABE_policy[%d]_attr: %s\n", j, ((cpabe_policy_t*) list_index(cph.p, j))->attr);
+			printf("CPABE_policy[%d]_c_x: ", j);
+			for (i = NUMWORDS-1; i >= 0; i--) {
+				printf("%x ", ((cpabe_policy_t*) list_index(cph.p, j))->c.x[i]);
+			}
+			printf("\n");
+			printf("CPABE_policy[%d]_c_y: ", j);
+			for (i = NUMWORDS-1; i >= 0; i--) {
+				printf("%x ", ((cpabe_policy_t*) list_index(cph.p, j))->c.y[i]);
+			}
+			printf("\n");
+			printf("CPABE_policy[%d]_cp_x: ", j);
+			for (i = NUMWORDS-1; i >= 0; i--) {
+				printf("%x ", ((cpabe_policy_t*) list_index(cph.p, j))->cp.x[i]);
+			}
+			printf("\n");
+			printf("CPABE_policy[%d]_cp_y: ", j);
+			for (i = NUMWORDS-1; i >= 0; i--) {
+				printf("%x ", ((cpabe_policy_t*) list_index(cph.p, j))->cp.y[i]);
+			}
+			printf("\n");
+		}
+		
+		
+		
 #endif
 #ifdef CPABE_DECRYPTION
 		printf("CPABE_dec(%d) \n", round_index);
