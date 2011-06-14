@@ -1795,7 +1795,7 @@ static uint8_t* unserialize_point(uint8_t* b, Point* data) {
 	uint16_t len = sizeof(NN_DIGIT) * NUMWORDS;
 	uint8_t * pos;
 	
-	pos = serialize_bytewise(b, (uint8_t*) data->x, len);
+	pos = unserialize_bytewise(b, (uint8_t*) data->x, len);
 	return unserialize_bytewise(pos, (uint8_t*) data->y, len);
 }
 
@@ -1812,7 +1812,7 @@ static uint8_t* unserialize_nn2number(uint8_t* b, NN2_NUMBER* data) {
 	uint16_t len = sizeof(NN_DIGIT) * NUMWORDS;
 	uint8_t * pos;
 	
-	pos = serialize_bytewise(b, (uint8_t*) data->r, len);
+	pos = unserialize_bytewise(b, (uint8_t*) data->r, len);
 	return unserialize_bytewise(pos, (uint8_t*) data->i, len);
 }
 
