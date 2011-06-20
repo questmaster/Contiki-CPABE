@@ -1889,11 +1889,11 @@ cpabe_prv_serialize( uint8_t* b, cpabe_prv_t* prv )
 {
 	uint8_t i;
 	uint16_t list_len = list_length(prv->comps);
-//	uint8_t* b = (uint8_t*) malloc();
+	//	uint8_t* b = (uint8_t*) malloc();
 	uint8_t* pos;
-	uint8_t* old_pos = b;
+	uint16_t size = 2 + 2 * (NUMWORDS * sizeof(NN_DIGIT));
 	
-	pos = serialize_point (   b, prv->d);
+	pos = serialize_point(b, prv->d);
 	pos = serialize_uint16( pos, list_len);
 	
 	for( i = 0; i < list_len; i++ )
@@ -1901,9 +1901,10 @@ cpabe_prv_serialize( uint8_t* b, cpabe_prv_t* prv )
 		pos = serialize_string(pos, ((cpabe_prv_comp_t*) list_index(prv->comps, i))->attr);
 		pos = serialize_point( pos, ((cpabe_prv_comp_t*) list_index(prv->comps, i))->d);
 		pos = serialize_point( pos, ((cpabe_prv_comp_t*) list_index(prv->comps, i))->dp);
+		size += 4 * (NUMWORDS * sizeof(NN_DIGIT)) + strlen(((cpabe_prv_comp_t*) list_index(prv->comps, i))->attr) + 2;
 	}
 	
-	return pos - old_pos; // return size
+	return size; // return size
 }
 
 void cpabe_prv_unserialize( cpabe_prv_t* prv, uint8_t* b, int f )
@@ -1924,7 +1925,7 @@ void cpabe_prv_unserialize( cpabe_prv_t* prv, uint8_t* b, int f )
 	for( i = 0; i < len; i++ )
 	{
 		c = (cpabe_prv_comp_t *) memb_alloc(&prv_comps_m);
-		c->attr = (char *) malloc(*pos);
+		c->attr = (char *) malloc(pos[0]);
 		
 		pos = unserialize_string(pos, c->attr);
 		pos = unserialize_point( pos, &(c->d));
@@ -1938,23 +1939,34 @@ void cpabe_prv_unserialize( cpabe_prv_t* prv, uint8_t* b, int f )
 }
 
 /* policy */
-uint8_t* serialize_policy( uint8_t* b, cpabe_policy_t *p )
+uint8_t* serialize_policy( uint8_t* b, cpabe_policy_t *p, uint16_t * size )
 {
 	int i;
 	uint8_t* pos;
+	cpabe_policy_t *elem;
+	
+	*size += 4;
 	
 	pos = serialize_uint16(b, p->k);
 	
 	pos = serialize_uint16(pos, list_length(p->children));
+	
 	if( list_length(p->children) == 0 )
 	{
 		pos = serialize_string(pos, p->attr);
 		pos = serialize_point( pos, p->c);
 		pos = serialize_point( pos, p->cp);
+		
+		*size += 4 * (NUMWORDS * sizeof(NN_DIGIT)) + strlen(p->attr) + 2;
 	}
-	else
-		for( i = 0; i < list_length(p->children); i++ )
-			pos = serialize_policy(pos, list_index(p->children, i));
+	else {
+		for( i = 0; i < list_length(p->children); i++ ) {
+			if ((elem = list_index(p->children, i)) != NULL) {
+				pos = serialize_policy(pos, elem, size);
+			}
+			
+		}
+	}
 	
 	return pos;
 }
@@ -1974,12 +1986,14 @@ unserialize_policy( uint8_t* b, cpabe_policy_t* p )
 	p->attr = 0;
 	MYLIST(p->children);
 	list_init(p->children);
+	MYLIST(p->satl);
+	list_init(p->satl);
 	
 	pos = unserialize_uint16(pos, &n);
 	if( n == 0 )
 	{
-		p->attr = (char *) malloc(*pos);
-
+		p->attr = (char *) malloc(pos[0]);
+		
 		pos = unserialize_string(pos, p->attr);
 		pos = unserialize_point(pos, &(p->c));
 		pos = unserialize_point(pos, &(p->cp));
@@ -1996,16 +2010,17 @@ unserialize_policy( uint8_t* b, cpabe_policy_t* p )
 /* cph text */
 uint8_t cpabe_cph_serialize( uint8_t* b, cpabe_cph_t* cph )
 {
-//	uint8_t* b = (uint8_t*) malloc();
+	//	uint8_t* b = (uint8_t*) malloc();
 	uint8_t* old_pos = b;
 	uint8_t* pos;
+	uint16_t size = 4 * (NUMWORDS * sizeof(NN_DIGIT));
 	
 	pos = serialize_nn2number(b, cph->cs);
 	pos = serialize_point(pos, cph->c);
-
-	pos = serialize_policy( pos, list_head(cph->p));
 	
-	return pos - old_pos; // return size
+	pos = serialize_policy( pos, list_head(cph->p), &size);
+	
+	return size; // TODO: return size
 }
 
 void cpabe_cph_unserialize( cpabe_cph_t* cph, uint8_t* b, int f )
@@ -2018,7 +2033,7 @@ void cpabe_cph_unserialize( cpabe_cph_t* cph, uint8_t* b, int f )
 	
 	pos = unserialize_nn2number(b, &(cph->cs));
 	pos = unserialize_point(pos, &(cph->c));
-
+	
 	unserialize_policy(pos, list_head(cph->p));
 	
 	if( f )
