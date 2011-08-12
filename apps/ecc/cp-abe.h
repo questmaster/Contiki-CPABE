@@ -168,8 +168,25 @@ extern void cpabe_enc(cpabe_cph_t *cph, cpabe_pub_t *pub, NN2_NUMBER * m, char *
  Returns true if decryption succeeded, false if this key does not
  satisfy the policy of the ciphertext (in which case m is unaltered).
  */
-extern int cpabe_dec(cpabe_pub_t *pub, cpabe_prv_t *prv, cpabe_cph_t *cph, NN2_NUMBER * m);
+extern int cpabe_dec(cpabe_prv_t *prv, cpabe_cph_t *cph, NN2_NUMBER * m);
 
+/*
+ Updates all keys with new alpha_prime and returns modified keys and
+ update parameters to update further pub/prv keys.
+ 
+ The msk is updated with the new parameters. prv/pub keys have to be updated 
+ with cpabe_*_update() to allow en-/decrypt data to old keys before updating.
+ 
+ To revoke a prv key distribute update parameters to all prv-key except the 
+ ones that have to be revoked.
+ */
+extern void cpabe_revocation_update(NN2_NUMBER *g_hat_alpha_prime, Point *delta, cpabe_pub_t *pub, cpabe_msk_t *msk);
+
+/*
+ Allows update of key parameters to include new alpha_prime in key. 
+ */
+extern void cpabe_pub_update(NN2_NUMBER *g_hat_alpha_prime, cpabe_prv_t *pub);
+extern void cpabe_prv_update(Point *delta, cpabe_prv_t *prv);
 
 
 /*

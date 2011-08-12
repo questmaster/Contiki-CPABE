@@ -1537,7 +1537,7 @@ dec_merge( element_t r, bswabe_policy_t* p, bswabe_prv_t* prv, bswabe_pub_t* pub
 
 static void
 dec_leaf_flatten( NN2_NUMBER * r, NN_DIGIT * exp,
-				 cpabe_policy_t* p, cpabe_prv_t* prv, cpabe_pub_t* pub )
+				 cpabe_policy_t* p, cpabe_prv_t* prv )
 {
 	cpabe_prv_comp_t* c;
 	NN2_NUMBER s; // GT
@@ -1595,11 +1595,11 @@ debug_print("leaf_c-dp_y: ", c->dp.y);
 }
 
 static void dec_node_flatten( NN2_NUMBER * r, NN_DIGIT * exp,
-					  cpabe_policy_t* p, cpabe_prv_t* prv, cpabe_pub_t* pub );
+					  cpabe_policy_t* p, cpabe_prv_t* prv );
 
 static void
 dec_internal_flatten( NN2_NUMBER * r, NN_DIGIT * exp,
-					 cpabe_policy_t* p, cpabe_prv_t* prv, cpabe_pub_t* pub ) 
+					 cpabe_policy_t* p, cpabe_prv_t* prv ) 
 {
 	int i;
 	NN_DIGIT t[NUMWORDS];		// Zr
@@ -1615,7 +1615,7 @@ dec_internal_flatten( NN2_NUMBER * r, NN_DIGIT * exp,
 		NNAssignZero(expnew, NUMWORDS);
 		NNAssign(expnew, tmp, NNDigits(param.m, NUMWORDS));
 		dec_node_flatten(r, expnew, list_index
-						 (p->children, ((satl_int_t *) list_index(p->satl, i))->k - 1), prv, pub);
+						 (p->children, ((satl_int_t *) list_index(p->satl, i))->k - 1), prv);
 
 #ifdef CPABE_DEBUG		
 		printf("int_r_r[%d]: ", i);
@@ -1631,24 +1631,24 @@ dec_internal_flatten( NN2_NUMBER * r, NN_DIGIT * exp,
 
 static void
 dec_node_flatten( NN2_NUMBER * r, NN_DIGIT * exp,
-				 cpabe_policy_t* p, cpabe_prv_t* prv, cpabe_pub_t* pub )
+				 cpabe_policy_t* p, cpabe_prv_t* prv )
 {
 //	assert(p->satisfiable);
 	if( list_length(p->children) == 0 )
-		dec_leaf_flatten(r, exp, p, prv, pub);
+		dec_leaf_flatten(r, exp, p, prv);
 	else
-		dec_internal_flatten(r, exp, p, prv, pub);
+		dec_internal_flatten(r, exp, p, prv);
 }
 
 static void
-dec_flatten( NN2_NUMBER * r, cpabe_policy_t* p, cpabe_prv_t* prv, cpabe_pub_t* pub )
+dec_flatten( NN2_NUMBER * r, cpabe_policy_t* p, cpabe_prv_t* prv )
 {
 	NN_DIGIT one[NUMWORDS];	// Zr
 		
 	NNAssignOne(one, NUMWORDS);
 	NN2AssignNN(r, one, NUMWORDS);
 	
-	dec_node_flatten(r, one, p, prv, pub);
+	dec_node_flatten(r, one, p, prv);
 	
 	//element_clear(one);
 }
@@ -1688,7 +1688,7 @@ dec_flat_t 3 e5 24 76 8c 30 a9 40 b1 3 63 f0 cc 6d 16 57 5e c8 a8 6b e1 18 d9 e1
 dec_t 3 c5 82 15 89 55 47 af a8 d7 68 ad 84 13 bc 32 1a 7 d8 8d c9 2 27 d4 1a e7 4b cb b4 69 2 e7 f8 40 7d 3f da a9 49 90 1d 4c 39 80 b4 18 cb 37 
 dec_m 1b f4 66 fb af 33 f4 0 3a 92 20 2d bf 61 56 bb 87 92 de 92 e9 1a b3 a7 7 35 f4 6d 77 eb 1 8f 5a 72 41 47 db cf 9f 9e f9 c5 c0 8c c5 77 f9 fc 
  */
-int cpabe_dec(cpabe_pub_t *pub, cpabe_prv_t *prv, cpabe_cph_t *cph, NN2_NUMBER * m) {
+int cpabe_dec(cpabe_prv_t *prv, cpabe_cph_t *cph, NN2_NUMBER * m) {
 	NN2_NUMBER t;	// GT
 	
 	check_sat(list_head(cph->p), prv);							// check properties saturation
@@ -1707,7 +1707,7 @@ int cpabe_dec(cpabe_pub_t *pub, cpabe_prv_t *prv, cpabe_cph_t *cph, NN2_NUMBER *
 //	if( dec_strategy == DEC_NAIVE ) 
 //		dec_naive(t, cph->p, prv, pub); // not ported!
 //	else if( dec_strategy == DEC_FLATTEN ) 
-		dec_flatten(&t, list_head(cph->p), prv, pub);
+		dec_flatten(&t, list_head(cph->p), prv);
 //	else 
 //		dec_merge(t, cph->p, prv, pub); // not ported!
 
@@ -1728,6 +1728,51 @@ int cpabe_dec(cpabe_pub_t *pub, cpabe_prv_t *prv, cpabe_cph_t *cph, NN2_NUMBER *
 #endif
 
 	return 1;
+}
+
+
+/* *** CP-ABE key update / revocation *************************************** */
+
+void cpabe_revocation_update(NN2_NUMBER *g_hat_alpha_prime, Point *delta, cpabe_pub_t *pub, cpabe_msk_t *msk) {
+	NN_DIGIT alpha_prime[NUMWORDS];
+	NN_DIGIT one_neg[NUMWORDS];
+	NN_DIGIT beta_inv[NUMWORDS];
+	Point g_alpha_neg;
+	Point g_alpha_prime;
+	Point tmp;
+	
+	// g_alpha_prime
+	NNModRandom(alpha_prime, param.m, NUMWORDS);		/**< Random alpha' */
+	ECC_mul(&(g_alpha_prime), &(pub->gp), alpha_prime);	/**< g_alpha' = gp * alpha' */
+	
+	// g_hat_alpha_prime
+	TP_TatePairing(g_hat_alpha_prime), &(pub->g), &(g_alpha_prime));	/**< g_hat_alpha' = e(g, gp * alpha') */
+	
+	// delta
+	NNAssignOne(one_neg, NUMWORDS);
+	NNModNeg(one_neg, one_neg, param.m, NUMWORDS);		/**< one_neg = -1 */
+	ECC_mul(&g_alpha_neg, &(msk->g_alpha), one_neg);	/**< g_alpha_neg = g_alpha * -1 */
+	ECC_add(&delta, &g_alpha_prime, &g_alpha_neg);		/**< delta = g_alpha' + g_alpha_neg; here is P * P -> Add them !!! */
+	
+	NNModInv(beta_inv, msk->beta, param.m, NUMWORDS);	/**< beta_inv = 1/beta */
+	ECC_assign(&tmp, &delta);
+	ECC_mul(&delta, &tmp, beta_inv);					/**< d = d * beta_inverted */
+	
+	
+	// replace old g_alpha in msk
+	ECC_assign(&(msk->g_alpha), &(g_alpha_prime));
+}
+
+void cpabe_pub_update(NN2_NUMBER *g_hat_alpha_prime, cpabe_prv_t *pub) {
+	NN2_Assign(&(pub->g_hat_alpha), g_hat_alpha_prime, NUMWORDS);
+}
+
+void cpabe_prv_update(Point *delta, cpabe_prv_t *prv) {
+	Point tmp;
+	
+	ECC_assign(&tmp, &(prv->d));
+	ECC_add(&(prv->d), &tmp, delta);	/**< d' = d + delta; here is P * P -> Add them !!! */
+	
 }
 
 
