@@ -34,21 +34,21 @@ Cparam = CPABE192K2
 USE_CPABE = TRUE
 
 # en-/disable different parts of testCPABE code and DEBUG messages
-#CFLAGS+=-DCPABE_DEBUG
+CFLAGS+=-DCPABE_DEBUG
 CFLAGS+=-DCPABE_SETUP
 CFLAGS+=-DCPABE_KEYGEN
 CFLAGS+=-DCPABE_ENCRYPTION
 CFLAGS+=-DCPABE_DECRYPTION
 
-CFLAGS+=-DCPABE_SMALL_SET
-#CFLAGS+=-DCPABE_MEDIUM_SET
+#CFLAGS+=-DCPABE_SMALL_SET
+CFLAGS+=-DCPABE_MEDIUM_SET
 #CFLAGS+=-DCPABE_LARGE_SET
 
 ## choose different optimization techniques
 ## NN
 CFLAGS+=-DBARRETT_REDUCTION		# barrett reduction
-CFLAGS+=-DHYBRID_MULT			# hybrid multipliation
-CFLAGS+=-DHYBRID_SQR			# hybrid square
+#CFLAGS+=-DHYBRID_MULT			# hybrid multipliation
+#CFLAGS+=-DHYBRID_SQR			# hybrid square
 #CFLAGS+=-DCURVE_OPT			# optimization for secg curve 
 					# (Not possible for TP -> non-functioning omega optimization)
 CFLAGS+=-DNO_ASM				# disable assembler speed-up for add, mult, exp,... 
@@ -63,7 +63,7 @@ CFLAGS+=-DSHAMIR_TRICK			# shamir trick, windows size is defined in ECDSA.c
 #CFLAGS+=-DPROJECTIVE_M			# ???
 
 ## activate 4/8MHz configuration for Tmote Sky (compatible to TinyOS freq's)
-CFLAGS += -DMSP430_4MHZ_ENABLE		# Only Tmote on Contiki 2.4
+#CFLAGS += -DMSP430_4MHZ_ENABLE		# Only Tmote on Contiki 2.4
 #CFLAGS += -DMSP430_8MHZ_ENABLE		# Only Tmote on Contiki 2.4
 #CFLAGS += -DMSP430_16MHZ_ENABLE	# Only Z1 on Contiki 2.5
 

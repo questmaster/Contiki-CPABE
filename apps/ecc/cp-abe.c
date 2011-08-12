@@ -29,9 +29,9 @@ unsigned long memb_comp_free_count = 0;
 unsigned long memb_policy_free_count = 0;
 unsigned long memb_poly_free_count = 0;
 
-MEMB(prv_comps_m, cpabe_prv_comp_t, 5);						/**< This limits the number of attributes in the private key */
-MEMB(enc_policy_m, cpabe_policy_t, 5);						/**< This limits the number of attributes in encrypted data */
-MEMB(enc_polynomial_m, cpabe_polynomial_t, 5);				/**< This limits the number of attributes in encrypted data */
+MEMB(prv_comps_m, cpabe_prv_comp_t, 8);						/**< This limits the number of attributes in the private key */
+MEMB(enc_policy_m, cpabe_policy_t, 8);						/**< This limits the number of attributes in encrypted data */
+MEMB(enc_polynomial_m, cpabe_polynomial_t, 8);				/**< This limits the number of attributes in encrypted data */
 
 /* -- Utility functions ----------------------------------------------------- */
 
@@ -169,7 +169,7 @@ static uint8_t sscanf_repl(char* tok, /*char * format,*/ uint8_t* k, uint8_t* n)
 	return ret;
 }
 
-#ifndef CPABE_DEBUG
+#ifdef CPABE_DEBUG
 
 void debug_print(char* name, NN_DIGIT *val) {
 	int i;
