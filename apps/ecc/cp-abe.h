@@ -185,7 +185,7 @@ extern void cpabe_revocation_update(NN2_NUMBER *g_hat_alpha_prime, Point *delta,
 /*
  Allows update of key parameters to include new alpha_prime in key. 
  */
-extern void cpabe_pub_update(NN2_NUMBER *g_hat_alpha_prime, cpabe_prv_t *pub);
+extern void cpabe_pub_update(NN2_NUMBER *g_hat_alpha_prime, cpabe_pub_t *pub);
 extern void cpabe_prv_update(Point *delta, cpabe_prv_t *prv);
 
 

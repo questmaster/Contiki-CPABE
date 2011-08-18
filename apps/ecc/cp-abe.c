@@ -1730,6 +1730,7 @@ int cpabe_dec(cpabe_prv_t *prv, cpabe_cph_t *cph, NN2_NUMBER * m) {
 	return 1;
 }
 
+#endif
 
 /* *** CP-ABE key update / revocation *************************************** */
 
@@ -1746,25 +1747,25 @@ void cpabe_revocation_update(NN2_NUMBER *g_hat_alpha_prime, Point *delta, cpabe_
 	ECC_mul(&(g_alpha_prime), &(pub->gp), alpha_prime);	/**< g_alpha' = gp * alpha' */
 	
 	// g_hat_alpha_prime
-	TP_TatePairing(g_hat_alpha_prime), &(pub->g), &(g_alpha_prime));	/**< g_hat_alpha' = e(g, gp * alpha') */
+	TP_TatePairing(g_hat_alpha_prime, &(pub->g), &(g_alpha_prime));	/**< g_hat_alpha' = e(g, gp * alpha') */
 	
 	// delta
 	NNAssignOne(one_neg, NUMWORDS);
 	NNModNeg(one_neg, one_neg, param.m, NUMWORDS);		/**< one_neg = -1 */
 	ECC_mul(&g_alpha_neg, &(msk->g_alpha), one_neg);	/**< g_alpha_neg = g_alpha * -1 */
-	ECC_add(&delta, &g_alpha_prime, &g_alpha_neg);		/**< delta = g_alpha' + g_alpha_neg; here is P * P -> Add them !!! */
+	ECC_add(delta, &g_alpha_prime, &g_alpha_neg);		/**< delta = g_alpha' + g_alpha_neg; here is P * P -> Add them !!! */
 	
 	NNModInv(beta_inv, msk->beta, param.m, NUMWORDS);	/**< beta_inv = 1/beta */
-	ECC_assign(&tmp, &delta);
-	ECC_mul(&delta, &tmp, beta_inv);					/**< d = d * beta_inverted */
+	ECC_assign(&tmp, delta);
+	ECC_mul(delta, &tmp, beta_inv);					/**< d = d * beta_inverted */
 	
 	
 	// replace old g_alpha in msk
 	ECC_assign(&(msk->g_alpha), &(g_alpha_prime));
 }
 
-void cpabe_pub_update(NN2_NUMBER *g_hat_alpha_prime, cpabe_prv_t *pub) {
-	NN2_Assign(&(pub->g_hat_alpha), g_hat_alpha_prime, NUMWORDS);
+void cpabe_pub_update(NN2_NUMBER *g_hat_alpha_prime, cpabe_pub_t *pub) {
+	NN2Assign(&(pub->g_hat_alpha), g_hat_alpha_prime, NUMWORDS);
 }
 
 void cpabe_prv_update(Point *delta, cpabe_prv_t *prv) {
@@ -1774,7 +1775,6 @@ void cpabe_prv_update(Point *delta, cpabe_prv_t *prv) {
 	ECC_add(&(prv->d), &tmp, delta);	/**< d' = d + delta; here is P * P -> Add them !!! */
 	
 }
-
 
 /* *** Serializer ************************************************** */
 
@@ -2056,7 +2056,7 @@ unserialize_policy( uint8_t* b, cpabe_policy_t* p )
 uint8_t cpabe_cph_serialize( uint8_t* b, cpabe_cph_t* cph )
 {
 	//	uint8_t* b = (uint8_t*) malloc();
-	uint8_t* old_pos = b;
+	//uint8_t* old_pos = b;
 	uint8_t* pos;
 	uint16_t size = 4 * (NUMWORDS * sizeof(NN_DIGIT));
 	
@@ -2180,5 +2180,4 @@ void cpabe_cph_free( cpabe_cph_t* cph )
 }
 
 
-#endif
 
