@@ -66,6 +66,7 @@ static void init_data(){
     M_len = MSG_LEN;
 #endif
 	
+	printf("ECIES_init(): start.\n");
     time_a = clock_time();
 	
     ECIES_init();

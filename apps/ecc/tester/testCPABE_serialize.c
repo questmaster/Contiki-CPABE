@@ -25,6 +25,7 @@
 extern void * list_index(list_t list, uint8_t index);
 
 #define MAX_ROUNDS 1
+#define SERIALIZER_BUFFER_SIZE 400
 
 static cpabe_pub_t pub;
 static cpabe_msk_t msk;
@@ -39,7 +40,7 @@ static unsigned long energy_cpu = 0;
 static unsigned long energy_lpm = 0;
 
 /* un-/serialize */
-static uint8_t serialized[400];
+static uint8_t serialized[SERIALIZER_BUFFER_SIZE];
 
 /* declaration of scopes process */
 PROCESS(tester_process, "CP-ABE tester process");
@@ -53,7 +54,7 @@ PROCESS_THREAD(tester_process, ev, data)
     uint32_t time_s, time_f, dt0;
 
 	watchdog_stop();
-	memset((uint8_t *) serialized, 0, 400);
+	memset((uint8_t *) serialized, 0, SERIALIZER_BUFFER_SIZE);
 	
 //	for (i = 0; i < NUMWORDS-1; i++) {
 //		m[i] = i;
@@ -238,6 +239,12 @@ PROCESS_THREAD(tester_process, ev, data)
 
 		// run tests		
 		
+		attributes[0] = "attr_expint08_xxxxxxx1";
+//		attributes[1] = "attr2";
+//		attributes[2] = "attr3";
+		attributes[2] = 0;
+		
+		
 #ifdef CPABE_KEYGEN
 		printf("CPABE_keygen(%d)\n", round_index);
 		mem_count = 0; memb_comp_count = 0; memb_policy_count = 0; memb_poly_count = 0;
@@ -296,8 +303,8 @@ PROCESS_THREAD(tester_process, ev, data)
 		// (un-)serialize keys and output them.
 printf("p1\n");
 		cpabe_prv_serialize( serialized, &prv );
-		printf("CPABE_prv: ");
-		for (i = 0; i < 400; i++) {
+		printf("CPABE_prv 1: ");
+		for (i = 0; i < SERIALIZER_BUFFER_SIZE; i++) {
 			printf("0x%x, ", serialized[i]);
 		}
 		printf("\n");
@@ -308,18 +315,40 @@ printf("p2\n");
 printf("p3\n");
 		
 		
+
 		//		attributes[0] = "attr_expint08_xxxxxxx1";
 		//		attributes[1] = 0;
 		
 		
-		//		attributes[0] = "attr_expint08_xxxxxxx0";
-		//		attributes[1] = "attr2";
-		//		attributes[2] = 0;
+		attributes[0] = "attr_expint08_xxxxxxx0";
+		attributes[1] = "attr2";
+		attributes[2] = 0;
+		memset((uint8_t *) serialized, 0, SERIALIZER_BUFFER_SIZE);
+
 		
+		cpabe_keygen(&prv, &pub, &msk, attributes);
+		cpabe_prv_serialize( serialized, &prv );
+		printf("CPABE_prv 2: ");
+		for (i = 0; i < SERIALIZER_BUFFER_SIZE; i++) {
+			printf("0x%x, ", serialized[i]);
+		}
+		printf("\n");
+		cpabe_prv_free( &prv );
+
 		
-		//		attributes[0] = "attr2";
-		//		attributes[1] = "attr3";
-		//		attributes[2] = 0;
+		attributes[0] = "attr2";
+		attributes[1] = "attr3";
+		attributes[2] = 0;
+		memset((uint8_t *) serialized, 0, SERIALIZER_BUFFER_SIZE);
+
+		cpabe_keygen(&prv, &pub, &msk, attributes);
+		cpabe_prv_serialize( serialized, &prv );
+		printf("CPABE_prv 3: ");
+		for (i = 0; i < SERIALIZER_BUFFER_SIZE; i++) {
+			printf("0x%x, ", serialized[i]);
+		}
+		printf("\n");
+		cpabe_prv_free( &prv );
 		
 		
 		cpabe_prv_unserialize( &prv, serialized, 1 ); 
