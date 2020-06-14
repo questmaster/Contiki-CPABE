@@ -15,7 +15,7 @@
 #include "NN2.h"
 #include "TP.h"
 #include "ECC.h"
-#include "cp-abe.h"
+#include "../apps/cp-abe/include/cp-abe.h"
 
 #define MAX_ROUNDS 10
 #define CLOCK_SECOND CLOCKS_PER_SEC 

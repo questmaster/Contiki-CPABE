@@ -27,7 +27,7 @@
  * $Id: ECDSAM.nc,v 1.10 2007/11/02 22:36:39 aliu3 Exp $
  * module for ECDSA
  */
-#include <sha1.h>
+#include "../cp-abe/sha1.h"
 #include <ECDSA.h>
 #include <watchdog.h>
 #include <random.h>
