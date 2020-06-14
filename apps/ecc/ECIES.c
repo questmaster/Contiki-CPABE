@@ -28,7 +28,7 @@
  * Module implement ECIES operations
  */
 
-#include "../cp-abe/sha1.h"
+#include "sha1.h"
 #include <string.h>
 #include <ECIES.h>
 
