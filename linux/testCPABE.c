@@ -123,7 +123,7 @@ int main(void)
 		mem_count = 0; memb_comp_count = 0; memb_policy_count = 0; memb_poly_count = 0;
 		time_s = clock();
 
-		cpabe_keygen(&prv, pub, msk, attributes);
+		cpabe_keygen(&prv, &pub, &msk, attributes);
 
 		time_f = clock();
 		dt0 = time_f - time_s;
@@ -141,7 +141,7 @@ int main(void)
 		mem_count = 0; memb_comp_count = 0; memb_policy_count = 0; memb_poly_count = 0;
 		time_s = clock();
 		
-		cpabe_enc(&cph, pub, &m, policy); 
+		cpabe_enc(&cph, &pub, &m, policy);
 		
 		time_f = clock();
 		dt0 = time_f - time_s;
@@ -162,7 +162,7 @@ int main(void)
 		mem_count = 0; memb_comp_count = 0; memb_policy_count = 0; memb_poly_count = 0;
 		time_s = clock();
 		
-		cpabe_dec(pub, prv, cph, &m2); 
+		cpabe_dec(&prv, &cph, &m2);
 		
 		time_f = clock();
 		dt0 = time_f - time_s;

@@ -34,7 +34,8 @@
 #include <NN.h>
 #include <string.h>
 #include <CurveParam.h>
-#include <random.h>
+//#include <random.h>
+#include <stdlib.h>
 
 
 #define MAX(a,b) ((a) < (b) ? (b) : (a))
@@ -458,7 +459,7 @@ static  NN_DIGIT b_testbit(NN_DIGIT * a, int16_t i)
      Lengths: a[2*digits], b[digits], c[digits].
      Assumes digits < MAX_NN_DIGITS.
    */
-__attribute__ ((noinline)) void NN_Mult (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT digits)
+void NN_Mult (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, NN_UINT digits)
   {
 	  watchdog_periodic();
 	  //#ifdef INLINE_ASM
@@ -1762,7 +1763,7 @@ __attribute__ ((noinline)) void NN_Mult (NN_DIGIT *a, NN_DIGIT *b, NN_DIGIT *c, 
   }
 
 
-__attribute__ ((noinline)) void NN_Sqr(NN_DIGIT *a, NN_DIGIT *b, NN_UINT digits)
+void NN_Sqr(NN_DIGIT *a, NN_DIGIT *b, NN_UINT digits)
   {
 	  watchdog_periodic();
     //#ifdef INLINE_ASM
@@ -4024,7 +4025,7 @@ void NNModRandom (NN_DIGIT * b, NN_DIGIT * c, NN_UINT digits) {
 		
 		for (ri=0; ri < order_digit_len; ri++){
 #ifdef THIRTYTWO_BIT_PROCESSOR
-			b[ri] = (((NN_DIGIT)random_rand()) << 16)|((NN_DIGIT)random_rand());
+			b[ri] = (((NN_DIGIT)/*random_*/rand()) << 16)|((NN_DIGIT)/*random_*/rand());
 #else
 			b[ri] = (NN_DIGIT)random_rand();
 #endif
