@@ -11,7 +11,7 @@
 #include <string.h>
 #include <watchdog.h>
 #include <memb.h>
-#include "cp-abe.h"
+#include "include/cp-abe.h"
 #include "TP.h"
 #include "qsort.h"
 #include "sha1.h"

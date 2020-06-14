@@ -21,7 +21,7 @@
 #include <NN2.h>
 #include "TP.h"
 #include "ECC.h"
-#include "cp-abe.h"
+#include "../include/cp-abe.h"
 extern void * list_index(list_t list, uint8_t index);
 
 #define MAX_ROUNDS 1

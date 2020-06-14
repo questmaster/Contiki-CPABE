@@ -35,7 +35,7 @@
  * Code was ported to Contiki by Daniel Jacobi from TinyECC 1.0 distribution.
  */
 
-#include <sha1.h>
+#include "sha1.h"
 
 #define METHOD2
 

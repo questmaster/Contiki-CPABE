@@ -28,7 +28,7 @@
  * ECDHM, the module implement ECDH operations
  */
 
-#include <sha1.h>
+#include "../cp-abe/sha1.h"
 #include <ECDH.h>
 #include <string.h>
 

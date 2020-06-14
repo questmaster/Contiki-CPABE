@@ -20,7 +20,7 @@
 #include <NN2.h>
 #include "TP.h"
 #include "ECC.h"
-#include "cp-abe.h"
+#include "../include/cp-abe.h"
 
 #define MAX_ROUNDS 10
 
