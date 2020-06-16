@@ -38,6 +38,7 @@ endif ()
 
 # add the cmake/ directory to the cmake module paths. Modules in there can be loaded with the include function.
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+include(unity)
 include(setup_module)
 
 add_subdirectory(linux)
