@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(libCPABE
-        VERSION 0.1.0.0
+        VERSION ${PROJECT_VERSION}
+        LANGUAGES C
         )
 
-add_library (CPABE
+add_library (CPABE STATIC EXCLUDE_FROM_ALL
         cp-abe.c
 #        curves/cpabe168k2.c
         curves/cpabe192k2.c
@@ -15,9 +16,14 @@ add_library (CPABE
         qsort.c
         )
 
+target_link_libraries (CPABE
+        PUBLIC ECC
+        )
+
 target_include_directories (CPABE
-        PUBLIC include
-        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+        PUBLIC  ${CMAKE_CURRENT_SOURCE_DIR}/include
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+        )
 
 target_compile_definitions(CPABE PRIVATE
         CPABE_SETUP
@@ -26,4 +32,6 @@ target_compile_definitions(CPABE PRIVATE
         CPABE_DECRYPTION
         )
 
-target_link_libraries (CPABE LINK_PUBLIC ECC)
+setup_module(CPABE)
+
+#add_subdirectory(test)

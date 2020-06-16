@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(libECC
-        VERSION 0.1.0.0
+        VERSION ${PROJECT_VERSION}
+        LANGUAGES C
         )
 
 add_library(ECC
@@ -27,8 +28,16 @@ add_library(ECC
         sha1.c
         )
 
+target_link_libraries (ECC
+        PUBLIC LinSupport
+        )
+
 target_include_directories (ECC
-        PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+        PUBLIC
+#        ${CMAKE_CURRENT_SOURCE_DIR}/include
+#        PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        )
 
 target_compile_definitions(ECC PUBLIC
         ## choose different optimization techniques
@@ -52,4 +61,6 @@ target_compile_definitions(ECC PUBLIC
         TARGET_LINUX32 CPABE192K2 TPSSC
         )
 
-target_link_libraries (ECC LINK_PUBLIC LinSupport)
+setup_module(ECC)
+
+#add_subdirectory(test)
