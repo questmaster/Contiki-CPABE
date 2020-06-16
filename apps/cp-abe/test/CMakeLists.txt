@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.12)
 
-add_executable(CPABE-test EXCLUDE_FROM_ALL
+add_executable(CPABE-test
         qsortTest.c
         )
 
 target_link_libraries(CPABE-test
-        PRIVATE CPABE ${Unity_LIB})
+        PRIVATE CPABE unity)
 
 add_dependencies(CPABE-test unity_ext)
 
