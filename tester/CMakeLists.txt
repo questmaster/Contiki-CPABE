@@ -20,3 +20,4 @@ target_compile_definitions(test_CPABE PUBLIC
 
 setup_module(test_CPABE)
 
+add_test(IntegrationCPABE test_CPABE)
