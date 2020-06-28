@@ -9,8 +9,6 @@ add_executable(CPABE-test
         )
 
 target_link_libraries(CPABE-test
-        PRIVATE unity CPABE)
-
-#add_dependencies(CPABE-test unity_ext)
+        PRIVATE unity CPABE fff ECC-fakes)
 
 add_test(CPABETest CPABE-test)

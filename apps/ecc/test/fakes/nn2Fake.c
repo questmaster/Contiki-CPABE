@@ -1,0 +1,16 @@
+//
+// Created by Daniel on 22.06.2020.
+//
+
+#ifndef CONTIKI_CPABE_NN2MOCK_H
+#define CONTIKI_CPABE_NN2MOCK_H
+
+#include <fff.h>
+#include "NN2.h"
+
+DEFINE_FFF_GLOBALS;
+
+DEFINITION_FAKE_VOID_FUNC(NN2ModMult, NN2_NUMBER, NN2_NUMBER, NN2_NUMBER, NN_DIGIT, NN_UINT);
+
+
+#endif // CONTIKI_CPABE_NN2MOCK_H
