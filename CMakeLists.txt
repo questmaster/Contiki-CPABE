@@ -4,7 +4,8 @@ project(Contiki_CPABE
         VERSION 1.0.0.0)
 
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED True)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
 
 enable_testing()
 
@@ -39,6 +40,7 @@ endif ()
 # add the cmake/ directory to the cmake module paths. Modules in there can be loaded with the include function.
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(unity)
+include(fff)
 include(setup_module)
 
 add_subdirectory(linux)
