@@ -68,7 +68,11 @@ CFLAGS+=-DSHAMIR_TRICK			# shamir trick, windows size is defined in ECDSA.c
 #CFLAGS += -DMSP430_16MHZ_ENABLE	# Only Z1 on Contiki 2.5
 
 
+#TARGETDIRS += apps
+APPDIRS += ../../
+
 ifndef CONTIKI
-	CONTIKI = ../..
+	CONTIKI = ../../../contiki
 endif
 include $(CONTIKI)/Makefile.include
+

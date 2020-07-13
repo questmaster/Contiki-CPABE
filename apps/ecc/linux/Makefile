@@ -68,7 +68,8 @@ include ../Makefile.ecc
 ## Start build process ## Don't change anything except you know what you do! ###
 ################################################################################
 
-CC=arm-linux-gcc
+#CC=arm-linux-gcc
+CC=gcc
 TARGET=testCPABE
 OTHERDIR=../
 
