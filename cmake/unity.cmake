@@ -1,5 +1,6 @@
 include(ExternalProject)
 
+# Begin: External Third Party Library
 ExternalProject_Add(
     unity_ext
     PREFIX ${PROJECT_BINARY_DIR}/unity
@@ -12,6 +13,24 @@ ExternalProject_Add(
     -DCMAKE_INSTALL_PREFIX:STRING=${PROJECT_BINARY_DIR}/unity
     )
 
-add_library(unity STATIC IMPORTED GLOBAL)
-set_target_properties(unity PROPERTIES IMPORTED_LOCATION ${PROJECT_BINARY_DIR}/unity/lib/libunity.a)
-target_include_directories(unity INTERFACE ${PROJECT_BINARY_DIR}/unity/include/unity)
+
+# The above ExternalProject_Add(...) construct wil take care of \
+# 1. Downloading sources
+# 2. Building Object files
+# 3. Install under DCMAKE_INSTALL_PREFIX Directory
+
+# Acquire Installation Directory of
+ExternalProject_Get_Property (unity_ext install_dir)
+
+# Begin: Importing Headers & Library of Third Party built using ExternalProject_Add(...)
+# Include PATH that has headers required by Target Project
+include_directories (${install_dir}/include/unity)
+
+# Import librarues from External Project required by Target Project
+add_library(unity STATIC IMPORTED )
+set_target_properties(unity PROPERTIES IMPORTED_LOCATION ${install_dir}/lib/libunity.a)
+
+add_dependencies(unity unity_ext)
+
+# End: Importing Headers & Library of Third Party built using ExternalProject_Add(...)
+# End: External Third Party Library
