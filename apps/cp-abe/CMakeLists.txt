@@ -14,7 +14,7 @@ add_library (CPABE STATIC EXCLUDE_FROM_ALL
 #        curves/cpabe384k2.c
 #        curves/cpabe512k2.c
         qsort.c
-        test/qsortTest.c)
+        )
 
 target_link_libraries (CPABE
         PUBLIC ECC

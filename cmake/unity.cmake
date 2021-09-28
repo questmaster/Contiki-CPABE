@@ -12,7 +12,6 @@ ExternalProject_Add(
     -DCMAKE_INSTALL_PREFIX:STRING=${PROJECT_BINARY_DIR}/unity
     )
 
-add_library(unity STATIC IMPORTED)
+add_library(unity STATIC IMPORTED GLOBAL)
 set_target_properties(unity PROPERTIES IMPORTED_LOCATION ${PROJECT_BINARY_DIR}/unity/lib/libunity.a)
-#target_include_directories(unity INTERFACE ${PROJECT_BINARY_DIR}/unity/include/unity)
-include_directories(${PROJECT_BINARY_DIR}/unity/include/unity)
+target_include_directories(unity INTERFACE ${PROJECT_BINARY_DIR}/unity/include/unity)
