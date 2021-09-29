@@ -32,6 +32,7 @@
 
 #include <ECC.h>
 #include <NN.h>
+#include <memory.h>
 
 // TODO: 8-bit
 

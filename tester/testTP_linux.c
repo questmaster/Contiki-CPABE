@@ -137,14 +137,14 @@ static void runTP(){
 
 		time_s = clock();
 		
-		TP_init(P, Q);
+		TP_init(&P, &Q);
 		
 		time_f = clock();
 		dt0 = time_f - time_s;
 		
 		time_s = clock();
 		
-		TP_Miller(&f, P);
+		TP_Miller(&f, &P);
 /*
     f.r[6]=0x00000000;
     f.r[5]=0x170e061d;
