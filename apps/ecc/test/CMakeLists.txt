@@ -8,8 +8,9 @@ cmake_minimum_required(VERSION 3.12)
 #
 #add_dependencies(ECC-test unity_ext)
 #
+#target_compile_definitions(ECC-test PUBLIC ${ECC_COMPILE_COMMANDS})
+#
 #add_test(ECCTest ECC-test)
 
-include(../ecc_config.cmake)
 
 add_subdirectory(fakes)

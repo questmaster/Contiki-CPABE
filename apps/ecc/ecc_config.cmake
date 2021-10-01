@@ -1,23 +1,23 @@
 
-add_definitions(
+set(ECC_COMPILE_DEFINITIONS
         ## choose different optimization techniques
         ## NN
-        -DBARRETT_REDUCTION		# barrett reduction
-        #-DHYBRID_MULT			# hybrid multipliation
-        #-DHYBRID_SQR			# hybrid square
-        -DNO_ASM
-        #-DCURVE_OPT			# optimization for secg curve
+        BARRETT_REDUCTION		# barrett reduction
+        #HYBRID_MULT			# hybrid multipliation
+        #HYBRID_SQR			# hybrid square
+        NO_ASM
+        #CURVE_OPT			# optimization for secg curve
         # (Not possible for TP -> non-functioning omega optimization)
         ## ECC
-        -DPROJECTIVE			# projective coordinate
-        -DSLIDING_WIN			# sliding window method, window size is defined in ECC.h
+        PROJECTIVE			# projective coordinate
+        SLIDING_WIN			# sliding window method, window size is defined in ECC.h
         ## ECDSA
-        -DSHAMIR_TRICK			# shamir trick, windows size is defined in ECDSA.c
+        SHAMIR_TRICK			# shamir trick, windows size is defined in ECDSA.c
         ## TP
-        #-DFIXED_P				# precompute intermediate nodes, slopes for a fixed P
-        #-DPROJECTIVE_M			# ???
+        #FIXED_P				# precompute intermediate nodes, slopes for a fixed P
+        #PROJECTIVE_M			# ???
 
         # to be removed
-        -DTARGET_LINUX32 -DCPABE192K2 -DTPSSC
+        TARGET_LINUX32 CPABE192K2 TPSSC
 )
 
