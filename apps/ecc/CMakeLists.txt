@@ -40,6 +40,7 @@ target_include_directories (ECC
         )
 
 include(ecc_config.cmake)
+target_compile_definitions(ECC PUBLIC ${ECC_COMPILE_DEFINITIONS})
 
 setup_module(ECC)
 
