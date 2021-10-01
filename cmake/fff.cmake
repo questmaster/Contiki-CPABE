@@ -1,5 +1,6 @@
 include(ExternalProject)
 
+# Begin: External Third Party Library
 ExternalProject_Add(
     fff_ext
     PREFIX ${PROJECT_BINARY_DIR}/fff
@@ -11,5 +12,23 @@ ExternalProject_Add(
         TEST_COMMAND      ""
     )
 
-add_library(fff INTERFACE IMPORTED)
-target_include_directories(fff INTERFACE ${PROJECT_BINARY_DIR}/fff/src/fff_ext)
+
+# The above ExternalProject_Add(...) construct wil take care of \
+# 1. Downloading sources
+# 2. Building Object files
+# 3. Install under DCMAKE_INSTALL_PREFIX Directory
+
+# Acquire Installation Directory of
+ExternalProject_Get_Property (fff_ext install_dir)
+
+# Begin: Importing Headers & Library of Third Party built using ExternalProject_Add(...)
+# Include PATH that has headers required by Target Project
+include_directories (${install_dir}/src/fff_ext)
+
+# Import librarues from External Project required by Target Project
+add_library(fff INTERFACE IMPORTED )
+
+add_dependencies(fff fff_ext)
+
+# End: Importing Headers & Library of Third Party built using ExternalProject_Add(...)
+# End: External Third Party Library

@@ -43,4 +43,5 @@ include(ecc_config.cmake)
 
 setup_module(ECC)
 
-#add_subdirectory(test)
+add_subdirectory(test)
+
