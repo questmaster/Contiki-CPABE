@@ -1,3 +1,4 @@
+
 add_definitions(
         ## choose different optimization techniques
         ## NN
@@ -18,4 +19,5 @@ add_definitions(
 
         # to be removed
         -DTARGET_LINUX32 -DCPABE192K2 -DTPSSC
-        )
+)
+

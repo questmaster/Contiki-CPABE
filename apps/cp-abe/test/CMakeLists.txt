@@ -9,6 +9,6 @@ add_executable(CPABE-test
         )
 
 target_link_libraries(CPABE-test
-        PRIVATE unity CPABE fff ECC-fakes)
+        PRIVATE unity fff ECC-fakes CPABE)
 
 add_test(CPABETest CPABE-test)
