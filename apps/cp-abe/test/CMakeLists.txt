@@ -1,11 +1,14 @@
 cmake_minimum_required(VERSION 3.12)
 
 add_executable(CPABE-test
-        qsortTest.c
-        qsortTest.h
         runTest.c
+
+        qsortTest.c
         cpabeTest.c
-        cpabeTest.h
+        )
+
+target_include_directories (CPABE-test
+        PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
         )
 
 target_link_libraries(CPABE-test

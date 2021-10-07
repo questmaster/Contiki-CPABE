@@ -13,6 +13,7 @@ int main(void) {
   RUN_TEST(test_BasicSorting);
   RUN_TEST(test_NegativeSorting);
   RUN_TEST(test_OddNumberSorting);
+
   RUN_TEST(test_basicCpabe);
 
   return UNITY_END();

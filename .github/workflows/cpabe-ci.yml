@@ -17,5 +17,6 @@ jobs:
       run: mkdir build && cd build && cmake ..
     - name: build
       run: cmake --build build --config Debug
-    - name: test
+    - name: execute
       run: cd build && ctest
+
