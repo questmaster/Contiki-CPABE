@@ -5,6 +5,7 @@ ExternalProject_Add(
     fff_ext
     PREFIX ${PROJECT_BINARY_DIR}/fff
     DOWNLOAD_NAME fff_v2.5.1.zip
+    DOWNLOAD_EXTRACT_TIMESTAMP true
     URL https://github.com/meekrosoft/fff/archive/master.zip
         CONFIGURE_COMMAND ""
         BUILD_COMMAND     ""

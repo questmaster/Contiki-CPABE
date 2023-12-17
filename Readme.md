@@ -1,7 +1,7 @@
 # CP-ABE Implementation for Contiki
 
 This repository contains an implementation of CP-ABE for the Contiki 2.4/2.5 operating system including support files.
-Performane measurements on several platforms are documented in this thesis: http://tuprints.ulb.tu-darmstadt.de/5249/
+Performance measurements on several platforms are documented in this thesis: http://tuprints.ulb.tu-darmstadt.de/5249/
 
 ## Repository Contents
 

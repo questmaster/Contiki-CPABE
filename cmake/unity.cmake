@@ -5,6 +5,7 @@ ExternalProject_Add(
     unity_ext
     PREFIX ${PROJECT_BINARY_DIR}/unity
     DOWNLOAD_NAME unity_v2.5.1.tar.gz
+    DOWNLOAD_EXTRACT_TIMESTAMP true
     URL https://github.com/ThrowTheSwitch/Unity/archive/v2.5.1.tar.gz
  #   URL_HASH SHA256=a8c5e384f511a03c603bbecc9edc24d2cb4a916998d51a29cf2e3a2896920d03
     BUILD_IN_SOURCE TRUE
